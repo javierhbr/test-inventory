@@ -1,0 +1,142 @@
+{
+  "userProfiles": [
+    {
+      "value": "developer",
+      "label": "Developer", 
+      "description": "Tests and Test Data (read/write)",
+      "icon": "💻",
+      "badgeStyle": {
+        "bgColor": "bg-blue-100",
+        "textColor": "text-blue-800"
+      }
+    },
+    {
+      "value": "automation",
+      "label": "Automation",
+      "description": "All modules, complete Execution Builder", 
+      "icon": "🤖",
+      "badgeStyle": {
+        "bgColor": "bg-green-100",
+        "textColor": "text-green-800"
+      }
+    },
+    {
+      "value": "product", 
+      "label": "Product",
+      "description": "Read-only in all modules",
+      "icon": "📊",
+      "badgeStyle": {
+        "bgColor": "bg-purple-100", 
+        "textColor": "text-purple-800"
+      }
+    },
+    {
+      "value": "admin",
+      "label": "Admin",
+      "description": "Full access and configurations",
+      "icon": "🛡️", 
+      "badgeStyle": {
+        "bgColor": "bg-red-100",
+        "textColor": "text-red-800"
+      }
+    }
+  ],
+  "userManagement": {
+    "title": "User Management",
+    "description": "Manage users and their permissions on the platform",
+    "searchPlaceholder": "Search by email or username...",
+    "buttons": {
+      "newUser": "New User",
+      "clearSearch": "Clear search",
+      "cancel": "Cancel",
+      "create": "Create User",
+      "save": "Save Changes",
+      "delete": "Delete",
+      "changePassword": "Change Password"
+    },
+    "tableHeaders": [
+      "User",
+      "Email", 
+      "Profile",
+      "Status",
+      "Last Login",
+      "Created",
+      "Actions"
+    ],
+    "statCards": [
+      {
+        "id": "total",
+        "label": "Total Users",
+        "icon": "Users",
+        "color": "text-blue-600"
+      },
+      {
+        "id": "active", 
+        "label": "Active",
+        "icon": "UserCheck",
+        "color": "text-green-600"
+      },
+      {
+        "id": "administrators",
+        "label": "Administrators", 
+        "icon": "Shield",
+        "color": "text-red-600"
+      },
+      {
+        "id": "inactive",
+        "label": "Inactive",
+        "icon": "Users", 
+        "color": "text-purple-600"
+      }
+    ],
+    "dialogs": {
+      "create": {
+        "title": "Create New User",
+        "description": "Complete the details to create a new user on the platform"
+      },
+      "edit": {
+        "title": "Edit User", 
+        "description": "Modify the details of user"
+      },
+      "changePassword": {
+        "title": "Change Password",
+        "description": "Set a new password for"
+      },
+      "confirmDelete": {
+        "title": "Confirm deletion?",
+        "description": "This action will permanently delete user {username}. This action cannot be undone."
+      }
+    },
+    "formLabels": {
+      "username": "Username",
+      "email": "Email",
+      "password": "Password", 
+      "confirmPassword": "Confirm Password",
+      "newPassword": "New Password",
+      "profile": "Profile"
+    },
+    "placeholders": {
+      "username": "Enter the username",
+      "email": "user@example.com",
+      "password": "Password",
+      "confirmPassword": "Confirm the password",
+      "newPassword": "New password (minimum 6 characters)",
+      "confirmNewPassword": "Confirm the new password"
+    },
+    "messages": {
+      "allFieldsRequired": "All fields are required",
+      "passwordsDoNotMatch": "Passwords do not match", 
+      "usernameExists": "Username already exists",
+      "emailExists": "Email already exists",
+      "passwordTooShort": "Password must be at least 6 characters long",
+      "cannotDeleteLastAdmin": "Cannot delete the last active administrator",
+      "cannotDeactivateLastAdmin": "Cannot deactivate the last active administrator",
+      "userCreated": "User {username} created successfully",
+      "userUpdated": "User {username} updated successfully", 
+      "userDeleted": "User {username} deleted successfully",
+      "userActivated": "User {username} activated successfully",
+      "userDeactivated": "User {username} deactivated successfully",
+      "passwordChanged": "Password for {username} changed successfully"
+    }
+  }
+}
