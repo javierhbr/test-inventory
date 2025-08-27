@@ -45,11 +45,11 @@ interface CreateTestData {
   };
   classifications: string[];
   labels: {
-    proyecto: string;
-    ambiente: string;
+    project: string;
+    environment: string;
     dataOwner: string;
-    grupo?: string;
-    fuente?: string;
+    group?: string;
+    source?: string;
   };
   scope: {
     visibility: 'manual' | 'automated' | 'platform';
@@ -73,7 +73,7 @@ const availableClassifications = [
   'Expired credit card',
   'Inactive credit card',
   'Card with offer',
-  'To activate',
+  'To be activated',
 ];
 
 const availablePlatforms = ['OCP Testing Studio', 'Xero', 'Sierra'];
@@ -104,11 +104,11 @@ export function CreateTestDataDialog({
   >([]);
 
   // Labels
-  const [proyecto, setProyecto] = useState('');
-  const [ambiente, setAmbiente] = useState('');
+  const [project, setProject] = useState('');
+  const [environment, setEnvironment] = useState('');
   const [dataOwner, setDataOwner] = useState('');
-  const [grupo, setGrupo] = useState('');
-  const [fuente, setFuente] = useState('');
+  const [group, setGroup] = useState('');
+  const [source, setSource] = useState('');
 
   // Scope
   const [visibility, setVisibility] = useState<
@@ -120,11 +120,11 @@ export function CreateTestDataDialog({
     setCustomerType('');
     setAccountType('');
     setSelectedClassifications([]);
-    setProyecto('');
-    setAmbiente('');
+    setProject('');
+    setEnvironment('');
     setDataOwner('');
-    setGrupo('');
-    setFuente('');
+    setGroup('');
+    setSource('');
     setVisibility('manual');
     setSelectedPlatforms([]);
   };
@@ -196,7 +196,7 @@ export function CreateTestDataDialog({
       !customerType ||
       !accountType ||
       selectedClassifications.length === 0 ||
-      !ambiente ||
+      !environment ||
       !dataOwner
     ) {
       alert('Please complete all required fields');
@@ -229,11 +229,11 @@ export function CreateTestDataDialog({
         },
         classifications: selectedClassifications,
         labels: {
-          proyecto,
-          ambiente,
+          project,
+          environment,
           dataOwner,
-          ...(grupo && { grupo }),
-          ...(fuente && { fuente }),
+          ...(group && { group }),
+          ...(source && { source }),
         },
         scope: {
           visibility,
@@ -404,20 +404,20 @@ export function CreateTestDataDialog({
                 <CardContent>
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <Label htmlFor="proyecto">Project *</Label>
+                      <Label htmlFor="project">Project *</Label>
                       <Input
-                        id="proyecto"
-                        value={proyecto}
-                        onChange={e => setProyecto(e.target.value)}
+                        id="project"
+                        value={project}
+                        onChange={e => setProject(e.target.value)}
                         placeholder="E.g.: Core Migration, Release Q3"
                         required
                       />
                     </div>
                     <div>
-                      <Label htmlFor="ambiente">Environment *</Label>
+                      <Label htmlFor="environment">Environment *</Label>
                       <Select
-                        value={ambiente}
-                        onValueChange={value => setAmbiente(value as string)}
+                        value={environment}
+                        onValueChange={value => setEnvironment(value as string)}
                       >
                         <SelectTrigger>
                           <SelectValue />
@@ -440,10 +440,10 @@ export function CreateTestDataDialog({
                       />
                     </div>
                     <div>
-                      <Label htmlFor="grupo">Customer Group</Label>
+                      <Label htmlFor="group">Customer Group</Label>
                       <Select
-                        value={grupo}
-                        onValueChange={value => setGrupo(value as string)}
+                        value={group}
+                        onValueChange={value => setGroup(value as string)}
                       >
                         <SelectTrigger>
                           <SelectValue />
@@ -456,11 +456,11 @@ export function CreateTestDataDialog({
                       </Select>
                     </div>
                     <div className="col-span-2">
-                      <Label htmlFor="fuente">Source</Label>
+                      <Label htmlFor="source">Source</Label>
                       <Input
-                        id="fuente"
-                        value={fuente}
-                        onChange={e => setFuente(e.target.value)}
+                        id="source"
+                        value={source}
+                        onChange={e => setSource(e.target.value)}
                         placeholder="E.g.: Core API, Bulk load, Generated"
                       />
                     </div>

@@ -27,7 +27,9 @@ function DropdownMenuTrigger({
     const isButton =
       children.type === 'button' ||
       (typeof children.type === 'object' &&
-        children.type?.displayName === 'Button');
+        children.type &&
+        'displayName' in children.type &&
+        (children.type as any).displayName === 'Button');
 
     return (
       <BaseMenu.Trigger

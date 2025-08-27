@@ -95,10 +95,10 @@ export function Header({
             <TestTube className="h-6 w-6 text-primary" />
             <div>
               <h1 className="text-xl font-bold leading-tight text-gray-900">
-                Sistema de Inventario de Testing
+                Test Inventory System
               </h1>
               <p className="text-sm text-gray-600">
-                Gestión integral de Test Cases, Test Data y Ejecuciones
+                Comprehensive management of Test Cases, Test Data and Executions
               </p>
             </div>
           </div>
@@ -129,7 +129,7 @@ export function Header({
                   </div>
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-64">
+              <DropdownMenuContent className="w-64">
                 <div className="border-b px-3 py-2">
                   <p className="font-medium text-gray-900">{user.name}</p>
                   <div className="mt-1 flex items-center gap-2">

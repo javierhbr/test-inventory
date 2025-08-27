@@ -35,10 +35,10 @@ interface LoginProps {
 
 // Mock data directly in component for now to fix the import issue
 const mockUsers: User[] = [
-  { id: 'dev-001', name: 'Juan Pérez', profile: 'dev' },
-  { id: 'automation-001', name: 'María García', profile: 'automation' },
-  { id: 'product-001', name: 'Carlos López', profile: 'product' },
-  { id: 'admin-001', name: 'Ana Martínez', profile: 'admin' },
+  { id: 'dev-001', name: 'John Doe', profile: 'dev' },
+  { id: 'automation-001', name: 'Mary Garcia', profile: 'automation' },
+  { id: 'product-001', name: 'Charles Lopez', profile: 'product' },
+  { id: 'admin-001', name: 'Ana Martinez', profile: 'admin' },
   { id: 'qa-001', name: 'Laura Ruiz', profile: 'qa_engineer' },
 ];
 
@@ -150,13 +150,13 @@ const authenticateOAuth = (provider: string): Promise<User> => {
     setTimeout(() => {
       // Simulate OAuth flow - in real implementation, this would handle OAuth callback
       let userProfile: UserProfile = 'automation'; // Default profile
-      let userName = `Usuario de ${provider}`;
+      let userName = `User from ${provider}`;
 
       // Assign different profiles based on provider
       switch (provider) {
         case 'enterprise':
           userProfile = 'admin'; // Enterprise SSO users get admin access
-          userName = 'Usuario Corporativo';
+          userName = 'Corporate User';
           break;
         default:
           userProfile = 'automation';
@@ -180,7 +180,7 @@ const oauthProviders = [
     name: 'Enterprise SSO',
     icon: Shield,
     color: 'bg-purple-600 hover:bg-purple-700 text-white',
-    description: 'Acceso corporativo con Single Sign-On',
+    description: 'Corporate access with Single Sign-On',
   },
 ];
 
@@ -194,7 +194,7 @@ export function Login({ onLogin }: LoginProps) {
     e.preventDefault();
 
     if (!selectedProfile) {
-      setError('Por favor selecciona un perfil');
+      setError('Please select a profile');
       return;
     }
 
@@ -205,7 +205,7 @@ export function Login({ onLogin }: LoginProps) {
       const user = await authenticateUser(selectedProfile as UserProfile);
       onLogin(user);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error de autenticación');
+      setError(err instanceof Error ? err.message : 'Authentication error');
     } finally {
       setIsLoading(false);
     }
@@ -220,7 +220,7 @@ export function Login({ onLogin }: LoginProps) {
       const user = await authenticateUser(profile);
       onLogin(user);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error de autenticación');
+      setError(err instanceof Error ? err.message : 'Authentication error');
     } finally {
       setIsLoading(false);
     }
@@ -237,7 +237,7 @@ export function Login({ onLogin }: LoginProps) {
       setError(
         err instanceof Error
           ? err.message
-          : `Error de autenticación con ${provider}`
+          : `Authentication error with ${provider}`
       );
     } finally {
       setOauthLoading(null);
@@ -328,7 +328,7 @@ export function Login({ onLogin }: LoginProps) {
                       {selectedProfileInfo.description}
                     </p>
                     <div className="text-sm">
-                      <strong>Permisos:</strong>
+                      <strong>Permissions:</strong>
                       <ul className="ml-4 mt-1 list-disc">
                         {selectedProfileInfo.permissions.map(
                           (permission: string, index: number) => (
@@ -344,7 +344,7 @@ export function Login({ onLogin }: LoginProps) {
               )}
 
               <Button type="submit" className="w-full" disabled={isLoading}>
-                {isLoading ? 'Iniciando sesión...' : 'Iniciar Sesión'}
+                {isLoading ? 'Logging in...' : 'Login'}
               </Button>
             </form>
 
@@ -356,7 +356,7 @@ export function Login({ onLogin }: LoginProps) {
                 </div>
                 <div className="relative flex justify-center text-xs uppercase">
                   <span className="bg-white px-2 text-gray-500">
-                    O continúa con
+                    Or continue with
                   </span>
                 </div>
               </div>
