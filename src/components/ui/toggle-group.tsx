@@ -19,10 +19,10 @@ function ToggleGroup({
   size,
   children,
   ...props
-}: React.ComponentProps<typeof BaseToggleGroup.Root> &
+}: React.ComponentProps<typeof BaseToggleGroup> &
   VariantProps<typeof toggleVariants>) {
   return (
-    <BaseToggleGroup.Root
+    <BaseToggleGroup
       data-slot="toggle-group"
       data-variant={variant}
       data-size={size}
@@ -35,7 +35,7 @@ function ToggleGroup({
       <ToggleGroupContext.Provider value={{ variant, size }}>
         {children}
       </ToggleGroupContext.Provider>
-    </BaseToggleGroup.Root>
+    </BaseToggleGroup>
   );
 }
 
@@ -45,12 +45,11 @@ function ToggleGroupItem({
   variant,
   size,
   ...props
-}: React.ComponentProps<typeof BaseToggleGroup.Item> &
-  VariantProps<typeof toggleVariants>) {
+}: React.ComponentProps<'button'> & VariantProps<typeof toggleVariants>) {
   const context = React.useContext(ToggleGroupContext);
 
   return (
-    <BaseToggleGroup.Item
+    <button
       data-slot="toggle-group-item"
       data-variant={context.variant || variant}
       data-size={context.size || size}
@@ -65,7 +64,7 @@ function ToggleGroupItem({
       {...props}
     >
       {children}
-    </BaseToggleGroup.Item>
+    </button>
   );
 }
 

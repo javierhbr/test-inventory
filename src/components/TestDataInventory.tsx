@@ -9,7 +9,7 @@ import { EditTestDataDialog } from './EditTestDataDialog';
 import { SearchAndFilters, FilterConfig } from './SearchAndFilters';
 import { TestDataDetail } from './TestDataDetail';
 import { Badge } from './ui/badge';
-import { Button } from './ui/button';
+import { Button, buttonVariants } from './ui/button';
 import { Card, CardContent } from './ui/card';
 import { Checkbox } from './ui/checkbox';
 import {
@@ -37,8 +37,9 @@ import {
   TableHeader,
   TableRow,
 } from './ui/table';
+import { cn } from './ui/utils';
 
-interface TestData {
+interface LocalTestData {
   id: string;
   customer: {
     customerId: string;
@@ -72,7 +73,7 @@ interface TestData {
   team: string;
 }
 
-const mockTestData: TestData[] = [
+const mockTestData: LocalTestData[] = [
   {
     id: 'TD-20031',
     customer: {
@@ -513,10 +514,9 @@ const ITEMS_PER_PAGE = 10;
 
 export function TestDataInventory() {
   const { hasPermission } = usePermissions();
-  const [testData, setTestData] = useState<TestData[]>(mockTestData);
-  const [selectedTestData, setSelectedTestData] = useState<TestData | null>(
-    null
-  );
+  const [testData, setTestData] = useState<LocalTestData[]>(mockTestData);
+  const [selectedTestData, setSelectedTestData] =
+    useState<LocalTestData | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState<string | string[]>('all');
   const [filterScope, setFilterScope] = useState<string | string[]>('all');
@@ -742,10 +742,31 @@ export function TestDataInventory() {
     );
   };
 
-  const handleTestDataUpdate = (updatedData: TestData) => {
+  const handleTestDataUpdate = (updatedData: LocalTestData) => {
     setTestData(prev =>
       prev.map(data => (data.id === updatedData.id ? updatedData : data))
     );
+  };
+
+  const convertToLocalTestData = (createData: any): LocalTestData => {
+    // Handle data from CreateTestDataDialog which has a different structure
+    return {
+      id: createData.id,
+      customer: createData.customer,
+      account: createData.account,
+      classifications: createData.classifications,
+      labels: {
+        project: createData.labels?.proyecto || 'Default Project',
+        environment: createData.labels?.ambiente || 'Unknown',
+        dataOwner: createData.labels?.dataOwner || 'Unknown',
+        group: createData.labels?.grupo,
+        source: createData.labels?.fuente,
+      },
+      scope: createData.scope,
+      status: createData.status,
+      lastUsed: createData.lastUsed,
+      team: createData.team || 'Default Team',
+    };
   };
 
   const handleDeleteTestData = (testDataId: string) => {
@@ -968,12 +989,18 @@ ${data.scope.platforms.map(platform => `        - ${platform}`).join('\n')}`
         <div className="flex gap-2">
           {hasPermission('create_test_data') && (
             <CreateTestDataDialog
-              onTestDataCreated={newData => setTestData([...testData, newData])}
+              onTestDataCreated={newData =>
+                setTestData([...testData, convertToLocalTestData(newData)])
+              }
             >
-              <Button>
+              <div
+                className={cn(
+                  buttonVariants({ variant: 'default', size: 'default' })
+                )}
+              >
                 <Plus className="mr-2 h-4 w-4" />
                 Create Test Data
-              </Button>
+              </div>
             </CreateTestDataDialog>
           )}
           {hasPermission('export_tests') && (
@@ -1166,14 +1193,13 @@ ${data.scope.platforms.map(platform => `        - ${platform}`).join('\n')}`
                   <TableCell>
                     <div className="flex gap-2">
                       <Dialog>
-                        <DialogTrigger>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => setSelectedTestData(data)}
-                          >
-                            <Eye className="h-4 w-4" />
-                          </Button>
+                        <DialogTrigger
+                          className={cn(
+                            buttonVariants({ variant: 'outline', size: 'sm' })
+                          )}
+                          onClick={() => setSelectedTestData(data)}
+                        >
+                          <Eye className="h-4 w-4" />
                         </DialogTrigger>
                         <DialogContent className="flex h-[90vh] !w-[50vw] !max-w-[50vw] flex-col bg-gradient-to-br from-white to-gray-50 p-0 sm:!max-w-[50vw]">
                           <DialogHeader className="shrink-0 border-b border-gray-200 px-6 pb-4 pt-6">
@@ -1262,9 +1288,13 @@ ${data.scope.platforms.map(platform => `        - ${platform}`).join('\n')}`
                           testData={data}
                           onTestDataUpdated={handleTestDataUpdate}
                         >
-                          <Button size="sm" variant="outline">
+                          <div
+                            className={cn(
+                              buttonVariants({ variant: 'outline', size: 'sm' })
+                            )}
+                          >
                             <Pencil className="h-4 w-4" />
-                          </Button>
+                          </div>
                         </EditTestDataDialog>
                       )}
 

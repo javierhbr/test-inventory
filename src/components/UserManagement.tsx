@@ -29,7 +29,7 @@ import {
   AlertDialogTrigger,
 } from './ui/alert-dialog';
 import { Badge } from './ui/badge';
-import { Button } from './ui/button';
+import { Button, buttonVariants } from './ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Checkbox } from './ui/checkbox';
 import {
@@ -57,6 +57,7 @@ import {
   TableHeader,
   TableRow,
 } from './ui/table';
+import { cn } from './ui/utils';
 
 interface AppUser {
   id: string;
@@ -596,19 +597,18 @@ export function UserManagement() {
                         <UserCheck className="h-3 w-3" />
                       </Button>
                       <AlertDialog>
-                        <AlertDialogTrigger>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            disabled={
-                              user.profile === 'admin' &&
-                              users.filter(
-                                u => u.profile === 'admin' && u.isActive
-                              ).length === 1
-                            }
-                          >
-                            <Trash2 className="h-3 w-3 text-red-600" />
-                          </Button>
+                        <AlertDialogTrigger
+                          className={cn(
+                            buttonVariants({ variant: 'outline', size: 'sm' })
+                          )}
+                          disabled={
+                            user.profile === 'admin' &&
+                            users.filter(
+                              u => u.profile === 'admin' && u.isActive
+                            ).length === 1
+                          }
+                        >
+                          <Trash2 className="h-3 w-3 text-red-600" />
                         </AlertDialogTrigger>
                         <AlertDialogContent>
                           <AlertDialogHeader>

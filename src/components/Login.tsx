@@ -397,7 +397,7 @@ export function Login({ onLogin }: LoginProps) {
               <div className="mb-4 text-center text-sm text-gray-500">
                 Quick access for demonstration:
               </div>
-              <div className="grid grid-cols-2 gap-2 md:grid-cols-4">
+              <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
                 {availableProfiles.map((profile: UserProfile) => {
                   const config = profileConfig[profile];
                   const info = profileInfo[profile];
@@ -408,11 +408,13 @@ export function Login({ onLogin }: LoginProps) {
                       variant="outline"
                       size="sm"
                       onClick={() => quickLogin(profile)}
-                      className="flex items-center gap-2"
+                      className="flex h-12 flex-col items-center justify-center gap-1 px-2 py-2 text-xs"
                       disabled={isLoading}
                     >
                       <IconComponent className="h-4 w-4" />
-                      {info.title}
+                      <span className="text-center leading-tight">
+                        {info.title}
+                      </span>
                     </Button>
                   );
                 })}
@@ -420,13 +422,21 @@ export function Login({ onLogin }: LoginProps) {
             </div>
 
             <div className="mt-6 rounded-lg bg-gray-100 p-4">
-              <h4 className="mb-2 font-medium">Permissions by Profile:</h4>
-              <div className="space-y-1 text-sm">
+              <h4 className="mb-3 font-medium">Permissions by Profile:</h4>
+              <div className="space-y-2">
                 {availableProfiles.map((profile: UserProfile) => {
                   const info = profileInfo[profile];
                   return (
-                    <div key={profile}>
-                      <strong>{info.title}:</strong> {info.description}
+                    <div
+                      key={profile}
+                      className="flex flex-col sm:flex-row sm:gap-2"
+                    >
+                      <div className="font-medium text-gray-700 sm:w-36 sm:flex-shrink-0">
+                        {info.title}:
+                      </div>
+                      <div className="text-sm text-gray-600">
+                        {info.description}
+                      </div>
                     </div>
                   );
                 })}

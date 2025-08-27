@@ -17,6 +17,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './components/ui/tabs';
 import { UserManagement } from './components/UserManagement';
 import { PermissionsProvider } from './contexts/PermissionsContext';
+import { useNavigationHistory } from './hooks/useNavigationHistory';
 import {
   AppConfig,
   configService,
@@ -31,6 +32,15 @@ function App() {
   const [loading, setLoading] = useState(true);
   const [configError, setConfigError] = useState<string | null>(null);
 
+  const {
+    currentTab: navigationTab,
+    pushToHistory,
+    goBack,
+    goForward,
+    canGoBack,
+    canGoForward,
+  } = useNavigationHistory('tests');
+
   // Load configurations on mount
   useEffect(() => {
     const loadConfigs = async () => {
@@ -41,7 +51,10 @@ function App() {
         ]);
         setAppConfig(appCfg);
         setSystemConfig(sysCfg);
-        setActiveTab(appCfg.application.defaultTab);
+        // Check if URL has a tab parameter, otherwise use default
+        const urlParams = new URLSearchParams(window.location.search);
+        const urlTab = urlParams.get('tab');
+        setActiveTab(urlTab || appCfg.application.defaultTab);
         setConfigError(null);
       } catch (error) {
         console.error('Failed to load configurations:', error);
@@ -77,6 +90,13 @@ function App() {
     return configService.getAvailableTabs(user.profile, appConfig.tabs);
   }, [user, appConfig]);
 
+  // Sync navigation tab with activeTab
+  useEffect(() => {
+    if (navigationTab !== activeTab) {
+      setActiveTab(navigationTab);
+    }
+  }, [navigationTab, activeTab]);
+
   // Ensure active tab is available for current user
   useEffect(() => {
     if (
@@ -87,6 +107,23 @@ function App() {
       setActiveTab(appConfig.application.defaultTab);
     }
   }, [user, activeTab, appConfig]);
+
+  // Handle tab changes with navigation history
+  const handleTabChange = (newTab: string) => {
+    if (newTab !== activeTab) {
+      pushToHistory(newTab);
+    }
+  };
+
+  // Handle navigation back
+  const handleGoBack = () => {
+    goBack();
+  };
+
+  // Handle navigation forward
+  const handleGoForward = () => {
+    goForward();
+  };
 
   // Get grid columns class
   const getGridColsClass = (count: number): string => {
@@ -185,13 +222,20 @@ function App() {
   return (
     <PermissionsProvider>
       <div className="min-h-screen bg-gray-50">
-        <Header user={user} onLogout={handleLogout} />
+        <Header
+          user={user}
+          onLogout={handleLogout}
+          onBack={handleGoBack}
+          onForward={handleGoForward}
+          canGoBack={canGoBack}
+          canGoForward={canGoForward}
+        />
 
         <div className="p-6">
           <div className="mx-auto max-w-[95%]">
             <Tabs
               value={activeTab}
-              onValueChange={setActiveTab}
+              onValueChange={handleTabChange}
               className="w-full"
             >
               <TabsList

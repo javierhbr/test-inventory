@@ -8,7 +8,7 @@ import { CreateTestDialog } from './CreateTestDialog';
 import { FilterConfig, SearchAndFilters } from './SearchAndFilters';
 import { TestDetail } from './TestDetail';
 import { Badge } from './ui/badge';
-import { Button } from './ui/button';
+import { Button, buttonVariants } from './ui/button';
 import { Card, CardContent } from './ui/card';
 import { Checkbox } from './ui/checkbox';
 import {
@@ -36,6 +36,7 @@ import {
   TableHeader,
   TableRow,
 } from './ui/table';
+import { cn } from './ui/utils';
 // Tabs import removed because it's unused in this file
 
 interface Test {
@@ -776,10 +777,14 @@ ${test.supportedRuntimes.map(runtime => `      - ${runtime}`).join('\n')}
             <CreateTestDialog
               onTestCreated={newTest => setTests([...tests, newTest])}
             >
-              <Button>
+              <div
+                className={cn(
+                  buttonVariants({ variant: 'default', size: 'default' })
+                )}
+              >
                 <Plus className="mr-2 h-4 w-4" />
                 Create Test
-              </Button>
+              </div>
             </CreateTestDialog>
           )}
           {hasPermission('export_tests') && (
@@ -953,15 +958,14 @@ ${test.supportedRuntimes.map(runtime => `      - ${runtime}`).join('\n')}
                   <TableCell>
                     <div className="flex items-center gap-1">
                       <Dialog>
-                        <DialogTrigger>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => setSelectedTest(test)}
-                            title="View details"
-                          >
-                            <Eye className="h-4 w-4" />
-                          </Button>
+                        <DialogTrigger
+                          className={cn(
+                            buttonVariants({ variant: 'outline', size: 'sm' })
+                          )}
+                          onClick={() => setSelectedTest(test)}
+                          title="View details"
+                        >
+                          <Eye className="h-4 w-4" />
                         </DialogTrigger>
                         <DialogContent className="flex h-[90vh] !w-[50vw] !max-w-[50vw] flex-col bg-gradient-to-br from-white to-gray-50 p-0 sm:!max-w-[50vw]">
                           <DialogHeader className="shrink-0 border-b border-gray-200 px-6 pb-4 pt-6">

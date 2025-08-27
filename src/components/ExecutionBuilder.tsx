@@ -14,7 +14,7 @@ import {
 
 import { SearchAndFilters, FilterConfig } from './SearchAndFilters';
 import { Badge } from './ui/badge';
-import { Button } from './ui/button';
+import { Button, buttonVariants } from './ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Checkbox } from './ui/checkbox';
 import {
@@ -50,6 +50,7 @@ import {
   TableRow,
 } from './ui/table';
 import { Textarea } from './ui/textarea';
+import { cn } from './ui/utils';
 
 interface Test {
   id: string;
@@ -822,11 +823,14 @@ ${item.test.dataRequirements.map(req => `      - ${req}`).join('\n')}${
           <div className="space-y-4">
             <div className="flex gap-2">
               <Dialog open={showCsvDialog} onOpenChange={setShowCsvDialog}>
-                <DialogTrigger>
-                  <Button size="sm" variant="outline" className="flex-1">
-                    <Upload className="mr-2 h-4 w-4" />
-                    Import CSV
-                  </Button>
+                <DialogTrigger
+                  className={cn(
+                    buttonVariants({ variant: 'outline', size: 'sm' }),
+                    'flex-1'
+                  )}
+                >
+                  <Upload className="mr-2 h-4 w-4" />
+                  Import CSV
                 </DialogTrigger>
                 <DialogContent>
                   <DialogHeader>

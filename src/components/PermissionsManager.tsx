@@ -9,7 +9,7 @@ import {
 } from '../contexts/PermissionsContext';
 
 import { Badge } from './ui/badge';
-import { Button } from './ui/button';
+import { Button, buttonVariants } from './ui/button';
 import {
   Card,
   CardContent,
@@ -26,6 +26,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from './ui/dialog';
+import { cn } from './ui/utils';
 
 export function PermissionsManager() {
   const { userPermissions, setUserPermissions } = usePermissions();
@@ -77,11 +78,11 @@ export function PermissionsManager() {
         }
       }}
     >
-      <DialogTrigger>
-        <Button variant="outline" size="sm">
-          <Shield className="mr-2 h-4 w-4" />
-          Permissions
-        </Button>
+      <DialogTrigger
+        className={cn(buttonVariants({ variant: 'outline', size: 'sm' }))}
+      >
+        <Shield className="mr-2 h-4 w-4" />
+        Permissions
       </DialogTrigger>
       <DialogContent className="flex h-[90vh] !w-[50vw] !max-w-[50vw] flex-col bg-gradient-to-br from-white to-gray-50 p-0 sm:!max-w-[50vw]">
         <DialogHeader className="shrink-0 border-b border-gray-200 px-6 pb-4 pt-6">

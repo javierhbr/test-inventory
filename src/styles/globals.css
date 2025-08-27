@@ -67,3 +67,18 @@
     @apply bg-background text-foreground;
   }
 }
+
+@layer components {
+  /* Ensure active tab styles persist */
+  [data-slot='tabs-trigger'][data-state='active'] {
+    @apply !z-20 !scale-105 !border-2 !border-b-0 !border-blue-500 !bg-white !font-bold !text-blue-700 !shadow-lg;
+  }
+
+  [data-slot='tabs-trigger'][data-state='active']:after {
+    @apply !h-1 !bg-blue-600;
+  }
+
+  [data-slot='tabs-trigger'][data-state='active'] svg {
+    @apply !text-blue-700;
+  }
+}

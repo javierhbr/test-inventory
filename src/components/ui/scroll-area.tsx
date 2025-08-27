@@ -31,9 +31,9 @@ function ScrollBar({
   className,
   orientation = 'vertical',
   ...props
-}: React.ComponentProps<typeof BaseScrollArea.ScrollAreaScrollbar>) {
+}: React.ComponentProps<'div'> & { orientation?: 'vertical' | 'horizontal' }) {
   return (
-    <BaseScrollArea.ScrollAreaScrollbar
+    <BaseScrollArea.Scrollbar
       data-slot="scroll-area-scrollbar"
       orientation={orientation}
       className={cn(
@@ -46,11 +46,11 @@ function ScrollBar({
       )}
       {...props}
     >
-      <BaseScrollArea.ScrollAreaThumb
+      <BaseScrollArea.Thumb
         data-slot="scroll-area-thumb"
         className="relative flex-1 rounded-full bg-border"
       />
-    </BaseScrollArea.ScrollAreaScrollbar>
+    </BaseScrollArea.Scrollbar>
   );
 }
 

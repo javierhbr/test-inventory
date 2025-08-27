@@ -1,4 +1,6 @@
 import {
+  ChevronLeft,
+  ChevronRight,
   Code,
   Cog,
   LogOut,
@@ -13,7 +15,7 @@ import { User as UserType } from './Login';
 import { PermissionsManager } from './PermissionsManager';
 import { Avatar, AvatarFallback } from './ui/avatar';
 import { Badge } from './ui/badge';
-import { Button } from './ui/button';
+import { Button, buttonVariants } from './ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -21,10 +23,15 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from './ui/dropdown-menu';
+import { cn } from './ui/utils';
 
 interface HeaderProps {
   user: UserType;
   onLogout: () => void;
+  onBack?: () => void;
+  onForward?: () => void;
+  canGoBack?: boolean;
+  canGoForward?: boolean;
 }
 
 const profileIcons = {
@@ -43,13 +50,43 @@ const profileColors = {
   admin: 'bg-red-100 text-red-800',
 };
 
-export function Header({ user, onLogout }: HeaderProps) {
+export function Header({
+  user,
+  onLogout,
+  onBack,
+  onForward,
+  canGoBack = false,
+  canGoForward = false,
+}: HeaderProps) {
   const ProfileIcon = profileIcons[user.profile];
 
   return (
     <div className="border-b border-gray-200 bg-white px-6 py-4">
       <div className="mx-auto flex max-w-7xl items-center justify-between">
         <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={onBack}
+              disabled={!canGoBack}
+              className="h-8 w-8"
+              title="Go back"
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={onForward}
+              disabled={!canGoForward}
+              className="h-8 w-8"
+              title="Go forward"
+            >
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          </div>
+
           <div className="flex items-center gap-3">
             <TestTube className="h-8 w-8 text-primary" />
             <div>
@@ -77,14 +114,17 @@ export function Header({ user, onLogout }: HeaderProps) {
           </div>
 
           <DropdownMenu>
-            <DropdownMenuTrigger>
-              <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-                <Avatar className="h-8 w-8">
-                  <AvatarFallback className="bg-primary text-primary-foreground">
-                    {user.name?.charAt(0).toUpperCase() || 'U'}
-                  </AvatarFallback>
-                </Avatar>
-              </Button>
+            <DropdownMenuTrigger
+              className={cn(
+                buttonVariants({ variant: 'ghost', size: 'icon' }),
+                'relative h-8 w-8 rounded-full'
+              )}
+            >
+              <Avatar className="h-8 w-8">
+                <AvatarFallback className="bg-primary text-primary-foreground">
+                  {user.name?.charAt(0).toUpperCase() || 'U'}
+                </AvatarFallback>
+              </Avatar>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-56">
               <div className="flex items-center justify-start gap-2 p-2">

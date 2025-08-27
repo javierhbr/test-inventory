@@ -19,7 +19,7 @@ function DropdownMenuPortal({
 
 function DropdownMenuTrigger({
   ...props
-}: React.ComponentProps<typeof BaseMenu.Trigger | typeof BaseMenu.Trigger>) {
+}: React.ComponentProps<typeof BaseMenu.Trigger>) {
   // The package exposes Menu.Trigger under the Menu namespace as "Trigger"
   // and the popup/content element is named "Popup" in this package. We keep
   // the same prop typing but render the underlying Trigger.
@@ -33,16 +33,18 @@ function DropdownMenuContent({
   // The package uses Menu.Popup as the content container for menus.
   return (
     <BaseMenu.Portal>
-      <BaseMenu.Popup
-        data-slot="dropdown-menu-content"
-        // The Popup implementation accepts positioning via the Menu positioner context.
-        // Avoid forwarding unknown props like `sideOffset` which the package typings don't accept.
-        className={cn(
-          'max-h-(--radix-dropdown-menu-content-available-height) origin-(--radix-dropdown-menu-content-transform-origin) z-50 min-w-[8rem] overflow-y-auto overflow-x-hidden rounded-md border bg-popover p-1 text-popover-foreground shadow-md data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2',
-          className
-        )}
-        {...(props as any)}
-      />
+      <BaseMenu.Positioner>
+        <BaseMenu.Popup
+          data-slot="dropdown-menu-content"
+          // The Popup implementation accepts positioning via the Menu positioner context.
+          // Avoid forwarding unknown props like `sideOffset` which the package typings don't accept.
+          className={cn(
+            'max-h-(--radix-dropdown-menu-content-available-height) origin-(--radix-dropdown-menu-content-transform-origin) z-50 min-w-[8rem] overflow-y-auto overflow-x-hidden rounded-md border bg-popover p-1 text-popover-foreground shadow-md data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2',
+            className
+          )}
+          {...(props as any)}
+        />
+      </BaseMenu.Positioner>
     </BaseMenu.Portal>
   );
 }
@@ -220,16 +222,20 @@ function DropdownMenuSubContent({
   className,
   ...props
 }: React.ComponentProps<typeof BaseMenu.Popup>) {
-  // Reuse the Popup export for submenu content
+  // Submenu content needs Portal and Positioner as well
   return (
-    <BaseMenu.Popup
-      data-slot="dropdown-menu-sub-content"
-      className={cn(
-        'origin-(--radix-dropdown-menu-content-transform-origin) z-50 min-w-[8rem] overflow-hidden rounded-md border bg-popover p-1 text-popover-foreground shadow-lg data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2',
-        className
-      )}
-      {...(props as any)}
-    />
+    <BaseMenu.Portal>
+      <BaseMenu.Positioner>
+        <BaseMenu.Popup
+          data-slot="dropdown-menu-sub-content"
+          className={cn(
+            'origin-(--radix-dropdown-menu-content-transform-origin) z-50 min-w-[8rem] overflow-hidden rounded-md border bg-popover p-1 text-popover-foreground shadow-lg data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2',
+            className
+          )}
+          {...(props as any)}
+        />
+      </BaseMenu.Positioner>
+    </BaseMenu.Portal>
   );
 }
 

@@ -41,7 +41,7 @@ function Slider({
           'relative grow overflow-hidden rounded-full bg-muted data-[orientation=horizontal]:h-4 data-[orientation=vertical]:h-full data-[orientation=horizontal]:w-full data-[orientation=vertical]:w-1.5'
         )}
       >
-        <BaseSlider.Range
+        <div
           data-slot="slider-range"
           className={cn(
             'absolute bg-primary data-[orientation=horizontal]:h-full data-[orientation=vertical]:w-full'

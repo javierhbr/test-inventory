@@ -34,6 +34,7 @@ const mockTestData: TestData[] = [
     status: 'En uso',
     createdAt: '2025-08-17T14:15:00Z',
     lastUsed: '2025-08-20T10:22:00Z',
+    team: 'Banking Team',
     s3Location: {
       bucket: 'test-data-storage',
       path: 'banking/accounts/enterprise/ACC-45124.json',
@@ -53,6 +54,7 @@ const mockTestData: TestData[] = [
     status: 'Consumida',
     createdAt: '2025-08-16T11:45:00Z',
     lastUsed: '2025-08-19T16:30:00Z',
+    team: 'Banking Team',
     s3Location: {
       bucket: 'test-data-storage',
       path: 'banking/accounts/expired/ACC-45125.json',
@@ -72,6 +74,7 @@ const mockTestData: TestData[] = [
     status: 'Reacondicionamiento',
     createdAt: '2025-08-15T08:20:00Z',
     lastUsed: '2025-08-18T13:45:00Z',
+    team: 'QA Team',
     s3Location: {
       bucket: 'test-data-storage',
       path: 'banking/accounts/active/ACC-45126.json',
@@ -91,6 +94,7 @@ const mockTestData: TestData[] = [
     status: 'Disponible',
     createdAt: '2025-08-19T12:10:00Z',
     lastUsed: null,
+    team: 'Core Team',
     s3Location: {
       bucket: 'test-data-storage',
       path: 'banking/accounts/checking/ACC-45127.json',
@@ -209,6 +213,7 @@ export async function createTestData(
         status: 'Disponible',
         createdAt: new Date().toISOString(),
         lastUsed: null,
+        team: 'QA Team',
         s3Location: {
           bucket: 'test-data-storage',
           path: `banking/accounts/generated/${formData.accountId}.json`,

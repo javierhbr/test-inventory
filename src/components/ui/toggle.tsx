@@ -32,10 +32,10 @@ function Toggle({
   variant,
   size,
   ...props
-}: React.ComponentProps<typeof BaseToggle.Root> &
+}: React.ComponentProps<typeof BaseToggle> &
   VariantProps<typeof toggleVariants>) {
   return (
-    <BaseToggle.Root
+    <BaseToggle
       data-slot="toggle"
       className={cn(toggleVariants({ variant, size, className }))}
       {...props}

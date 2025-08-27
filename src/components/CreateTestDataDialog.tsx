@@ -30,7 +30,7 @@ import {
   SelectValue,
 } from './ui/select';
 
-interface TestData {
+interface CreateTestData {
   id: string;
   customer: {
     customerId: string;
@@ -61,7 +61,7 @@ interface TestData {
 
 interface CreateTestDataDialogProps {
   children: React.ReactNode;
-  onTestDataCreated: (testData: TestData) => void;
+  onTestDataCreated: (testData: CreateTestData) => void;
 }
 
 const availableClassifications = [
@@ -214,7 +214,7 @@ export function CreateTestDataDialog({
       // Simulate API call to create account/customer
       const apiResult = await simulateApiCall();
 
-      const newTestData: TestData = {
+      const newTestData: CreateTestData = {
         id: generateTestDataId(),
         customer: {
           customerId: apiResult.customerId,

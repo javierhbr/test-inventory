@@ -8,9 +8,9 @@ import { cn } from './utils';
 function RadioGroup({
   className,
   ...props
-}: React.ComponentProps<typeof BaseRadioGroup.Root>) {
+}: React.ComponentProps<typeof BaseRadioGroup>) {
   return (
-    <BaseRadioGroup.Root
+    <BaseRadioGroup
       data-slot="radio-group"
       className={cn('grid gap-3', className)}
       {...props}
@@ -21,9 +21,9 @@ function RadioGroup({
 function RadioGroupItem({
   className,
   ...props
-}: React.ComponentProps<typeof BaseRadioGroup.Item>) {
+}: React.ComponentProps<typeof BaseRadioGroup>) {
   return (
-    <BaseRadioGroup.Item
+    <BaseRadioGroup
       data-slot="radio-group-item"
       className={cn(
         'aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive shadow-xs aspect-square size-4 shrink-0 rounded-full border border-input text-primary outline-none transition-[color,box-shadow] focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-input/30',
@@ -31,13 +31,13 @@ function RadioGroupItem({
       )}
       {...props}
     >
-      <BaseRadioGroup.Indicator
+      <div
         data-slot="radio-group-indicator"
         className="relative flex items-center justify-center"
       >
         <CircleIcon className="absolute left-1/2 top-1/2 size-2 -translate-x-1/2 -translate-y-1/2 fill-primary" />
-      </BaseRadioGroup.Indicator>
-    </BaseRadioGroup.Item>
+      </div>
+    </BaseRadioGroup>
   );
 }
 

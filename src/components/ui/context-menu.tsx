@@ -22,23 +22,17 @@ function ContextMenuTrigger({
 function ContextMenuGroup({
   ...props
 }: React.ComponentProps<typeof BaseContextMenu.Group>) {
-  return (
-    <BaseContextMenu.Group data-slot="context-menu-group" {...props} />
-  );
+  return <BaseContextMenu.Group data-slot="context-menu-group" {...props} />;
 }
 
 function ContextMenuPortal({
   ...props
 }: React.ComponentProps<typeof BaseContextMenu.Portal>) {
-  return (
-    <BaseContextMenu.Portal data-slot="context-menu-portal" {...props} />
-  );
+  return <BaseContextMenu.Portal data-slot="context-menu-portal" {...props} />;
 }
 
-function ContextMenuSub({
-  ...props
-}: React.ComponentProps<typeof BaseContextMenu.Sub>) {
-  return <BaseContextMenu.Sub data-slot="context-menu-sub" {...props} />;
+function ContextMenuSub({ ...props }: React.HTMLAttributes<HTMLDivElement>) {
+  return <div data-slot="context-menu-sub" {...props} />;
 }
 
 function ContextMenuRadioGroup({
@@ -57,11 +51,11 @@ function ContextMenuSubTrigger({
   inset,
   children,
   ...props
-}: React.ComponentProps<typeof BaseContextMenu.SubTrigger> & {
+}: React.HTMLAttributes<HTMLDivElement> & {
   inset?: boolean;
 }) {
   return (
-    <BaseContextMenu.SubTrigger
+    <div
       data-slot="context-menu-sub-trigger"
       data-inset={inset}
       className={cn(
@@ -72,40 +66,46 @@ function ContextMenuSubTrigger({
     >
       {children}
       <ChevronRightIcon className="ml-auto" />
-    </BaseContextMenu.SubTrigger>
+    </div>
   );
 }
 
 function ContextMenuSubContent({
   className,
   ...props
-}: React.ComponentProps<typeof BaseContextMenu.SubContent>) {
+}: React.ComponentProps<typeof BaseContextMenu.Popup>) {
   return (
-    <BaseContextMenu.SubContent
-      data-slot="context-menu-sub-content"
-      className={cn(
-        'origin-(--radix-context-menu-content-transform-origin) z-50 min-w-[8rem] overflow-hidden rounded-md border bg-popover p-1 text-popover-foreground shadow-lg data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2',
-        className
-      )}
-      {...props}
-    />
+    <BaseContextMenu.Portal>
+      <BaseContextMenu.Positioner>
+        <BaseContextMenu.Popup
+          data-slot="context-menu-sub-content"
+          className={cn(
+            'z-50 min-w-[8rem] overflow-hidden rounded-md border bg-popover p-1 text-popover-foreground shadow-lg data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95',
+            className
+          )}
+          {...props}
+        />
+      </BaseContextMenu.Positioner>
+    </BaseContextMenu.Portal>
   );
 }
 
 function ContextMenuContent({
   className,
   ...props
-}: React.ComponentProps<typeof BaseContextMenu.Content>) {
+}: React.ComponentProps<typeof BaseContextMenu.Popup>) {
   return (
     <BaseContextMenu.Portal>
-      <BaseContextMenu.Content
-        data-slot="context-menu-content"
-        className={cn(
-          'max-h-(--radix-context-menu-content-available-height) origin-(--radix-context-menu-content-transform-origin) z-50 min-w-[8rem] overflow-y-auto overflow-x-hidden rounded-md border bg-popover p-1 text-popover-foreground shadow-md data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2',
-          className
-        )}
-        {...props}
-      />
+      <BaseContextMenu.Positioner>
+        <BaseContextMenu.Popup
+          data-slot="context-menu-content"
+          className={cn(
+            'z-50 min-w-[8rem] overflow-y-auto overflow-x-hidden rounded-md border bg-popover p-1 text-popover-foreground shadow-md data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95',
+            className
+          )}
+          {...props}
+        />
+      </BaseContextMenu.Positioner>
     </BaseContextMenu.Portal>
   );
 }
@@ -150,9 +150,9 @@ function ContextMenuCheckboxItem({
       {...props}
     >
       <span className="pointer-events-none absolute left-2 flex size-3.5 items-center justify-center">
-        <BaseContextMenu.ItemIndicator>
+        <span>
           <CheckIcon className="size-4" />
-        </BaseContextMenu.ItemIndicator>
+        </span>
       </span>
       {children}
     </BaseContextMenu.CheckboxItem>
@@ -174,9 +174,9 @@ function ContextMenuRadioItem({
       {...props}
     >
       <span className="pointer-events-none absolute left-2 flex size-3.5 items-center justify-center">
-        <BaseContextMenu.ItemIndicator>
+        <span>
           <CircleIcon className="size-2 fill-current" />
-        </BaseContextMenu.ItemIndicator>
+        </span>
       </span>
       {children}
     </BaseContextMenu.RadioItem>
@@ -187,11 +187,11 @@ function ContextMenuLabel({
   className,
   inset,
   ...props
-}: React.ComponentProps<typeof BaseContextMenu.Label> & {
+}: React.HTMLAttributes<HTMLDivElement> & {
   inset?: boolean;
 }) {
   return (
-    <BaseContextMenu.Label
+    <div
       data-slot="context-menu-label"
       data-inset={inset}
       className={cn(
