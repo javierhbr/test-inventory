@@ -77,28 +77,39 @@ const ChartStyle = ({ id, config }: { id: string; config: ChartConfig }) => {
     return null;
   }
 
-  return (
-    <style
-      dangerouslySetInnerHTML={{
-        __html: Object.entries(THEMES)
-          .map(
-            ([theme, prefix]) => `
-${prefix} [data-chart=${id}] {
-${colorConfig
-  .map(([key, itemConfig]) => {
-    const color =
-      itemConfig.theme?.[theme as keyof typeof itemConfig.theme] ||
-      itemConfig.color;
-    return color ? `  --color-${key}: ${color};` : null;
-  })
-  .join('\n')}
-}
-`
-          )
-          .join('\n'),
-      }}
-    />
-  );
+  // Sanitize CSS values coming from config to avoid injection.
+  const sanitizeCssValue = (value: unknown) => {
+    if (typeof value !== 'string') return null;
+    // Reject dangerous constructs that could lead to injection
+    const forbidden = /url\(|expression\(|<|>|\{|\}|;|\$|@import|\/\*/i;
+    if (forbidden.test(value)) return null;
+    // Allow a conservative character set for colors / tokens
+    const safe = /^[-#0-9a-zA-Z(),.%\s]+$/;
+    return safe.test(value) ? value : null;
+  };
+
+  const css = Object.entries(THEMES)
+    .map(([theme, prefix]) => {
+      const body = colorConfig
+        .map(([key, itemConfig]) => {
+          const rawColor =
+            itemConfig.theme?.[theme as keyof typeof itemConfig.theme] ||
+            itemConfig.color;
+          const color = sanitizeCssValue(rawColor);
+          return color ? `  --color-${key}: ${color};` : null;
+        })
+        .filter(Boolean)
+        .join('\n');
+
+      if (!body) return null;
+      return `\n${prefix} [data-chart=${id}] {\n${body}\n}\n`;
+    })
+    .filter(Boolean)
+    .join('\n');
+
+  if (!css) return null;
+
+  return <style dangerouslySetInnerHTML={{ __html: css }} />;
 };
 
 const ChartTooltip = RechartsPrimitive.Tooltip;
@@ -344,9 +355,9 @@ function getPayloadConfigFromPayload(
 
 export {
   ChartContainer,
-  ChartTooltip,
-  ChartTooltipContent,
   ChartLegend,
   ChartLegendContent,
   ChartStyle,
+  ChartTooltip,
+  ChartTooltipContent,
 };

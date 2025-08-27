@@ -139,21 +139,31 @@ export function PermissionsProvider({
         setDefaultUser();
       }
     } else {
-      // Set default user for demo purposes
-      setDefaultUser();
+      // Do not automatically create a default admin in storage for security reasons.
+      // Use a non-privileged demo user by default to avoid accidental elevation.
+      const defaultUser: UserPermissions = {
+        userId: 'demo-user',
+        username: 'demo-user',
+        roles: ['viewer'],
+        permissions: getPermissionsFromRoles(['viewer']),
+      };
+      setUserPermissions(defaultUser);
+      // Only persist to sessionStorage when explicitly requested by developer/demo flows.
+      // sessionStorage.setItem('userPermissions', JSON.stringify(defaultUser));
     }
   }, []);
 
   const setDefaultUser = () => {
-    // Set default user as admin with delete permissions
+    // For explicit demo initialization only: do not call in normal startup flows.
     const defaultUser: UserPermissions = {
       userId: 'user-001',
       username: 'admin-user',
-      roles: ['admin'], // Admin role includes delete permissions
+      roles: ['admin'],
       permissions: getPermissionsFromRoles(['admin']),
     };
     setUserPermissions(defaultUser);
-    sessionStorage.setItem('userPermissions', JSON.stringify(defaultUser));
+    // Persist only when intentionally invoked by a developer action.
+    // sessionStorage.setItem('userPermissions', JSON.stringify(defaultUser));
   };
 
   const hasPermission = (permissionId: string): boolean => {

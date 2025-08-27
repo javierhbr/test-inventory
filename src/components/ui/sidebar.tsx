@@ -81,7 +81,22 @@ function SidebarProvider({
       }
 
       // This sets the cookie to keep the sidebar state.
-      document.cookie = `${SIDEBAR_COOKIE_NAME}=${openState}; path=/; max-age=${SIDEBAR_COOKIE_MAX_AGE}`;
+      // Use conservative cookie flags and URL-encode the value to avoid injection.
+      try {
+        const value = encodeURIComponent(String(openState));
+        // Add SameSite=Lax and Secure to reduce CSRF risk and leaking in insecure contexts.
+        const sameSite = 'SameSite=Lax';
+        const secure =
+          typeof window !== 'undefined' && window.location.protocol === 'https:'
+            ? 'Secure'
+            : '';
+        const cookie = `${SIDEBAR_COOKIE_NAME}=${value}; path=/; max-age=${SIDEBAR_COOKIE_MAX_AGE}; ${sameSite}${secure ? `; ${secure}` : ''}`;
+        document.cookie = cookie;
+      } catch (e) {
+        // If cookies are disabled or encoding fails, silently ignore to avoid breaking UI.
+        // eslint-disable-next-line no-console
+        console.warn('Failed to persist sidebar state cookie:', e);
+      }
     },
     [setOpenProp, open]
   );
