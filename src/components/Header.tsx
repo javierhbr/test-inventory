@@ -8,7 +8,9 @@ import {
   TestTube,
   User,
 } from 'lucide-react';
+
 import { User as UserType } from './Login';
+import { PermissionsManager } from './PermissionsManager';
 import { Avatar, AvatarFallback } from './ui/avatar';
 import { Badge } from './ui/badge';
 import { Button } from './ui/button';
@@ -19,7 +21,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from './ui/dropdown-menu';
-import { PermissionsManager } from './PermissionsManager';
 
 interface HeaderProps {
   user: UserType;
@@ -63,7 +64,7 @@ export function Header({ user, onLogout }: HeaderProps) {
 
         <div className="flex items-center gap-4">
           <PermissionsManager />
-          
+
           <div className="flex items-center gap-2 text-sm">
             <span className="text-gray-600">Welcome,</span>
             <span className="font-medium">{user.name}</span>

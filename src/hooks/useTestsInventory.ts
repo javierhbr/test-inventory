@@ -1,9 +1,9 @@
 // Custom hook for TestsInventory logic using service layer
 
 import { useState, useEffect, useCallback } from 'react';
+
 import {
   Test,
-  FilterOptions,
   getAllTests,
   filterTests,
   createTest,
@@ -12,7 +12,7 @@ import {
   exportTestsToYaml,
   getTestStatistics,
   downloadFile,
-  CreateTestFormData
+  CreateTestFormData,
 } from '../services';
 
 interface UseTestsInventoryReturn {
@@ -28,20 +28,20 @@ interface UseTestsInventoryReturn {
     runtimes: string[];
   };
   statistics: ReturnType<typeof getTestStatistics>;
-  
+
   // Filters
   searchTerm: string;
   filterFlujo: string;
   filterStatus: string;
   filterRuntime: string;
-  
+
   // Actions
   setSearchTerm: (term: string) => void;
   setFilterFlujo: (flujo: string) => void;
   setFilterStatus: (status: string) => void;
   setFilterRuntime: (runtime: string) => void;
   setSelectedTest: (test: Test | null) => void;
-  
+
   // Business logic
   handleCreateTest: (testData: CreateTestFormData) => Promise<void>;
   handleDeleteTest: (testId: string) => Promise<void>;
@@ -84,7 +84,7 @@ export function useTestsInventory(): UseTestsInventoryReturn {
     searchTerm,
     flujo: filterFlujo,
     status: filterStatus,
-    runtime: filterRuntime
+    runtime: filterRuntime,
   });
 
   // Get filter options
@@ -108,22 +108,25 @@ export function useTestsInventory(): UseTestsInventoryReturn {
     }
   }, []);
 
-  const handleDeleteTest = useCallback(async (testId: string) => {
-    setIsLoading(true);
-    try {
-      await deleteTest(testId);
-      setTests(prevTests => prevTests.filter(test => test.id !== testId));
-      if (selectedTest?.id === testId) {
-        setSelectedTest(null);
+  const handleDeleteTest = useCallback(
+    async (testId: string) => {
+      setIsLoading(true);
+      try {
+        await deleteTest(testId);
+        setTests(prevTests => prevTests.filter(test => test.id !== testId));
+        if (selectedTest?.id === testId) {
+          setSelectedTest(null);
+        }
+        setError(null);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Error deleting test');
+        throw err;
+      } finally {
+        setIsLoading(false);
       }
-      setError(null);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error deleting test');
-      throw err;
-    } finally {
-      setIsLoading(false);
-    }
-  }, [selectedTest]);
+    },
+    [selectedTest]
+  );
 
   const handleExportYaml = useCallback(() => {
     try {
@@ -156,25 +159,25 @@ export function useTestsInventory(): UseTestsInventoryReturn {
     selectedTest,
     filterOptions,
     statistics,
-    
+
     // Filters
     searchTerm,
     filterFlujo,
     filterStatus,
     filterRuntime,
-    
+
     // Setters
     setSearchTerm,
     setFilterFlujo,
     setFilterStatus,
     setFilterRuntime,
     setSelectedTest,
-    
+
     // Business logic
     handleCreateTest,
     handleDeleteTest,
     handleExportYaml,
     clearFilters,
-    refreshTests
+    refreshTests,
   };
 }

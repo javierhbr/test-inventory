@@ -1,11 +1,33 @@
 import React, { useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
+
+import {
+  Copy,
+  Download,
+  History,
+  FileText,
+  Play,
+  Settings,
+} from 'lucide-react';
+
 import { Badge } from './ui/badge';
 import { Button } from './ui/button';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from './ui/card';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from './ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from './ui/table';
 import { Textarea } from './ui/textarea';
-import { Copy, Download, History, FileText, Play, Settings } from 'lucide-react';
 
 interface Test {
   id: string;
@@ -54,7 +76,7 @@ const mockRuns: TestRun[] = [
     runtime: 'OCP Testing Studio',
     status: 'FAILED',
     duration: '45s',
-    testDataUsed: 'TD-20031'
+    testDataUsed: 'TD-20031',
   },
   {
     runId: 'RUN-002',
@@ -63,8 +85,8 @@ const mockRuns: TestRun[] = [
     runtime: 'OCP Testing Studio',
     status: 'PASSED',
     duration: '32s',
-    testDataUsed: 'TD-20021'
-  }
+    testDataUsed: 'TD-20021',
+  },
 ];
 
 const mockVersions: TestVersion[] = [
@@ -72,20 +94,20 @@ const mockVersions: TestVersion[] = [
     version: 'v1.2',
     modifiedAt: '2025-08-20T09:15:00Z',
     modifiedBy: 'qa-engineer',
-    changeSummary: 'Updated data requirements'
+    changeSummary: 'Updated data requirements',
   },
   {
     version: 'v1.1',
     modifiedAt: '2025-08-18T14:30:00Z',
     modifiedBy: 'test-architect',
-    changeSummary: 'Added mobile experience support'
+    changeSummary: 'Added mobile experience support',
   },
   {
     version: 'v1.0',
     modifiedAt: '2025-08-15T16:00:00Z',
     modifiedBy: 'qa-engineer',
-    changeSummary: 'Initial version'
-  }
+    changeSummary: 'Initial version',
+  },
 ];
 
 export function TestDetail({ test }: { test: Test }) {
@@ -126,70 +148,87 @@ executions:
 
   const getStatusBadge = (status: string) => {
     const variants = {
-      'PASSED': 'bg-green-100 text-green-800',
-      'FAILED': 'bg-red-100 text-red-800',
-      'SKIPPED': 'bg-yellow-100 text-yellow-800',
-      'BLOCKED': 'bg-gray-100 text-gray-800'
+      PASSED: 'bg-green-100 text-green-800',
+      FAILED: 'bg-red-100 text-red-800',
+      SKIPPED: 'bg-yellow-100 text-yellow-800',
+      BLOCKED: 'bg-gray-100 text-gray-800',
     };
-    
+
     return (
-      <Badge className={variants[status as keyof typeof variants] || 'bg-gray-100 text-gray-800'}>
+      <Badge
+        className={
+          variants[status as keyof typeof variants] ||
+          'bg-gray-100 text-gray-800'
+        }
+      >
         {status}
       </Badge>
     );
   };
 
   return (
-    <div className="space-y-4 h-full min-h-[600px]">
+    <div className="h-full min-h-[600px] space-y-4">
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="general" className="flex items-center gap-2">
-            <Settings className="w-4 h-4" />
+            <Settings className="h-4 w-4" />
             General Info
           </TabsTrigger>
           <TabsTrigger value="executions" className="flex items-center gap-2">
-            <Play className="w-4 h-4" />
+            <Play className="h-4 w-4" />
             Executions
           </TabsTrigger>
           <TabsTrigger value="versions" className="flex items-center gap-2">
-            <History className="w-4 h-4" />
+            <History className="h-4 w-4" />
             Versions
           </TabsTrigger>
           <TabsTrigger value="yaml" className="flex items-center gap-2">
-            <FileText className="w-4 h-4" />
+            <FileText className="h-4 w-4" />
             YAML View
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="general" className="space-y-4 min-h-[500px]">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <TabsContent value="general" className="min-h-[500px] space-y-4">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <Card>
               <CardHeader>
                 <CardTitle>Basic Information</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
                 <div>
-                  <label className="text-sm font-medium text-gray-500">Test ID</label>
+                  <label className="text-sm font-medium text-gray-500">
+                    Test ID
+                  </label>
                   <div className="font-mono">{test.id}</div>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-gray-500">Name</label>
+                  <label className="text-sm font-medium text-gray-500">
+                    Name
+                  </label>
                   <div>{test.name}</div>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-gray-500">Flow</label>
+                  <label className="text-sm font-medium text-gray-500">
+                    Flow
+                  </label>
                   <div>{test.flow}</div>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-gray-500">Team</label>
+                  <label className="text-sm font-medium text-gray-500">
+                    Team
+                  </label>
                   <Badge variant="outline">{test.team}</Badge>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-gray-500">Current Version</label>
+                  <label className="text-sm font-medium text-gray-500">
+                    Current Version
+                  </label>
                   <Badge variant="outline">{test.version}</Badge>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-gray-500">Last Modified</label>
+                  <label className="text-sm font-medium text-gray-500">
+                    Last Modified
+                  </label>
                   <div>{new Date(test.lastModified).toLocaleString()}</div>
                 </div>
               </CardContent>
@@ -202,19 +241,27 @@ executions:
               <CardContent className="space-y-3">
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="text-sm font-medium text-gray-500">Flow</label>
+                    <label className="text-sm font-medium text-gray-500">
+                      Flow
+                    </label>
                     <Badge variant="outline">{test.labels.flow}</Badge>
                   </div>
                   <div>
-                    <label className="text-sm font-medium text-gray-500">Intent</label>
+                    <label className="text-sm font-medium text-gray-500">
+                      Intent
+                    </label>
                     <Badge variant="outline">{test.labels.intent}</Badge>
                   </div>
                   <div>
-                    <label className="text-sm font-medium text-gray-500">Experience</label>
+                    <label className="text-sm font-medium text-gray-500">
+                      Experience
+                    </label>
                     <Badge variant="outline">{test.labels.experience}</Badge>
                   </div>
                   <div>
-                    <label className="text-sm font-medium text-gray-500">Project</label>
+                    <label className="text-sm font-medium text-gray-500">
+                      Project
+                    </label>
                     <Badge variant="outline">{test.labels.project}</Badge>
                   </div>
                 </div>
@@ -228,7 +275,11 @@ executions:
               <CardContent>
                 <div className="space-y-2">
                   {test.dataRequirements.map((req, index) => (
-                    <Badge key={index} variant="secondary" className="mr-2 mb-2">
+                    <Badge
+                      key={index}
+                      variant="secondary"
+                      className="mb-2 mr-2"
+                    >
                       {req}
                     </Badge>
                   ))}
@@ -243,7 +294,7 @@ executions:
               <CardContent>
                 <div className="space-y-2">
                   {test.supportedRuntimes.map((runtime, index) => (
-                    <Badge key={index} variant="outline" className="mr-2 mb-2">
+                    <Badge key={index} variant="outline" className="mb-2 mr-2">
                       {runtime}
                     </Badge>
                   ))}
@@ -259,16 +310,24 @@ executions:
             <CardContent className="space-y-3">
               <div className="grid grid-cols-3 gap-4">
                 <div>
-                  <label className="text-sm font-medium text-gray-500">Golden Dialog ID</label>
+                  <label className="text-sm font-medium text-gray-500">
+                    Golden Dialog ID
+                  </label>
                   <div className="font-mono">GD-001</div>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-gray-500">S3 Bucket</label>
+                  <label className="text-sm font-medium text-gray-500">
+                    S3 Bucket
+                  </label>
                   <div className="font-mono">my-test-dialogs</div>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-gray-500">S3 Path</label>
-                  <div className="font-mono">golden-dialogs/payment-flow/dialog-001.yaml</div>
+                  <label className="text-sm font-medium text-gray-500">
+                    S3 Path
+                  </label>
+                  <div className="font-mono">
+                    golden-dialogs/payment-flow/dialog-001.yaml
+                  </div>
                 </div>
               </div>
             </CardContent>
@@ -297,15 +356,19 @@ executions:
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {mockRuns.map((run) => (
+                  {mockRuns.map(run => (
                     <TableRow key={run.runId}>
                       <TableCell className="font-mono">{run.runId}</TableCell>
-                      <TableCell>{new Date(run.executedAt).toLocaleString()}</TableCell>
+                      <TableCell>
+                        {new Date(run.executedAt).toLocaleString()}
+                      </TableCell>
                       <TableCell>{run.executedBy}</TableCell>
                       <TableCell>{run.runtime}</TableCell>
                       <TableCell>{getStatusBadge(run.status)}</TableCell>
                       <TableCell>{run.duration}</TableCell>
-                      <TableCell className="font-mono">{run.testDataUsed}</TableCell>
+                      <TableCell className="font-mono">
+                        {run.testDataUsed}
+                      </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
@@ -334,7 +397,7 @@ executions:
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {mockVersions.map((version) => (
+                  {mockVersions.map(version => (
                     <TableRow key={version.version}>
                       <TableCell>
                         <Badge variant="outline">{version.version}</Badge>
@@ -342,14 +405,20 @@ executions:
                           <Badge className="ml-2 text-xs">Current</Badge>
                         )}
                       </TableCell>
-                      <TableCell>{new Date(version.modifiedAt).toLocaleString()}</TableCell>
+                      <TableCell>
+                        {new Date(version.modifiedAt).toLocaleString()}
+                      </TableCell>
                       <TableCell>{version.modifiedBy}</TableCell>
                       <TableCell>{version.changeSummary}</TableCell>
                       <TableCell>
                         <div className="flex gap-2">
-                          <Button size="sm" variant="outline">View</Button>
+                          <Button size="sm" variant="outline">
+                            View
+                          </Button>
                           {version.version !== test.version && (
-                            <Button size="sm" variant="outline">Rollback</Button>
+                            <Button size="sm" variant="outline">
+                              Rollback
+                            </Button>
                           )}
                         </div>
                       </TableCell>
@@ -364,7 +433,7 @@ executions:
         <TabsContent value="yaml" className="min-h-[500px]">
           <Card>
             <CardHeader>
-              <div className="flex justify-between items-center">
+              <div className="flex items-center justify-between">
                 <div>
                   <CardTitle>YAML Definition</CardTitle>
                   <CardDescription>
@@ -372,12 +441,16 @@ executions:
                   </CardDescription>
                 </div>
                 <div className="flex gap-2">
-                  <Button size="sm" variant="outline" onClick={() => copyToClipboard(testYaml)}>
-                    <Copy className="w-4 h-4 mr-2" />
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => copyToClipboard(testYaml)}
+                  >
+                    <Copy className="mr-2 h-4 w-4" />
                     Copy
                   </Button>
                   <Button size="sm" variant="outline">
-                    <Download className="w-4 h-4 mr-2" />
+                    <Download className="mr-2 h-4 w-4" />
                     Export YAML
                   </Button>
                 </div>
@@ -387,7 +460,7 @@ executions:
               <Textarea
                 value={testYaml}
                 readOnly
-                className="font-mono text-sm h-[400px] resize-none"
+                className="h-[400px] resize-none font-mono text-sm"
               />
             </CardContent>
           </Card>

@@ -1,7 +1,16 @@
 import { useMemo, useState } from 'react';
+
+import { Download, Edit, Eye, Plus, Trash2 } from 'lucide-react';
+
+import { usePermissions } from '../contexts/PermissionsContext';
+
+import { CreateTestDialog } from './CreateTestDialog';
+import { FilterConfig, SearchAndFilters } from './SearchAndFilters';
+import { TestDetail } from './TestDetail';
 import { Badge } from './ui/badge';
 import { Button } from './ui/button';
 import { Card, CardContent } from './ui/card';
+import { Checkbox } from './ui/checkbox';
 import {
   Dialog,
   DialogContent,
@@ -11,21 +20,6 @@ import {
   DialogTrigger,
 } from './ui/dialog';
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from './ui/table';
-// Tabs import removed because it's unused in this file
-import { Download, Edit, Eye, Plus, Trash2 } from 'lucide-react';
-import { CreateTestDialog } from './CreateTestDialog';
-import { FilterConfig, SearchAndFilters } from './SearchAndFilters';
-import { TestDetail } from './TestDetail';
-import { usePermissions } from '../contexts/PermissionsContext';
-import { Checkbox } from './ui/checkbox';
-import {
   Pagination,
   PaginationContent,
   PaginationEllipsis,
@@ -34,6 +28,15 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from './ui/pagination';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from './ui/table';
+// Tabs import removed because it's unused in this file
 
 interface Test {
   id: string;
@@ -744,8 +747,12 @@ ${test.supportedRuntimes.map(runtime => `      - ${runtime}`).join('\n')}
       alert('Please select at least one test to delete');
       return;
     }
-    
-    if (window.confirm(`Are you sure you want to delete ${selectedCount} test${selectedCount !== 1 ? 's' : ''}? This action cannot be undone.`)) {
+
+    if (
+      window.confirm(
+        `Are you sure you want to delete ${selectedCount} test${selectedCount !== 1 ? 's' : ''}? This action cannot be undone.`
+      )
+    ) {
       setTests(prev => prev.filter(test => !selectedTestIds.has(test.id)));
       setSelectedTestIds(new Set());
     }
@@ -789,12 +796,8 @@ ${test.supportedRuntimes.map(runtime => `      - ${runtime}`).join('\n')}
             </Button>
           )}
           {hasPermission('delete_tests') && selectedCount > 0 && (
-            <Button 
-              size="sm" 
-              variant="destructive" 
-              onClick={handleBulkDelete}
-            >
-              <Trash2 className="w-4 h-4 mr-2" />
+            <Button size="sm" variant="destructive" onClick={handleBulkDelete}>
+              <Trash2 className="mr-2 h-4 w-4" />
               Delete Selected ({selectedCount})
             </Button>
           )}

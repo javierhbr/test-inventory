@@ -16,7 +16,7 @@
       "type": "list",
       "items": [
         "Active account",
-        "Business account", 
+        "Business account",
         "Primary user",
         "Expired credit card",
         "Dormant account",
@@ -26,7 +26,7 @@
     },
     {
       "id": "runtimes",
-      "title": "Runtimes", 
+      "title": "Runtimes",
       "description": "Available execution platforms",
       "type": "list",
       "items": [
@@ -41,7 +41,7 @@
     {
       "id": "s3config",
       "title": "S3 Configuration",
-      "description": "Storage configuration", 
+      "description": "Storage configuration",
       "type": "keyvalue",
       "items": {
         "Bucket": "my-test-dialogs",
@@ -63,30 +63,21 @@
     "roles": {
       "developer": {
         "name": "Developer",
-        "permissions": [
-          "Tests (read/write)",
-          "Test Data (read/write)"
-        ]
+        "permissions": ["Tests (read/write)", "Test Data (read/write)"]
       },
       "automation": {
-        "name": "Automation", 
-        "permissions": [
-          "All modules",
-          "Complete Execution Builder"
-        ]
+        "name": "Automation",
+        "permissions": ["All modules", "Complete Execution Builder"]
       },
       "product": {
         "name": "Product",
-        "permissions": [
-          "Read-only in all modules",
-          "Cannot create/edit"
-        ]
+        "permissions": ["Read-only in all modules", "Cannot create/edit"]
       },
       "admin": {
         "name": "Admin",
         "permissions": [
           "Full access",
-          "System configurations", 
+          "System configurations",
           "User management"
         ]
       }

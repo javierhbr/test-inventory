@@ -54,9 +54,9 @@ export function filterItems<T>(
     // Check other filters
     for (const [key, value] of Object.entries(filters)) {
       if (key === 'searchTerm') continue;
-      
+
       if (value === 'all' || !value) continue;
-      
+
       const itemValue = item[key as keyof T];
       if (Array.isArray(value)) {
         // Handle array filters (e.g., multiple selections)
@@ -74,7 +74,11 @@ export function filterItems<T>(
 /**
  * Downloads a file with the given content and filename
  */
-export function downloadFile(content: string, filename: string, mimeType: string = 'text/plain'): void {
+export function downloadFile(
+  content: string,
+  filename: string,
+  mimeType: string = 'text/plain'
+): void {
   const blob = new Blob([content], { type: mimeType });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
@@ -112,37 +116,41 @@ export function generateRandomDate(daysBack: number = 30): string {
 /**
  * Validates if all required fields in an object are filled
  */
-export function validateRequiredFields<T extends Record<string, any>>(
+export function validateRequiredFields<T extends Record<string, unknown>>(
   obj: T,
   requiredFields: (keyof T)[]
 ): { isValid: boolean; missingFields: string[] } {
   const missingFields: string[] = [];
-  
+
   for (const field of requiredFields) {
     const value = obj[field];
-    if (value === undefined || value === null || value === '' || 
-        (Array.isArray(value) && value.length === 0)) {
+    if (
+      value === undefined ||
+      value === null ||
+      value === '' ||
+      (Array.isArray(value) && value.length === 0)
+    ) {
       missingFields.push(String(field));
     }
   }
-  
+
   return {
     isValid: missingFields.length === 0,
-    missingFields
+    missingFields,
   };
 }
 
 /**
  * Debounce function to limit the rate at which a function can fire
  */
-export function debounce<T extends (...args: any[]) => any>(
+export function debounce<T extends (...args: unknown[]) => unknown>(
   func: T,
   wait: number
 ): (...args: Parameters<T>) => void {
   let timeout: NodeJS.Timeout;
   return (...args: Parameters<T>) => {
     clearTimeout(timeout);
-    timeout = setTimeout(() => func.apply(null, args), wait);
+    timeout = setTimeout(() => func(...args), wait);
   };
 }
 
@@ -151,12 +159,19 @@ export function debounce<T extends (...args: any[]) => any>(
  */
 export function getGridColsClass(count: number): string {
   switch (count) {
-    case 1: return 'grid-cols-1';
-    case 2: return 'grid-cols-2';
-    case 3: return 'grid-cols-3';
-    case 4: return 'grid-cols-4';
-    case 5: return 'grid-cols-5';
-    case 6: return 'grid-cols-6';
-    default: return 'grid-cols-3';
+    case 1:
+      return 'grid-cols-1';
+    case 2:
+      return 'grid-cols-2';
+    case 3:
+      return 'grid-cols-3';
+    case 4:
+      return 'grid-cols-4';
+    case 5:
+      return 'grid-cols-5';
+    case 6:
+      return 'grid-cols-6';
+    default:
+      return 'grid-cols-3';
   }
 }

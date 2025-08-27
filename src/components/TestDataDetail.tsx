@@ -1,3 +1,5 @@
+import { useState } from 'react';
+
 import {
   Copy,
   Database,
@@ -6,7 +8,7 @@ import {
   History,
   User,
 } from 'lucide-react';
-import { useState } from 'react';
+
 import { Badge } from './ui/badge';
 import { Button } from './ui/button';
 import {

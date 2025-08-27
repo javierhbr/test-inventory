@@ -1,11 +1,19 @@
 import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
-import { Button } from './ui/button';
-import { Input } from './ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
-import { Checkbox } from './ui/checkbox';
-import { Badge } from './ui/badge';
+
 import { Search, Filter, X } from 'lucide-react';
+
+import { Badge } from './ui/badge';
+import { Button } from './ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
+import { Checkbox } from './ui/checkbox';
+import { Input } from './ui/input';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from './ui/select';
 
 export interface FilterOption {
   value: string;
@@ -41,7 +49,7 @@ interface SearchAndFiltersProps {
 export function SearchAndFilters({
   searchTerm,
   onSearchChange,
-  searchPlaceholder = "Search...",
+  searchPlaceholder = 'Search...',
   filters,
   onClearFilters,
   filteredCount,
@@ -51,9 +59,14 @@ export function SearchAndFilters({
   isAllSelected,
   isIndeterminate,
   onSelectAll,
-  selectAllLabel
+  selectAllLabel,
 }: SearchAndFiltersProps) {
-  const handleMultiSelectChange = (filterKey: string, optionValue: string, isChecked: boolean, currentValue: string | string[]) => {
+  const handleMultiSelectChange = (
+    filterKey: string,
+    optionValue: string,
+    isChecked: boolean,
+    currentValue: string | string[]
+  ) => {
     const filter = filters.find(f => f.key === filterKey);
     if (!filter) return;
 
@@ -66,7 +79,7 @@ export function SearchAndFilters({
     }
 
     let newValue: string[];
-    
+
     if (Array.isArray(currentValue)) {
       if (isChecked) {
         newValue = [...currentValue, optionValue];
@@ -90,7 +103,11 @@ export function SearchAndFilters({
     }
   };
 
-  const removeSelectedValue = (filterKey: string, valueToRemove: string, currentValue: string | string[]) => {
+  const removeSelectedValue = (
+    filterKey: string,
+    valueToRemove: string,
+    currentValue: string | string[]
+  ) => {
     const filter = filters.find(f => f.key === filterKey);
     if (!filter || !Array.isArray(currentValue)) return;
 
@@ -106,12 +123,14 @@ export function SearchAndFilters({
     if (Array.isArray(filter.value)) {
       if (filter.value.length === 0) return filter.placeholder;
       if (filter.value.length === 1) {
-        const option = filter.options.find(opt => opt.value === filter.value[0]);
+        const option = filter.options.find(
+          opt => opt.value === filter.value[0]
+        );
         return option?.label || filter.value[0];
       }
       return `${filter.value.length} selected`;
     }
-    
+
     if (filter.value === 'all') return filter.placeholder;
     const option = filter.options.find(opt => opt.value === filter.value);
     return option?.label || filter.value;
@@ -120,8 +139,8 @@ export function SearchAndFilters({
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-lg flex items-center gap-2">
-          <Filter className="w-5 h-5" />
+        <CardTitle className="flex items-center gap-2 text-lg">
+          <Filter className="h-5 w-5" />
           Filters and Search
         </CardTitle>
       </CardHeader>
@@ -129,36 +148,53 @@ export function SearchAndFilters({
         {/* Search Input - Now at the top */}
         <div className="mb-6">
           <div className="relative">
-            <Search className="w-4 h-4 absolute left-3 top-3 text-gray-400" />
+            <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
             <Input
               placeholder={searchPlaceholder}
               value={searchTerm}
-              onChange={(e) => onSearchChange(e.target.value)}
+              onChange={e => onSearchChange(e.target.value)}
               className="pl-10"
             />
           </div>
         </div>
 
         {/* Selected Filters Display */}
-        {filters.some(filter => Array.isArray(filter.value) && filter.value.length > 0) && (
+        {filters.some(
+          filter => Array.isArray(filter.value) && filter.value.length > 0
+        ) && (
           <div className="mb-4">
             <div className="flex flex-wrap gap-2">
-              {filters.map((filter) => {
-                if (!Array.isArray(filter.value) || filter.value.length === 0) return null;
-                
-                return filter.value.map((selectedValue) => {
-                  const option = filter.options.find(opt => opt.value === selectedValue);
+              {filters.map(filter => {
+                if (!Array.isArray(filter.value) || filter.value.length === 0)
+                  return null;
+
+                return filter.value.map(selectedValue => {
+                  const option = filter.options.find(
+                    opt => opt.value === selectedValue
+                  );
                   if (!option) return null;
-                  
+
                   return (
-                    <Badge key={`${filter.key}-${selectedValue}`} variant="secondary" className="flex items-center gap-1">
-                      <span className="text-xs text-muted-foreground">{filter.label}:</span>
+                    <Badge
+                      key={`${filter.key}-${selectedValue}`}
+                      variant="secondary"
+                      className="flex items-center gap-1"
+                    >
+                      <span className="text-xs text-muted-foreground">
+                        {filter.label}:
+                      </span>
                       {option.label}
                       <button
-                        onClick={() => removeSelectedValue(filter.key, selectedValue, filter.value)}
-                        className="ml-1 hover:bg-secondary-foreground/20 rounded-full p-0.5"
+                        onClick={() =>
+                          removeSelectedValue(
+                            filter.key,
+                            selectedValue,
+                            filter.value
+                          )
+                        }
+                        className="ml-1 rounded-full p-0.5 hover:bg-secondary-foreground/20"
                       >
-                        <X className="w-3 h-3" />
+                        <X className="h-3 w-3" />
                       </button>
                     </Badge>
                   );
@@ -169,15 +205,21 @@ export function SearchAndFilters({
         )}
 
         {/* Filters Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
-          {filters.map((filter) => (
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-6">
+          {filters.map(filter => (
             <div key={filter.key} className="space-y-1">
-              <label className="text-xs text-gray-500 uppercase tracking-wide">
+              <label className="text-xs uppercase tracking-wide text-gray-500">
                 {filter.label}
               </label>
-              <Select 
-                value={Array.isArray(filter.value) ? (filter.value.length === 0 ? 'all' : filter.value[0]) : filter.value} 
-                onValueChange={(value) => {
+              <Select
+                value={
+                  Array.isArray(filter.value)
+                    ? filter.value.length === 0
+                      ? 'all'
+                      : filter.value[0]
+                    : filter.value
+                }
+                onValueChange={value => {
                   if (!filter.multiple) {
                     filter.onChange(value);
                   }
@@ -191,20 +233,28 @@ export function SearchAndFilters({
                 <SelectContent>
                   {filter.multiple ? (
                     <>
-                      {filter.options.map((option) => {
-                        const isSelected = Array.isArray(filter.value) 
+                      {filter.options.map(option => {
+                        const isSelected = Array.isArray(filter.value)
                           ? filter.value.includes(option.value)
                           : filter.value === option.value;
-                        
+
                         return (
-                          <div key={option.value} className="flex items-center space-x-2 px-2 py-1.5 hover:bg-accent">
+                          <div
+                            key={option.value}
+                            className="flex items-center space-x-2 px-2 py-1.5 hover:bg-accent"
+                          >
                             <Checkbox
                               checked={isSelected}
-                              onCheckedChange={(checked) => 
-                                handleMultiSelectChange(filter.key, option.value, checked as boolean, filter.value)
+                              onCheckedChange={checked =>
+                                handleMultiSelectChange(
+                                  filter.key,
+                                  option.value,
+                                  checked as boolean,
+                                  filter.value
+                                )
                               }
                             />
-                            <label className="text-sm cursor-pointer flex-1">
+                            <label className="flex-1 cursor-pointer text-sm">
                               {option.label}
                             </label>
                           </div>
@@ -212,7 +262,7 @@ export function SearchAndFilters({
                       })}
                     </>
                   ) : (
-                    filter.options.map((option) => (
+                    filter.options.map(option => (
                       <SelectItem key={option.value} value={option.value}>
                         {option.label}
                       </SelectItem>
@@ -222,10 +272,16 @@ export function SearchAndFilters({
               </Select>
             </div>
           ))}
-          
+
           <div className="space-y-1">
-            <label className="text-xs text-gray-500 uppercase tracking-wide">ACTIONS</label>
-            <Button variant="outline" onClick={onClearFilters} className="h-10 w-full">
+            <label className="text-xs uppercase tracking-wide text-gray-500">
+              ACTIONS
+            </label>
+            <Button
+              variant="outline"
+              onClick={onClearFilters}
+              className="h-10 w-full"
+            >
               Clear
             </Button>
           </div>
@@ -240,7 +296,7 @@ export function SearchAndFilters({
             <div className="flex items-center gap-2">
               <Checkbox
                 checked={isAllSelected}
-                ref={(el) => {
+                ref={el => {
                   if (el) el.indeterminate = isIndeterminate;
                 }}
                 onCheckedChange={onSelectAll}

@@ -5,35 +5,44 @@ This directory contains JSON configuration files that make the application highl
 ## Configuration Files
 
 ### `/public/config/app.json`
+
 Main application configuration including:
+
 - Application metadata (name, description, version)
 - Tab definitions with permissions
 - Settings tab configuration
 
 **Key Features:**
+
 - **Tab Permissions**: Control which user profiles can access specific tabs
 - **Dynamic Icons**: Configure icons for each tab using Lucide React icon names
 - **Component Mapping**: Map tab IDs to React components
 
 ### `/public/config/system.json`
+
 System configuration and settings page content:
+
 - System configuration sections (Classifications, Runtimes, S3)
 - Role and permission definitions
 - Configurable content lists
 
 **Key Features:**
+
 - **Dynamic Sections**: Add/remove configuration sections
 - **Content Types**: Support for list and key-value content types
 - **Role Permissions**: Define what each user role can access
 
 ### `/public/config/users.json`
+
 User management configuration:
+
 - User profile definitions with icons and badges
 - UI text and labels
 - Validation messages
 - Dialog configurations
 
 **Key Features:**
+
 - **Profile Badges**: Configure colors and icons for user roles
 - **Internationalization**: All UI text configurable
 - **Message Interpolation**: Dynamic messages with variable substitution
@@ -41,6 +50,7 @@ User management configuration:
 ## Configuration Service
 
 The `configService` provides:
+
 - **Async Loading**: Configurations loaded on demand
 - **Caching**: Configurations cached after first load
 - **Helper Methods**: Utilities for permission checking, message interpolation
@@ -49,6 +59,7 @@ The `configService` provides:
 ## Usage Examples
 
 ### Adding a New Tab
+
 ```json
 {
   "id": "reports",
@@ -61,21 +72,19 @@ The `configService` provides:
 ```
 
 ### Adding a Classification
+
 ```json
 {
   "id": "classifications",
   "title": "Classifications",
   "description": "Manage classification catalog",
   "type": "list",
-  "items": [
-    "Active account",
-    "Business account",
-    "New classification here"
-  ]
+  "items": ["Active account", "Business account", "New classification here"]
 }
 ```
 
 ### Customizing User Messages
+
 ```json
 {
   "messages": {
@@ -94,6 +103,7 @@ The `configService` provides:
 5. **Easy Maintenance**: Non-technical users can update content
 
 ## File Structure
+
 ```
 /public/config/
 ├── app.json          # Main application configuration

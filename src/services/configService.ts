@@ -106,296 +106,290 @@ export interface UserConfig {
 // Embedded configuration objects
 const APP_CONFIG: AppConfig = {
   application: {
-    name: "Testing Platform",
-    description: "Comprehensive testing inventory and execution platform",
-    version: "1.0.0",
-    defaultTab: "tests"
+    name: 'Testing Platform',
+    description: 'Comprehensive testing inventory and execution platform',
+    version: '1.0.0',
+    defaultTab: 'tests',
   },
   tabs: [
     {
-      id: "tests",
-      label: "Tests Inventory",
-      icon: "TestTube",
-      component: "TestsInventory",
-      permissions: ["dev", "automation", "product", "admin"],
-      description: "Manage test cases and scenarios"
+      id: 'tests',
+      label: 'Tests Inventory',
+      icon: 'TestTube',
+      component: 'TestsInventory',
+      permissions: ['dev', 'automation', 'product', 'admin'],
+      description: 'Manage test cases and scenarios',
     },
     {
-      id: "testdata",
-      label: "Test Data Inventory", 
-      icon: "Database",
-      component: "TestDataInventory",
-      permissions: ["dev", "automation", "product", "admin"],
-      description: "Manage test data and banking sources"
+      id: 'testdata',
+      label: 'Test Data Inventory',
+      icon: 'Database',
+      component: 'TestDataInventory',
+      permissions: ['dev', 'automation', 'product', 'admin'],
+      description: 'Manage test data and banking sources',
     },
     {
-      id: "execution",
-      label: "Execution Builder",
-      icon: "Play", 
-      component: "ExecutionBuilder",
-      permissions: ["dev", "automation", "admin"],
-      description: "Build and manage test execution batches"
+      id: 'execution',
+      label: 'Execution Builder',
+      icon: 'Play',
+      component: 'ExecutionBuilder',
+      permissions: ['dev', 'automation', 'admin'],
+      description: 'Build and manage test execution batches',
     },
     {
-      id: "settings",
-      label: "Settings",
-      icon: "Settings",
-      component: "Settings",
-      permissions: ["admin"],
-      description: "System configuration and user management"
-    }
+      id: 'settings',
+      label: 'Settings',
+      icon: 'Settings',
+      component: 'Settings',
+      permissions: ['admin'],
+      description: 'System configuration and user management',
+    },
   ],
   settingsTabs: [
     {
-      id: "system",
-      label: "System Configuration",
-      description: "Management of catalogs and general configurations"
+      id: 'system',
+      label: 'System Configuration',
+      description: 'Management of catalogs and general configurations',
     },
     {
-      id: "users", 
-      label: "User Management",
-      description: "Manage users and their permissions"
-    }
-  ]
+      id: 'users',
+      label: 'User Management',
+      description: 'Manage users and their permissions',
+    },
+  ],
 };
 
 const SYSTEM_CONFIG: SystemConfig = {
   systemConfiguration: {
-    title: "System Configuration",
-    description: "Management of catalogs and general configurations",
+    title: 'System Configuration',
+    description: 'Management of catalogs and general configurations',
     adminOnlyBadge: {
-      text: "Admin Only",
-      bgColor: "bg-red-100",
-      textColor: "text-red-800"
-    }
+      text: 'Admin Only',
+      bgColor: 'bg-red-100',
+      textColor: 'text-red-800',
+    },
   },
   configurationSections: [
     {
-      id: "classifications",
-      title: "Classifications",
-      description: "Manage classification catalog",
-      type: "list",
+      id: 'classifications',
+      title: 'Classifications',
+      description: 'Manage classification catalog',
+      type: 'list',
       items: [
-        "Active account",
-        "Business account", 
-        "Primary user",
-        "Expired credit card",
-        "Dormant account",
-        "VIP customer",
-        "New customer"
-      ]
+        'Active account',
+        'Business account',
+        'Primary user',
+        'Expired credit card',
+        'Dormant account',
+        'VIP customer',
+        'New customer',
+      ],
     },
     {
-      id: "runtimes",
-      title: "Runtimes", 
-      description: "Available execution platforms",
-      type: "list",
+      id: 'runtimes',
+      title: 'Runtimes',
+      description: 'Available execution platforms',
+      type: 'list',
       items: [
-        "OCP Testing Studio",
-        "Xero",
-        "Sierra",
-        "Postman",
-        "Newman",
-        "Custom Runtime"
-      ]
+        'OCP Testing Studio',
+        'Xero',
+        'Sierra',
+        'Postman',
+        'Newman',
+        'Custom Runtime',
+      ],
     },
     {
-      id: "s3config",
-      title: "S3 Configuration",
-      description: "Storage configuration", 
-      type: "keyvalue",
+      id: 's3config',
+      title: 'S3 Configuration',
+      description: 'Storage configuration',
+      type: 'keyvalue',
       items: {
-        "Bucket": "my-test-dialogs",
-        "Versioning": "Enabled",
-        "Region": "us-east-1",
-        "Encryption": "AES-256"
-      }
-    }
+        Bucket: 'my-test-dialogs',
+        Versioning: 'Enabled',
+        Region: 'us-east-1',
+        Encryption: 'AES-256',
+      },
+    },
   ],
   rolesPermissions: {
-    title: "Roles and Permissions",
-    description: "User profiles and permissions configuration",
+    title: 'Roles and Permissions',
+    description: 'User profiles and permissions configuration',
     cardStyle: {
-      borderColor: "border-blue-200",
-      bgColor: "bg-blue-50",
-      titleColor: "text-blue-800",
-      descriptionColor: "text-blue-700"
+      borderColor: 'border-blue-200',
+      bgColor: 'bg-blue-50',
+      titleColor: 'text-blue-800',
+      descriptionColor: 'text-blue-700',
     },
     roles: {
       dev: {
-        name: "Developer",
-        permissions: [
-          "Tests (read/write)",
-          "Test Data (read/write)"
-        ]
+        name: 'Developer',
+        permissions: ['Tests (read/write)', 'Test Data (read/write)'],
       },
       automation: {
-        name: "Automation", 
-        permissions: [
-          "All modules",
-          "Complete Execution Builder"
-        ]
+        name: 'Automation',
+        permissions: ['All modules', 'Complete Execution Builder'],
       },
       product: {
-        name: "Product",
-        permissions: [
-          "Read-only in all modules",
-          "Cannot create/edit"
-        ]
+        name: 'Product',
+        permissions: ['Read-only in all modules', 'Cannot create/edit'],
       },
       admin: {
-        name: "Admin",
+        name: 'Admin',
         permissions: [
-          "Full access",
-          "System configurations", 
-          "User management"
-        ]
-      }
-    }
-  }
+          'Full access',
+          'System configurations',
+          'User management',
+        ],
+      },
+    },
+  },
 };
 
 const USER_CONFIG: UserConfig = {
   userProfiles: [
     {
-      value: "dev",
-      label: "Developer", 
-      description: "Tests and Test Data (read/write)",
-      icon: "💻",
+      value: 'dev',
+      label: 'Developer',
+      description: 'Tests and Test Data (read/write)',
+      icon: '💻',
       badgeStyle: {
-        bgColor: "bg-blue-100",
-        textColor: "text-blue-800"
-      }
+        bgColor: 'bg-blue-100',
+        textColor: 'text-blue-800',
+      },
     },
     {
-      value: "automation",
-      label: "Automation",
-      description: "All modules, complete Execution Builder", 
-      icon: "🤖",
+      value: 'automation',
+      label: 'Automation',
+      description: 'All modules, complete Execution Builder',
+      icon: '🤖',
       badgeStyle: {
-        bgColor: "bg-green-100",
-        textColor: "text-green-800"
-      }
+        bgColor: 'bg-green-100',
+        textColor: 'text-green-800',
+      },
     },
     {
-      value: "product", 
-      label: "Product",
-      description: "Read-only in all modules",
-      icon: "📊",
+      value: 'product',
+      label: 'Product',
+      description: 'Read-only in all modules',
+      icon: '📊',
       badgeStyle: {
-        bgColor: "bg-purple-100", 
-        textColor: "text-purple-800"
-      }
+        bgColor: 'bg-purple-100',
+        textColor: 'text-purple-800',
+      },
     },
     {
-      value: "admin",
-      label: "Admin",
-      description: "Full access and configurations",
-      icon: "🛡️", 
+      value: 'admin',
+      label: 'Admin',
+      description: 'Full access and configurations',
+      icon: '🛡️',
       badgeStyle: {
-        bgColor: "bg-red-100",
-        textColor: "text-red-800"
-      }
-    }
+        bgColor: 'bg-red-100',
+        textColor: 'text-red-800',
+      },
+    },
   ],
   userManagement: {
-    title: "User Management",
-    description: "Manage users and their permissions on the platform",
-    searchPlaceholder: "Search by email or username...",
+    title: 'User Management',
+    description: 'Manage users and their permissions on the platform',
+    searchPlaceholder: 'Search by email or username...',
     buttons: {
-      newUser: "New User",
-      clearSearch: "Clear search",
-      cancel: "Cancel",
-      create: "Create User",
-      save: "Save Changes",
-      delete: "Delete",
-      changePassword: "Change Password"
+      newUser: 'New User',
+      clearSearch: 'Clear search',
+      cancel: 'Cancel',
+      create: 'Create User',
+      save: 'Save Changes',
+      delete: 'Delete',
+      changePassword: 'Change Password',
     },
     tableHeaders: [
-      "User",
-      "Email", 
-      "Profile",
-      "Status",
-      "Last Login",
-      "Created",
-      "Actions"
+      'User',
+      'Email',
+      'Profile',
+      'Status',
+      'Last Login',
+      'Created',
+      'Actions',
     ],
     statCards: [
       {
-        id: "total",
-        label: "Total Users",
-        icon: "Users",
-        color: "text-blue-600"
+        id: 'total',
+        label: 'Total Users',
+        icon: 'Users',
+        color: 'text-blue-600',
       },
       {
-        id: "active", 
-        label: "Active",
-        icon: "UserCheck",
-        color: "text-green-600"
+        id: 'active',
+        label: 'Active',
+        icon: 'UserCheck',
+        color: 'text-green-600',
       },
       {
-        id: "administrators",
-        label: "Administrators", 
-        icon: "Shield",
-        color: "text-red-600"
+        id: 'administrators',
+        label: 'Administrators',
+        icon: 'Shield',
+        color: 'text-red-600',
       },
       {
-        id: "inactive",
-        label: "Inactive",
-        icon: "Users", 
-        color: "text-purple-600"
-      }
+        id: 'inactive',
+        label: 'Inactive',
+        icon: 'Users',
+        color: 'text-purple-600',
+      },
     ],
     dialogs: {
       create: {
-        title: "Create New User",
-        description: "Complete the details to create a new user on the platform"
+        title: 'Create New User',
+        description:
+          'Complete the details to create a new user on the platform',
       },
       edit: {
-        title: "Edit User", 
-        description: "Modify the details of user"
+        title: 'Edit User',
+        description: 'Modify the details of user',
       },
       changePassword: {
-        title: "Change Password",
-        description: "Set a new password for"
+        title: 'Change Password',
+        description: 'Set a new password for',
       },
       confirmDelete: {
-        title: "Confirm deletion?",
-        description: "This action will permanently delete user {username}. This action cannot be undone."
-      }
+        title: 'Confirm deletion?',
+        description:
+          'This action will permanently delete user {username}. This action cannot be undone.',
+      },
     },
     formLabels: {
-      username: "Username",
-      email: "Email",
-      password: "Password", 
-      confirmPassword: "Confirm Password",
-      newPassword: "New Password",
-      profile: "Profile"
+      username: 'Username',
+      email: 'Email',
+      password: 'Password',
+      confirmPassword: 'Confirm Password',
+      newPassword: 'New Password',
+      profile: 'Profile',
     },
     placeholders: {
-      username: "Enter the username",
-      email: "user@example.com",
-      password: "Password",
-      confirmPassword: "Confirm the password",
-      newPassword: "New password (minimum 6 characters)",
-      confirmNewPassword: "Confirm the new password"
+      username: 'Enter the username',
+      email: 'user@example.com',
+      password: 'Password',
+      confirmPassword: 'Confirm the password',
+      newPassword: 'New password (minimum 6 characters)',
+      confirmNewPassword: 'Confirm the new password',
     },
     messages: {
-      allFieldsRequired: "All fields are required",
-      passwordsDoNotMatch: "Passwords do not match", 
-      usernameExists: "Username already exists",
-      emailExists: "Email already exists",
-      passwordTooShort: "Password must be at least 6 characters long",
-      cannotDeleteLastAdmin: "Cannot delete the last active administrator",
-      cannotDeactivateLastAdmin: "Cannot deactivate the last active administrator",
-      userCreated: "User {username} created successfully",
-      userUpdated: "User {username} updated successfully", 
-      userDeleted: "User {username} deleted successfully",
-      userActivated: "User {username} activated successfully",
-      userDeactivated: "User {username} deactivated successfully",
-      passwordChanged: "Password for {username} changed successfully"
-    }
-  }
+      allFieldsRequired: 'All fields are required',
+      passwordsDoNotMatch: 'Passwords do not match',
+      usernameExists: 'Username already exists',
+      emailExists: 'Email already exists',
+      passwordTooShort: 'Password must be at least 6 characters long',
+      cannotDeleteLastAdmin: 'Cannot delete the last active administrator',
+      cannotDeactivateLastAdmin:
+        'Cannot deactivate the last active administrator',
+      userCreated: 'User {username} created successfully',
+      userUpdated: 'User {username} updated successfully',
+      userDeleted: 'User {username} deleted successfully',
+      userActivated: 'User {username} activated successfully',
+      userDeactivated: 'User {username} deactivated successfully',
+      passwordChanged: 'Password for {username} changed successfully',
+    },
+  },
 };
 
 class ConfigService {
@@ -437,7 +431,11 @@ class ConfigService {
       .map(tab => tab.id);
   }
 
-  isTabAccessible(profile: UserProfile, tabId: string, tabs: TabConfig[]): boolean {
+  isTabAccessible(
+    profile: UserProfile,
+    tabId: string,
+    tabs: TabConfig[]
+  ): boolean {
     const availableTabs = this.getAvailableTabs(profile, tabs);
     return availableTabs.includes(tabId);
   }
@@ -446,12 +444,18 @@ class ConfigService {
     return tabs.find(tab => tab.id === tabId);
   }
 
-  getUserProfileConfig(profile: UserProfile, profiles: UserProfileConfig[]): UserProfileConfig | undefined {
+  getUserProfileConfig(
+    profile: UserProfile,
+    profiles: UserProfileConfig[]
+  ): UserProfileConfig | undefined {
     return profiles.find(p => p.value === profile);
   }
 
   // Message interpolation helper
-  interpolateMessage(message: string, variables: Record<string, string>): string {
+  interpolateMessage(
+    message: string,
+    variables: Record<string, string>
+  ): string {
     return message.replace(/{(\w+)}/g, (match, key) => variables[key] || match);
   }
 }

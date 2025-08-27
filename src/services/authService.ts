@@ -7,23 +7,23 @@ const mockUsers: User[] = [
   {
     id: 'dev-001',
     name: 'Juan Pérez',
-    profile: 'dev'
+    profile: 'dev',
   },
   {
     id: 'automation-001',
     name: 'María García',
-    profile: 'automation'
+    profile: 'automation',
   },
   {
     id: 'product-001',
     name: 'Carlos López',
-    profile: 'product'
+    profile: 'product',
   },
   {
     id: 'admin-001',
     name: 'Ana Martínez',
-    profile: 'admin'
-  }
+    profile: 'admin',
+  },
 ];
 
 /**
@@ -52,10 +52,10 @@ export function getAvailableProfiles(): UserProfile[] {
 /**
  * Gets profile display information
  */
-export function getProfileInfo(profile: UserProfile): { 
-  title: string; 
-  description: string; 
-  permissions: string[] 
+export function getProfileInfo(profile: UserProfile): {
+  title: string;
+  description: string;
+  permissions: string[];
 } {
   const profileInfo = {
     dev: {
@@ -66,8 +66,8 @@ export function getProfileInfo(profile: UserProfile): {
         'Crear y editar tests',
         'Ver Test Data Inventory',
         'Crear y editar test data',
-        'Usar Execution Builder (limitado)'
-      ]
+        'Usar Execution Builder (limitado)',
+      ],
     },
     automation: {
       title: 'Automation Engineer',
@@ -76,8 +76,8 @@ export function getProfileInfo(profile: UserProfile): {
         'Acceso completo a Tests Inventory',
         'Acceso completo a Test Data Inventory',
         'Acceso completo a Execution Builder',
-        'Gestión de ejecuciones'
-      ]
+        'Gestión de ejecuciones',
+      ],
     },
     product: {
       title: 'Product Manager',
@@ -86,8 +86,8 @@ export function getProfileInfo(profile: UserProfile): {
         'Ver Tests Inventory (solo lectura)',
         'Ver Test Data Inventory (solo lectura)',
         'Ver reportes de ejecución',
-        'Acceso a métricas y dashboards'
-      ]
+        'Acceso a métricas y dashboards',
+      ],
     },
     admin: {
       title: 'System Administrator',
@@ -97,9 +97,9 @@ export function getProfileInfo(profile: UserProfile): {
         'Configuración del sistema',
         'Gestión de usuarios',
         'Configuración de catálogos',
-        'Configuración de runtimes'
-      ]
-    }
+        'Configuración de runtimes',
+      ],
+    },
   };
 
   return profileInfo[profile];
@@ -110,11 +110,11 @@ export function getProfileInfo(profile: UserProfile): {
  */
 export function getAvailableTabs(profile: UserProfile): string[] {
   const baseTabs = ['tests', 'testdata', 'execution'];
-  
+
   if (profile === 'admin') {
     return [...baseTabs, 'settings'];
   }
-  
+
   return baseTabs;
 }
 
@@ -131,7 +131,7 @@ export function hasPermission(profile: UserProfile, action: string): boolean {
       'execution.read': true,
       'execution.write': false,
       'settings.read': false,
-      'settings.write': false
+      'settings.write': false,
     },
     automation: {
       'tests.read': true,
@@ -141,7 +141,7 @@ export function hasPermission(profile: UserProfile, action: string): boolean {
       'execution.read': true,
       'execution.write': true,
       'settings.read': false,
-      'settings.write': false
+      'settings.write': false,
     },
     product: {
       'tests.read': true,
@@ -151,7 +151,7 @@ export function hasPermission(profile: UserProfile, action: string): boolean {
       'execution.read': true,
       'execution.write': false,
       'settings.read': false,
-      'settings.write': false
+      'settings.write': false,
     },
     admin: {
       'tests.read': true,
@@ -161,8 +161,8 @@ export function hasPermission(profile: UserProfile, action: string): boolean {
       'execution.read': true,
       'execution.write': true,
       'settings.read': true,
-      'settings.write': true
-    }
+      'settings.write': true,
+    },
   };
 
   return permissions[profile][action] || false;
@@ -172,7 +172,7 @@ export function hasPermission(profile: UserProfile, action: string): boolean {
  * Logs out the current user
  */
 export function logoutUser(): Promise<void> {
-  return new Promise((resolve) => {
+  return new Promise(resolve => {
     setTimeout(() => {
       // Clear all stored session data
       localStorage.clear();

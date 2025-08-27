@@ -1,21 +1,20 @@
 // Custom hook for ExecutionBuilder logic using service layer
 
 import { useState, useEffect, useCallback } from 'react';
+
 import {
   Test,
   CartItem,
-  FilterOptions,
   getAllTests,
   filterTestsForExecution,
   addTestToCart,
   removeTestFromCart,
   clearExecutionCart,
   assignTestDataToCart,
-  generateExecutionYaml,
   downloadExecutionYaml,
   copyExecutionYamlToClipboard,
   validateExecutionConfig,
-  importTestsFromCsv
+  importTestsFromCsv,
 } from '../services';
 
 interface UseExecutionBuilderReturn {
@@ -30,7 +29,7 @@ interface UseExecutionBuilderReturn {
   showCsvDialog: boolean;
   csvInput: string;
   selectedRuntime: string;
-  
+
   // Actions
   setSearchTerm: (term: string) => void;
   setFilterFlujo: (flujo: string) => void;
@@ -40,7 +39,7 @@ interface UseExecutionBuilderReturn {
   setShowCsvDialog: (show: boolean) => void;
   setShowYamlDialog: (show: boolean) => void;
   setShowValidationModal: (show: boolean) => void;
-  
+
   // Business logic
   handleAddToCart: (test: Test) => void;
   handleRemoveFromCart: (testId: string) => void;
@@ -90,24 +89,32 @@ export function useExecutionBuilder(): UseExecutionBuilderReturn {
   const filteredTests = filterTestsForExecution(tests, cart, {
     searchTerm,
     flujo: filterFlujo,
-    runtime: filterRuntime
+    runtime: filterRuntime,
   });
 
   // Business logic handlers
-  const handleAddToCart = useCallback((test: Test) => {
-    try {
-      const newCart = addTestToCart(test, cart);
-      setCart(newCart);
-      setError(null);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error adding test to cart');
-    }
-  }, [cart]);
+  const handleAddToCart = useCallback(
+    (test: Test) => {
+      try {
+        const newCart = addTestToCart(test, cart);
+        setCart(newCart);
+        setError(null);
+      } catch (err) {
+        setError(
+          err instanceof Error ? err.message : 'Error adding test to cart'
+        );
+      }
+    },
+    [cart]
+  );
 
-  const handleRemoveFromCart = useCallback((testId: string) => {
-    const newCart = removeTestFromCart(testId, cart);
-    setCart(newCart);
-  }, [cart]);
+  const handleRemoveFromCart = useCallback(
+    (testId: string) => {
+      const newCart = removeTestFromCart(testId, cart);
+      setCart(newCart);
+    },
+    [cart]
+  );
 
   const handleClearCart = useCallback(() => {
     setCart(clearExecutionCart());
@@ -115,14 +122,16 @@ export function useExecutionBuilder(): UseExecutionBuilderReturn {
 
   const handleAssignTestData = useCallback(async () => {
     if (cart.length === 0) return;
-    
+
     setIsLoading(true);
     try {
       const updatedCart = await assignTestDataToCart(cart);
       setCart(updatedCart);
       setError(null);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error assigning test data');
+      setError(
+        err instanceof Error ? err.message : 'Error assigning test data'
+      );
     } finally {
       setIsLoading(false);
     }
@@ -169,7 +178,10 @@ export function useExecutionBuilder(): UseExecutionBuilderReturn {
 
   const handleCopyYaml = useCallback(async () => {
     try {
-      const success = await copyExecutionYamlToClipboard({ cart, selectedRuntime });
+      const success = await copyExecutionYamlToClipboard({
+        cart,
+        selectedRuntime,
+      });
       if (!success) {
         setError('Failed to copy to clipboard');
       } else {
@@ -198,7 +210,7 @@ export function useExecutionBuilder(): UseExecutionBuilderReturn {
     showCsvDialog,
     csvInput,
     selectedRuntime,
-    
+
     // Setters
     setSearchTerm,
     setFilterFlujo,
@@ -208,7 +220,7 @@ export function useExecutionBuilder(): UseExecutionBuilderReturn {
     setShowCsvDialog,
     setShowYamlDialog,
     setShowValidationModal,
-    
+
     // Business logic
     handleAddToCart,
     handleRemoveFromCart,
@@ -218,6 +230,6 @@ export function useExecutionBuilder(): UseExecutionBuilderReturn {
     handleExportYaml,
     handleDownloadYaml,
     handleCopyYaml,
-    clearFilters
+    clearFilters,
   };
 }

@@ -1,5 +1,7 @@
-import { Database, Play, Settings, TestTube } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
+
+import { Database, Play, Settings, TestTube } from 'lucide-react';
+
 import { ExecutionBuilder } from './components/ExecutionBuilder';
 import { Header } from './components/Header';
 import { Login, User } from './components/Login';
@@ -14,12 +16,12 @@ import {
 } from './components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './components/ui/tabs';
 import { UserManagement } from './components/UserManagement';
+import { PermissionsProvider } from './contexts/PermissionsContext';
 import {
   AppConfig,
   configService,
   SystemConfig,
 } from './services/configService';
-import { PermissionsProvider } from './contexts/PermissionsContext';
 
 function App() {
   const [user, setUser] = useState<User | null>(null);
@@ -73,7 +75,7 @@ function App() {
   const availableTabs = useMemo(() => {
     if (!user || !appConfig) return [];
     return configService.getAvailableTabs(user.profile, appConfig.tabs);
-  }, [user?.profile, appConfig]);
+  }, [user, appConfig]);
 
   // Ensure active tab is available for current user
   useEffect(() => {
@@ -84,7 +86,7 @@ function App() {
     ) {
       setActiveTab(appConfig.application.defaultTab);
     }
-  }, [user?.profile, activeTab, appConfig]);
+  }, [user, activeTab, appConfig]);
 
   // Get grid columns class
   const getGridColsClass = (count: number): string => {
@@ -249,38 +251,46 @@ function App() {
                           </CardHeader>
                           <CardContent>
                             <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-                              {systemConfig.configurationSections.map(section => (
-                                <Card key={section.id}>
-                                  <CardHeader>
-                                    <CardTitle className="text-lg">
-                                      {section.title}
-                                    </CardTitle>
-                                  </CardHeader>
-                                  <CardContent>
-                                    <p className="mb-2 text-sm text-gray-600">
-                                      {section.description}
-                                    </p>
-                                    <div className="space-y-2">
-                                      {section.type === 'list' &&
-                                        Array.isArray(section.items) &&
-                                        section.items.map((item, index) => (
-                                          <div key={index} className="text-sm">
-                                            • {item}
-                                          </div>
-                                        ))}
-                                      {section.type === 'keyvalue' &&
-                                        !Array.isArray(section.items) &&
-                                        Object.entries(section.items).map(
-                                          ([key, value]) => (
-                                            <div key={key} className="text-sm">
-                                              {key}: {value}
+                              {systemConfig.configurationSections.map(
+                                section => (
+                                  <Card key={section.id}>
+                                    <CardHeader>
+                                      <CardTitle className="text-lg">
+                                        {section.title}
+                                      </CardTitle>
+                                    </CardHeader>
+                                    <CardContent>
+                                      <p className="mb-2 text-sm text-gray-600">
+                                        {section.description}
+                                      </p>
+                                      <div className="space-y-2">
+                                        {section.type === 'list' &&
+                                          Array.isArray(section.items) &&
+                                          section.items.map((item, index) => (
+                                            <div
+                                              key={index}
+                                              className="text-sm"
+                                            >
+                                              • {item}
                                             </div>
-                                          )
-                                        )}
-                                    </div>
-                                  </CardContent>
-                                </Card>
-                              ))}
+                                          ))}
+                                        {section.type === 'keyvalue' &&
+                                          !Array.isArray(section.items) &&
+                                          Object.entries(section.items).map(
+                                            ([key, value]) => (
+                                              <div
+                                                key={key}
+                                                className="text-sm"
+                                              >
+                                                {key}: {value}
+                                              </div>
+                                            )
+                                          )}
+                                      </div>
+                                    </CardContent>
+                                  </Card>
+                                )
+                              )}
                             </div>
 
                             <div className="mt-6">
@@ -315,7 +325,7 @@ function App() {
                                         </ul>
                                       </div>
                                     ))}
-                                </div>
+                                  </div>
                                 </CardContent>
                               </Card>
                             </div>

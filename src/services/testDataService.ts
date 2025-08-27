@@ -1,7 +1,11 @@
 // Test Data service - handles all test data-related business logic
 
 import { TestData, CreateTestDataFormData, FilterOptions } from './types';
-import { generateId, generateRandomDate, filterItems, validateRequiredFields } from './utils';
+import {
+  generateId,
+  filterItems,
+  validateRequiredFields,
+} from './utils';
 
 // Mock test data
 const mockTestData: TestData[] = [
@@ -16,13 +20,13 @@ const mockTestData: TestData[] = [
     lastUsed: null,
     s3Location: {
       bucket: 'test-data-storage',
-      path: 'banking/accounts/active/ACC-45123.json'
+      path: 'banking/accounts/active/ACC-45123.json',
     },
     metadata: {
       source: 'API Generator',
       environment: 'Staging',
-      region: 'us-east-1'
-    }
+      region: 'us-east-1',
+    },
   },
   {
     id: 'TD-45124',
@@ -35,13 +39,13 @@ const mockTestData: TestData[] = [
     lastUsed: '2025-08-20T10:22:00Z',
     s3Location: {
       bucket: 'test-data-storage',
-      path: 'banking/accounts/enterprise/ACC-45124.json'
+      path: 'banking/accounts/enterprise/ACC-45124.json',
     },
     metadata: {
       source: 'Database Export',
       environment: 'Production Clone',
-      region: 'us-east-1'
-    }
+      region: 'us-east-1',
+    },
   },
   {
     id: 'TD-45125',
@@ -54,13 +58,13 @@ const mockTestData: TestData[] = [
     lastUsed: '2025-08-19T16:30:00Z',
     s3Location: {
       bucket: 'test-data-storage',
-      path: 'banking/accounts/expired/ACC-45125.json'
+      path: 'banking/accounts/expired/ACC-45125.json',
     },
     metadata: {
       source: 'Manual Creation',
       environment: 'Testing',
-      region: 'us-west-2'
-    }
+      region: 'us-west-2',
+    },
   },
   {
     id: 'TD-45126',
@@ -73,13 +77,13 @@ const mockTestData: TestData[] = [
     lastUsed: '2025-08-18T13:45:00Z',
     s3Location: {
       bucket: 'test-data-storage',
-      path: 'banking/accounts/active/ACC-45126.json'
+      path: 'banking/accounts/active/ACC-45126.json',
     },
     metadata: {
       source: 'API Generator',
       environment: 'Staging',
-      region: 'us-east-1'
-    }
+      region: 'us-east-1',
+    },
   },
   {
     id: 'TD-45127',
@@ -92,21 +96,21 @@ const mockTestData: TestData[] = [
     lastUsed: null,
     s3Location: {
       bucket: 'test-data-storage',
-      path: 'banking/accounts/checking/ACC-45127.json'
+      path: 'banking/accounts/checking/ACC-45127.json',
     },
     metadata: {
       source: 'Database Export',
       environment: 'Production Clone',
-      region: 'us-east-1'
-    }
-  }
+      region: 'us-east-1',
+    },
+  },
 ];
 
 /**
  * Fetches all test data
  */
 export async function getAllTestData(): Promise<TestData[]> {
-  return new Promise((resolve) => {
+  return new Promise(resolve => {
     setTimeout(() => resolve([...mockTestData]), 500);
   });
 }
@@ -115,7 +119,7 @@ export async function getAllTestData(): Promise<TestData[]> {
  * Fetches a single test data by ID
  */
 export async function getTestDataById(id: string): Promise<TestData | null> {
-  return new Promise((resolve) => {
+  return new Promise(resolve => {
     setTimeout(() => {
       const testData = mockTestData.find(td => td.id === id);
       resolve(testData || null);
@@ -126,27 +130,47 @@ export async function getTestDataById(id: string): Promise<TestData | null> {
 /**
  * Filters test data based on search criteria
  */
-export function filterTestData(testData: TestData[], filters: FilterOptions): TestData[] {
-  const searchFields: (keyof TestData)[] = ['id', 'accountId', 'referenceId', 'customerId'];
-  
+export function filterTestData(
+  testData: TestData[],
+  filters: FilterOptions
+): TestData[] {
+  const searchFields: (keyof TestData)[] = [
+    'id',
+    'accountId',
+    'referenceId',
+    'customerId',
+  ];
+
   return filterItems(testData, filters, searchFields).filter(data => {
     // Additional custom filtering logic
-    if (filters.status && filters.status !== 'all' && data.status !== filters.status) {
+    if (
+      filters.status &&
+      filters.status !== 'all' &&
+      data.status !== filters.status
+    ) {
       return false;
     }
-    
+
     if (filters.classification && filters.classification !== 'all') {
       return data.classification.includes(filters.classification);
     }
-    
-    if (filters.source && filters.source !== 'all' && data.metadata.source !== filters.source) {
+
+    if (
+      filters.source &&
+      filters.source !== 'all' &&
+      data.metadata.source !== filters.source
+    ) {
       return false;
     }
-    
-    if (filters.environment && filters.environment !== 'all' && data.metadata.environment !== filters.environment) {
+
+    if (
+      filters.environment &&
+      filters.environment !== 'all' &&
+      data.metadata.environment !== filters.environment
+    ) {
       return false;
     }
-    
+
     return true;
   });
 }
@@ -154,19 +178,28 @@ export function filterTestData(testData: TestData[], filters: FilterOptions): Te
 /**
  * Creates new test data
  */
-export async function createTestData(formData: CreateTestDataFormData): Promise<TestData> {
+export async function createTestData(
+  formData: CreateTestDataFormData
+): Promise<TestData> {
   return new Promise((resolve, reject) => {
     setTimeout(() => {
       // Validate required fields
       const validation = validateRequiredFields(formData, [
-        'accountId', 'referenceId', 'customerId', 'classification'
+        'accountId',
+        'referenceId',
+        'customerId',
+        'classification',
       ]);
-      
+
       if (!validation.isValid) {
-        reject(new Error(`Campos requeridos faltantes: ${validation.missingFields.join(', ')}`));
+        reject(
+          new Error(
+            `Campos requeridos faltantes: ${validation.missingFields.join(', ')}`
+          )
+        );
         return;
       }
-      
+
       const newTestData: TestData = {
         id: generateId('TD'),
         accountId: formData.accountId,
@@ -178,11 +211,11 @@ export async function createTestData(formData: CreateTestDataFormData): Promise<
         lastUsed: null,
         s3Location: {
           bucket: 'test-data-storage',
-          path: `banking/accounts/generated/${formData.accountId}.json`
+          path: `banking/accounts/generated/${formData.accountId}.json`,
         },
-        metadata: formData.metadata
+        metadata: formData.metadata,
       };
-      
+
       mockTestData.push(newTestData);
       resolve(newTestData);
     }, 1000);
@@ -193,7 +226,7 @@ export async function createTestData(formData: CreateTestDataFormData): Promise<
  * Updates test data status
  */
 export async function updateTestDataStatus(
-  id: string, 
+  id: string,
   status: TestData['status']
 ): Promise<TestData> {
   return new Promise((resolve, reject) => {
@@ -203,13 +236,16 @@ export async function updateTestDataStatus(
         reject(new Error('Test data no encontrado'));
         return;
       }
-      
+
       mockTestData[index] = {
         ...mockTestData[index],
         status,
-        lastUsed: status === 'En uso' ? new Date().toISOString() : mockTestData[index].lastUsed
+        lastUsed:
+          status === 'En uso'
+            ? new Date().toISOString()
+            : mockTestData[index].lastUsed,
       };
-      
+
       resolve(mockTestData[index]);
     }, 500);
   });
@@ -247,7 +283,7 @@ export async function deleteTestData(id: string): Promise<void> {
         reject(new Error('Test data no encontrado'));
         return;
       }
-      
+
       mockTestData.splice(index, 1);
       resolve();
     }, 500);
@@ -263,23 +299,35 @@ export function getTestDataFilterOptions(): {
   sources: string[];
   environments: string[];
 } {
-  const statuses: TestData['status'][] = ['Disponible', 'En uso', 'Consumida', 'Reacondicionamiento'];
-  const classifications = [...new Set(mockTestData.flatMap(td => td.classification))];
+  const statuses: TestData['status'][] = [
+    'Disponible',
+    'En uso',
+    'Consumida',
+    'Reacondicionamiento',
+  ];
+  const classifications = [
+    ...new Set(mockTestData.flatMap(td => td.classification)),
+  ];
   const sources = [...new Set(mockTestData.map(td => td.metadata.source))];
-  const environments = [...new Set(mockTestData.map(td => td.metadata.environment))];
-  
+  const environments = [
+    ...new Set(mockTestData.map(td => td.metadata.environment)),
+  ];
+
   return { statuses, classifications, sources, environments };
 }
 
 /**
  * Finds available test data for specific requirements
  */
-export async function findAvailableTestData(requirements: string[]): Promise<TestData[]> {
-  return new Promise((resolve) => {
+export async function findAvailableTestData(
+  requirements: string[]
+): Promise<TestData[]> {
+  return new Promise(resolve => {
     setTimeout(() => {
-      const available = mockTestData.filter(td => 
-        td.status === 'Disponible' && 
-        requirements.some(req => td.classification.includes(req))
+      const available = mockTestData.filter(
+        td =>
+          td.status === 'Disponible' &&
+          requirements.some(req => td.classification.includes(req))
       );
       resolve(available);
     }, 300);
@@ -301,25 +349,28 @@ export function getTestDataStatistics(testData: TestData[]): {
     byStatus: {} as Record<TestData['status'], number>,
     byClassification: {} as Record<string, number>,
     bySource: {} as Record<string, number>,
-    byEnvironment: {} as Record<string, number>
+    byEnvironment: {} as Record<string, number>,
   };
-  
+
   testData.forEach(data => {
     // Status stats
     stats.byStatus[data.status] = (stats.byStatus[data.status] || 0) + 1;
-    
+
     // Classification stats
     data.classification.forEach(classification => {
-      stats.byClassification[classification] = (stats.byClassification[classification] || 0) + 1;
+      stats.byClassification[classification] =
+        (stats.byClassification[classification] || 0) + 1;
     });
-    
+
     // Source stats
-    stats.bySource[data.metadata.source] = (stats.bySource[data.metadata.source] || 0) + 1;
-    
+    stats.bySource[data.metadata.source] =
+      (stats.bySource[data.metadata.source] || 0) + 1;
+
     // Environment stats
-    stats.byEnvironment[data.metadata.environment] = (stats.byEnvironment[data.metadata.environment] || 0) + 1;
+    stats.byEnvironment[data.metadata.environment] =
+      (stats.byEnvironment[data.metadata.environment] || 0) + 1;
   });
-  
+
   return stats;
 }
 
@@ -327,7 +378,9 @@ export function getTestDataStatistics(testData: TestData[]): {
  * Exports test data to YAML format
  */
 export function exportTestDataToYaml(testData: TestData[]): string {
-  const yamlContent = testData.map(data => `
+  const yamlContent = testData
+    .map(
+      data => `
 id: ${data.id}
 accountId: ${data.accountId}
 referenceId: ${data.referenceId}
@@ -344,42 +397,51 @@ metadata:
   source: ${data.metadata.source}
   environment: ${data.metadata.environment}
   region: ${data.metadata.region}
-`).join('\n---\n');
-  
+`
+    )
+    .join('\n---\n');
+
   return `# Test Data Export\n# Generated on: ${new Date().toISOString()}\n\n${yamlContent}`;
 }
 
 /**
  * Validates S3 location format
  */
-export function validateS3Location(bucket: string, path: string): {
+export function validateS3Location(
+  bucket: string,
+  path: string
+): {
   isValid: boolean;
   errors: string[];
 } {
   const errors: string[] = [];
-  
+
   if (!bucket || bucket.length < 3) {
     errors.push('Bucket name must be at least 3 characters');
   }
-  
+
   if (!path || !path.includes('.')) {
     errors.push('Path must include a file extension');
   }
-  
+
   if (path && path.startsWith('/')) {
     errors.push('Path should not start with /');
   }
-  
+
   return {
     isValid: errors.length === 0,
-    errors
+    errors,
   };
 }
 
 /**
  * Generates S3 path for test data
  */
-export function generateS3Path(accountId: string, classification: string[]): string {
-  const category = classification[0]?.toLowerCase().replace(' ', '-') || 'general';
+export function generateS3Path(
+  accountId: string,
+  classification: string[]
+): string {
+  const category =
+    classification[0]?.toLowerCase().replace(' ', '-') || 'general';
   return `banking/accounts/${category}/${accountId}.json`;
 }

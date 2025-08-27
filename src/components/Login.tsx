@@ -1,5 +1,7 @@
-import { Code, Cog, Package, Shield, TestTube, User } from 'lucide-react';
 import React, { useState } from 'react';
+
+import { Code, Cog, Package, Shield, TestTube, User } from 'lucide-react';
+
 import { Badge } from './ui/badge';
 import { Button } from './ui/button';
 import {

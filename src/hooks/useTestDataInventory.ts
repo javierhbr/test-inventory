@@ -1,9 +1,9 @@
 // Custom hook for TestDataInventory logic using service layer
 
 import { useState, useEffect, useCallback } from 'react';
+
 import {
   TestData,
-  FilterOptions,
   CreateTestDataFormData,
   getAllTestData,
   filterTestData,
@@ -13,7 +13,7 @@ import {
   getTestDataFilterOptions,
   exportTestDataToYaml,
   getTestDataStatistics,
-  downloadFile
+  downloadFile,
 } from '../services';
 
 interface UseTestDataInventoryReturn {
@@ -30,14 +30,14 @@ interface UseTestDataInventoryReturn {
     environments: string[];
   };
   statistics: ReturnType<typeof getTestDataStatistics>;
-  
+
   // Filters
   searchTerm: string;
   filterStatus: string;
   filterClassification: string;
   filterSource: string;
   filterEnvironment: string;
-  
+
   // Actions
   setSearchTerm: (term: string) => void;
   setFilterStatus: (status: string) => void;
@@ -45,7 +45,7 @@ interface UseTestDataInventoryReturn {
   setFilterSource: (source: string) => void;
   setFilterEnvironment: (environment: string) => void;
   setSelectedTestData: (testData: TestData | null) => void;
-  
+
   // Business logic
   handleCreateTestData: (formData: CreateTestDataFormData) => Promise<void>;
   handleUpdateStatus: (id: string, status: TestData['status']) => Promise<void>;
@@ -58,7 +58,9 @@ interface UseTestDataInventoryReturn {
 export function useTestDataInventory(): UseTestDataInventoryReturn {
   // State
   const [testData, setTestData] = useState<TestData[]>([]);
-  const [selectedTestData, setSelectedTestData] = useState<TestData | null>(null);
+  const [selectedTestData, setSelectedTestData] = useState<TestData | null>(
+    null
+  );
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
   const [filterClassification, setFilterClassification] = useState('all');
@@ -91,7 +93,7 @@ export function useTestDataInventory(): UseTestDataInventoryReturn {
     status: filterStatus,
     classification: filterClassification,
     source: filterSource,
-    environment: filterEnvironment
+    environment: filterEnvironment,
   });
 
   // Get filter options
@@ -101,55 +103,68 @@ export function useTestDataInventory(): UseTestDataInventoryReturn {
   const statistics = getTestDataStatistics(filteredTestData);
 
   // Business logic handlers
-  const handleCreateTestData = useCallback(async (formData: CreateTestDataFormData) => {
-    setIsLoading(true);
-    try {
-      const newTestData = await createTestData(formData);
-      setTestData(prevData => [...prevData, newTestData]);
-      setError(null);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error creating test data');
-      throw err; // Re-throw to allow component to handle UI feedback
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
-
-  const handleUpdateStatus = useCallback(async (id: string, status: TestData['status']) => {
-    setIsLoading(true);
-    try {
-      const updatedTestData = await updateTestDataStatus(id, status);
-      setTestData(prevData => 
-        prevData.map(item => item.id === id ? updatedTestData : item)
-      );
-      if (selectedTestData?.id === id) {
-        setSelectedTestData(updatedTestData);
+  const handleCreateTestData = useCallback(
+    async (formData: CreateTestDataFormData) => {
+      setIsLoading(true);
+      try {
+        const newTestData = await createTestData(formData);
+        setTestData(prevData => [...prevData, newTestData]);
+        setError(null);
+      } catch (err) {
+        setError(
+          err instanceof Error ? err.message : 'Error creating test data'
+        );
+        throw err; // Re-throw to allow component to handle UI feedback
+      } finally {
+        setIsLoading(false);
       }
-      setError(null);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error updating status');
-      throw err;
-    } finally {
-      setIsLoading(false);
-    }
-  }, [selectedTestData]);
+    },
+    []
+  );
 
-  const handleDeleteTestData = useCallback(async (id: string) => {
-    setIsLoading(true);
-    try {
-      await deleteTestData(id);
-      setTestData(prevData => prevData.filter(item => item.id !== id));
-      if (selectedTestData?.id === id) {
-        setSelectedTestData(null);
+  const handleUpdateStatus = useCallback(
+    async (id: string, status: TestData['status']) => {
+      setIsLoading(true);
+      try {
+        const updatedTestData = await updateTestDataStatus(id, status);
+        setTestData(prevData =>
+          prevData.map(item => (item.id === id ? updatedTestData : item))
+        );
+        if (selectedTestData?.id === id) {
+          setSelectedTestData(updatedTestData);
+        }
+        setError(null);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Error updating status');
+        throw err;
+      } finally {
+        setIsLoading(false);
       }
-      setError(null);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error deleting test data');
-      throw err;
-    } finally {
-      setIsLoading(false);
-    }
-  }, [selectedTestData]);
+    },
+    [selectedTestData]
+  );
+
+  const handleDeleteTestData = useCallback(
+    async (id: string) => {
+      setIsLoading(true);
+      try {
+        await deleteTestData(id);
+        setTestData(prevData => prevData.filter(item => item.id !== id));
+        if (selectedTestData?.id === id) {
+          setSelectedTestData(null);
+        }
+        setError(null);
+      } catch (err) {
+        setError(
+          err instanceof Error ? err.message : 'Error deleting test data'
+        );
+        throw err;
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [selectedTestData]
+  );
 
   const handleExportYaml = useCallback(() => {
     try {
@@ -158,7 +173,9 @@ export function useTestDataInventory(): UseTestDataInventoryReturn {
       downloadFile(yaml, filename, 'text/yaml');
       setError(null);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error exporting test data');
+      setError(
+        err instanceof Error ? err.message : 'Error exporting test data'
+      );
     }
   }, [filteredTestData]);
 
@@ -183,14 +200,14 @@ export function useTestDataInventory(): UseTestDataInventoryReturn {
     selectedTestData,
     filterOptions,
     statistics,
-    
+
     // Filters
     searchTerm,
     filterStatus,
     filterClassification,
     filterSource,
     filterEnvironment,
-    
+
     // Setters
     setSearchTerm,
     setFilterStatus,
@@ -198,13 +215,13 @@ export function useTestDataInventory(): UseTestDataInventoryReturn {
     setFilterSource,
     setFilterEnvironment,
     setSelectedTestData,
-    
+
     // Business logic
     handleCreateTestData,
     handleUpdateStatus,
     handleDeleteTestData,
     handleExportYaml,
     clearFilters,
-    refreshTestData
+    refreshTestData,
   };
 }

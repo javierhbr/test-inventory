@@ -5,6 +5,7 @@ This document explains the service layer implementation that separates business 
 ## Architecture Overview
 
 The service layer follows these principles:
+
 - **Separation of Concerns**: Business logic is separated from UI components
 - **Reusability**: Services can be used across multiple components
 - **Testability**: Business logic can be tested independently
@@ -35,7 +36,9 @@ The service layer follows these principles:
 ## Services
 
 ### 1. Types (`/services/types.ts`)
+
 Contains all shared TypeScript interfaces and types used across the application:
+
 - `User`, `UserProfile`
 - `Test`, `TestData`
 - `CartItem`, `AssignedTestData`
@@ -43,7 +46,9 @@ Contains all shared TypeScript interfaces and types used across the application:
 - `FilterOptions`, `ExecutionConfig`
 
 ### 2. Utils (`/services/utils.ts`)
+
 Common utility functions:
+
 - `generateId()` - Generate unique IDs
 - `formatDate()`, `formatDateTime()` - Date formatting
 - `filterItems()` - Generic filtering logic
@@ -51,7 +56,9 @@ Common utility functions:
 - `validateRequiredFields()` - Form validation
 
 ### 3. Auth Service (`/services/authService.ts`)
+
 Handles authentication and authorization:
+
 - `authenticateUser()` - User authentication
 - `getAvailableProfiles()` - Get user profiles
 - `getProfileInfo()` - Get profile details
@@ -59,7 +66,9 @@ Handles authentication and authorization:
 - `getAvailableTabs()` - Get accessible tabs
 
 ### 4. Tests Service (`/services/testsService.ts`)
+
 Manages test cases:
+
 - `getAllTests()` - Fetch all tests
 - `getTestById()` - Fetch single test
 - `filterTests()` - Filter tests by criteria
@@ -68,7 +77,9 @@ Manages test cases:
 - `getTestStatistics()` - Analytics
 
 ### 5. Test Data Service (`/services/testDataService.ts`)
+
 Manages test data:
+
 - `getAllTestData()` - Fetch all test data
 - `filterTestData()` - Filter test data
 - `createTestData()` - Create new test data
@@ -77,7 +88,9 @@ Manages test data:
 - `exportTestDataToYaml()` - Export functionality
 
 ### 6. Execution Service (`/services/executionService.ts`)
+
 Handles execution builder logic:
+
 - `filterTestsForExecution()` - Filter tests for cart
 - `addTestToCart()`, `removeTestFromCart()` - Cart management
 - `assignTestDataToCart()` - Auto-assign test data
@@ -89,55 +102,74 @@ Handles execution builder logic:
 Custom hooks encapsulate component state and business logic:
 
 ### useExecutionBuilder
+
 ```typescript
 const {
   // State
-  tests, cart, filteredTests, isLoading, error,
-  
+  tests,
+  cart,
+  filteredTests,
+  isLoading,
+  error,
+
   // Actions
-  handleAddToCart, handleRemoveFromCart, handleClearCart,
-  handleAssignTestData, handleExportYaml,
-  
+  handleAddToCart,
+  handleRemoveFromCart,
+  handleClearCart,
+  handleAssignTestData,
+  handleExportYaml,
+
   // Filters
-  setSearchTerm, setFilterFlujo, clearFilters
+  setSearchTerm,
+  setFilterFlujo,
+  clearFilters,
 } = useExecutionBuilder();
 ```
 
 ### useTestsInventory
+
 ```typescript
 const {
   // State
-  tests, filteredTests, statistics, filterOptions,
-  
+  tests,
+  filteredTests,
+  statistics,
+  filterOptions,
+
   // Actions
-  handleCreateTest, handleDeleteTest, handleExportYaml,
-  
+  handleCreateTest,
+  handleDeleteTest,
+  handleExportYaml,
+
   // Filters
-  searchTerm, setSearchTerm, clearFilters
+  searchTerm,
+  setSearchTerm,
+  clearFilters,
 } = useTestsInventory();
 ```
 
 ## Usage Example
 
 ### Before (Component with Business Logic)
+
 ```typescript
 export function ExecutionBuilder() {
   const [tests, setTests] = useState([]);
   const [cart, setCart] = useState([]);
-  
+
   const addToCart = (test) => {
     // Business logic mixed with component
     setCart([...cart, { test }]);
   };
-  
+
   const generateYaml = () => {
     // Complex business logic in component
     const yaml = `executionId: ${generateId()}...`;
     return yaml;
   };
-  
+
   // Lots of business logic...
-  
+
   return (
     <div>
       {/* UI rendering */}
@@ -147,6 +179,7 @@ export function ExecutionBuilder() {
 ```
 
 ### After (Component with Service Layer)
+
 ```typescript
 export function ExecutionBuilder() {
   // All business logic moved to custom hook
@@ -155,7 +188,7 @@ export function ExecutionBuilder() {
     handleAddToCart, handleGenerateYaml,
     setSearchTerm, clearFilters
   } = useExecutionBuilder();
-  
+
   // Component only handles UI rendering
   return (
     <div>
@@ -194,7 +227,9 @@ Services can be tested independently:
 import { filterTests } from '../services/testsService';
 
 test('should filter tests by flujo', () => {
-  const tests = [/* test data */];
+  const tests = [
+    /* test data */
+  ];
   const filtered = filterTests(tests, { flujo: 'Pago' });
   expect(filtered).toHaveLength(1);
 });

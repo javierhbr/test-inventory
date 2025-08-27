@@ -1,14 +1,30 @@
 import { useState, useMemo } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
-import { Button } from './ui/button';
-import { Badge } from './ui/badge';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from './ui/table';
-import { Textarea } from './ui/textarea';
-import { Checkbox } from './ui/checkbox';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from './ui/dialog';
-import { Upload, ShoppingCart, Download, Plus, X, FileText, Copy, Trash2, AlertTriangle } from 'lucide-react';
+
+import {
+  Upload,
+  ShoppingCart,
+  Download,
+  Plus,
+  X,
+  FileText,
+  Copy,
+  Trash2,
+  AlertTriangle,
+} from 'lucide-react';
+
 import { SearchAndFilters, FilterConfig } from './SearchAndFilters';
+import { Badge } from './ui/badge';
+import { Button } from './ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
+import { Checkbox } from './ui/checkbox';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from './ui/dialog';
 import {
   Pagination,
   PaginationContent,
@@ -18,6 +34,22 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from './ui/pagination';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from './ui/select';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from './ui/table';
+import { Textarea } from './ui/textarea';
 
 interface Test {
   id: string;
@@ -63,15 +95,19 @@ const mockTests: Test[] = [
       flow: 'Payment',
       intent: 'Negative',
       experience: 'Mobile',
-      project: 'Release Q3'
+      project: 'Release Q3',
     },
-    dataRequirements: ['Expired account', 'Authorized user', 'Expired credit card'],
+    dataRequirements: [
+      'Expired account',
+      'Authorized user',
+      'Expired credit card',
+    ],
     supportedRuntimes: ['OCP Testing Studio', 'Xero'],
     lastExecution: {
       date: '2025-08-15T10:30:00Z',
       status: 'FAILED',
-      runtime: 'OCP Testing Studio'
-    }
+      runtime: 'OCP Testing Studio',
+    },
   },
   {
     id: 'TC-00145',
@@ -82,15 +118,15 @@ const mockTests: Test[] = [
       flow: 'Login',
       intent: 'Positive',
       experience: 'Web',
-      project: 'Core Banking'
+      project: 'Core Banking',
     },
     dataRequirements: ['Business account', 'Primary user'],
     supportedRuntimes: ['OCP Testing Studio', 'Sierra'],
     lastExecution: {
       date: '2025-08-18T14:22:00Z',
       status: 'PASSED',
-      runtime: 'Sierra'
-    }
+      runtime: 'Sierra',
+    },
   },
   {
     id: 'TC-00198',
@@ -101,11 +137,11 @@ const mockTests: Test[] = [
       flow: 'Transfer',
       intent: 'Positive',
       experience: 'Mobile',
-      project: 'Release Q3'
+      project: 'Release Q3',
     },
     dataRequirements: ['Active account', 'Primary user'],
     supportedRuntimes: ['OCP Testing Studio', 'Xero', 'Sierra'],
-    lastExecution: null
+    lastExecution: null,
   },
   {
     id: 'TC-00156',
@@ -116,15 +152,15 @@ const mockTests: Test[] = [
       flow: 'Inquiry',
       intent: 'Positive',
       experience: 'API',
-      project: 'Core Banking'
+      project: 'Core Banking',
     },
     dataRequirements: ['Checking account', 'Primary user'],
     supportedRuntimes: ['OCP Testing Studio', 'Xero'],
     lastExecution: {
       date: '2025-08-19T11:15:00Z',
       status: 'PASSED',
-      runtime: 'OCP Testing Studio'
-    }
+      runtime: 'OCP Testing Studio',
+    },
   },
   {
     id: 'TC-00258',
@@ -135,15 +171,15 @@ const mockTests: Test[] = [
       flow: 'Transfer',
       intent: 'Positive',
       experience: 'Mobile',
-      project: 'Banking App'
+      project: 'Banking App',
     },
     dataRequirements: ['Source account', 'Target account', 'Authorized user'],
     supportedRuntimes: ['OCP Testing Studio', 'Xero', 'Sierra'],
     lastExecution: {
       date: '2025-08-19T09:15:00Z',
       status: 'PASSED',
-      runtime: 'OCP Testing Studio'
-    }
+      runtime: 'OCP Testing Studio',
+    },
   },
   {
     id: 'TC-00167',
@@ -154,15 +190,15 @@ const mockTests: Test[] = [
       flow: 'Inquiry',
       intent: 'Positive',
       experience: 'Web',
-      project: 'Customer Portal'
+      project: 'Customer Portal',
     },
     dataRequirements: ['Premium account', 'Verified customer'],
     supportedRuntimes: ['Sierra', 'Xero'],
     lastExecution: {
       date: '2025-08-17T16:45:00Z',
       status: 'PASSED',
-      runtime: 'Sierra'
-    }
+      runtime: 'Sierra',
+    },
   },
   {
     id: 'TC-00178',
@@ -173,15 +209,15 @@ const mockTests: Test[] = [
       flow: 'Activation',
       intent: 'Positive',
       experience: 'Mobile',
-      project: 'Card Services'
+      project: 'Card Services',
     },
     dataRequirements: ['New card', 'Customer profile', 'Phone verification'],
     supportedRuntimes: ['OCP Testing Studio', 'Xero'],
     lastExecution: {
       date: '2025-08-16T13:30:00Z',
       status: 'FAILED',
-      runtime: 'Xero'
-    }
+      runtime: 'Xero',
+    },
   },
   {
     id: 'TC-00189',
@@ -192,15 +228,15 @@ const mockTests: Test[] = [
       flow: 'Payment',
       intent: 'Negative',
       experience: 'Web',
-      project: 'Payment Gateway'
+      project: 'Payment Gateway',
     },
     dataRequirements: ['Low balance account', 'Payment request'],
     supportedRuntimes: ['Sierra', 'OCP Testing Studio'],
     lastExecution: {
       date: '2025-08-20T07:45:00Z',
       status: 'PASSED',
-      runtime: 'Sierra'
-    }
+      runtime: 'Sierra',
+    },
   },
   {
     id: 'TC-00190',
@@ -211,15 +247,15 @@ const mockTests: Test[] = [
       flow: 'Login',
       intent: 'Positive',
       experience: 'Web',
-      project: 'Security Enhancement'
+      project: 'Security Enhancement',
     },
     dataRequirements: ['MFA enabled account', 'Mobile device', 'Email access'],
     supportedRuntimes: ['OCP Testing Studio', 'Sierra', 'Xero'],
     lastExecution: {
       date: '2025-08-19T15:20:00Z',
       status: 'PASSED',
-      runtime: 'OCP Testing Studio'
-    }
+      runtime: 'OCP Testing Studio',
+    },
   },
   {
     id: 'TC-00201',
@@ -230,15 +266,19 @@ const mockTests: Test[] = [
       flow: 'Transfer',
       intent: 'Positive',
       experience: 'Web',
-      project: 'International Banking'
+      project: 'International Banking',
     },
-    dataRequirements: ['Premium account', 'International recipient', 'Compliance documents'],
+    dataRequirements: [
+      'Premium account',
+      'International recipient',
+      'Compliance documents',
+    ],
     supportedRuntimes: ['Sierra', 'OCP Testing Studio'],
     lastExecution: {
       date: '2025-08-18T11:30:00Z',
       status: 'BLOCKED',
-      runtime: 'Sierra'
-    }
+      runtime: 'Sierra',
+    },
   },
   {
     id: 'TC-00212',
@@ -249,15 +289,15 @@ const mockTests: Test[] = [
       flow: 'Activation',
       intent: 'Positive',
       experience: 'Mobile',
-      project: 'Mobile Security'
+      project: 'Mobile Security',
     },
     dataRequirements: ['Mobile app user', 'Biometric capable device'],
     supportedRuntimes: ['OCP Testing Studio'],
     lastExecution: {
       date: '2025-08-17T14:15:00Z',
       status: 'SKIPPED',
-      runtime: 'OCP Testing Studio'
-    }
+      runtime: 'OCP Testing Studio',
+    },
   },
   {
     id: 'TC-00223',
@@ -268,15 +308,15 @@ const mockTests: Test[] = [
       flow: 'Inquiry',
       intent: 'Positive',
       experience: 'Web',
-      project: 'Document Services'
+      project: 'Document Services',
     },
     dataRequirements: ['Active account', 'Statement period data'],
     supportedRuntimes: ['Sierra', 'Xero', 'OCP Testing Studio'],
     lastExecution: {
       date: '2025-08-20T10:00:00Z',
       status: 'PASSED',
-      runtime: 'Xero'
-    }
+      runtime: 'Xero',
+    },
   },
   {
     id: 'TC-00234',
@@ -287,15 +327,19 @@ const mockTests: Test[] = [
       flow: 'Payment',
       intent: 'Positive',
       experience: 'Mobile',
-      project: 'Card Processing'
+      project: 'Card Processing',
     },
-    dataRequirements: ['Active credit card', 'Merchant account', 'Payment amount'],
+    dataRequirements: [
+      'Active credit card',
+      'Merchant account',
+      'Payment amount',
+    ],
     supportedRuntimes: ['OCP Testing Studio', 'Xero'],
     lastExecution: {
       date: '2025-08-19T12:45:00Z',
       status: 'PASSED',
-      runtime: 'Xero'
-    }
+      runtime: 'Xero',
+    },
   },
   {
     id: 'TC-00245',
@@ -306,12 +350,16 @@ const mockTests: Test[] = [
       flow: 'Login',
       intent: 'Positive',
       experience: 'Web',
-      project: 'Account Recovery'
+      project: 'Account Recovery',
     },
-    dataRequirements: ['User account', 'Security questions setup', 'Email access'],
+    dataRequirements: [
+      'User account',
+      'Security questions setup',
+      'Email access',
+    ],
     supportedRuntimes: ['Sierra', 'OCP Testing Studio'],
-    lastExecution: null
-  }
+    lastExecution: null,
+  },
 ];
 
 const ITEMS_PER_PAGE = 10;
@@ -333,35 +381,47 @@ export function ExecutionBuilder() {
   const [generatedYaml, setGeneratedYaml] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [selectAllPages, setSelectAllPages] = useState(false);
-  
+
   // Cart pagination state
   const [cartCurrentPage, setCartCurrentPage] = useState(1);
   const [cartSearchFilter, setCartSearchFilter] = useState<string>('all');
 
   const filteredTests = tests.filter(test => {
-    const matchesSearch = test.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         test.id.toLowerCase().includes(searchTerm.toLowerCase());
-    
-    const matchesFlujo = Array.isArray(filterFlujo) 
+    const matchesSearch =
+      test.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      test.id.toLowerCase().includes(searchTerm.toLowerCase());
+
+    const matchesFlujo = Array.isArray(filterFlujo)
       ? filterFlujo.includes('all') || filterFlujo.includes(test.labels.flow)
       : filterFlujo === 'all' || test.labels.flow === filterFlujo;
-    
-    const lastExecutionStatus = test.lastExecution?.status?.toLowerCase() || 'never';
+
+    const lastExecutionStatus =
+      test.lastExecution?.status?.toLowerCase() || 'never';
     const matchesStatus = Array.isArray(filterStatus)
-      ? filterStatus.includes('all') || filterStatus.includes(lastExecutionStatus)
+      ? filterStatus.includes('all') ||
+        filterStatus.includes(lastExecutionStatus)
       : filterStatus === 'all' || lastExecutionStatus === filterStatus;
-    
+
     const matchesRuntime = Array.isArray(filterRuntime)
-      ? filterRuntime.includes('all') || test.supportedRuntimes.some(runtime => filterRuntime.includes(runtime))
-      : filterRuntime === 'all' || test.supportedRuntimes.includes(filterRuntime);
-    
+      ? filterRuntime.includes('all') ||
+        test.supportedRuntimes.some(runtime => filterRuntime.includes(runtime))
+      : filterRuntime === 'all' ||
+        test.supportedRuntimes.includes(filterRuntime);
+
     const matchesTeam = Array.isArray(filterTeam)
       ? filterTeam.includes('all') || filterTeam.includes(test.team)
       : filterTeam === 'all' || test.team === filterTeam;
-    
+
     const notInCart = !cart.some(item => item.test.id === test.id);
 
-    return matchesSearch && matchesFlujo && matchesStatus && matchesRuntime && matchesTeam && notInCart;
+    return (
+      matchesSearch &&
+      matchesFlujo &&
+      matchesStatus &&
+      matchesRuntime &&
+      matchesTeam &&
+      notInCart
+    );
   });
 
   // Pagination calculations
@@ -379,7 +439,7 @@ export function ExecutionBuilder() {
   const getPageNumbers = () => {
     const pages = [];
     const maxVisiblePages = 5;
-    
+
     if (totalPages <= maxVisiblePages) {
       for (let i = 1; i <= totalPages; i++) {
         pages.push(i);
@@ -430,7 +490,7 @@ export function ExecutionBuilder() {
   const getCartPageNumbers = () => {
     const pages = [];
     const maxVisiblePages = 5;
-    
+
     if (cartTotalPages <= maxVisiblePages) {
       for (let i = 1; i <= cartTotalPages; i++) {
         pages.push(i);
@@ -492,9 +552,12 @@ export function ExecutionBuilder() {
       return;
     }
 
-    const testIds = lines.slice(1).map(line => line.trim()).filter(Boolean);
+    const testIds = lines
+      .slice(1)
+      .map(line => line.trim())
+      .filter(Boolean);
     const testsToAdd = tests.filter(test => testIds.includes(test.id));
-    
+
     const newCartItems = testsToAdd
       .filter(test => !cart.some(item => item.test.id === test.id))
       .map(test => ({ test }));
@@ -514,7 +577,7 @@ export function ExecutionBuilder() {
           referenceId: `REF-ACC-${Math.floor(Math.random() * 90000) + 10000}`,
           customerId: `CUST-${Math.floor(Math.random() * 90000) + 10000}`,
           assignedAt: new Date().toISOString(),
-          status: 'Assigned'
+          status: 'Assigned',
         };
         return { ...item, assignedTestData: mockTestData };
       }
@@ -529,27 +592,39 @@ export function ExecutionBuilder() {
       return;
     }
 
-    const executionId = `EX-${new Date().toISOString().slice(0, 10).replace(/-/g, '')}-${Math.floor(Math.random() * 1000).toString().padStart(3, '0')}`;
-    
+    const executionId = `EX-${new Date().toISOString().slice(0, 10).replace(/-/g, '')}-${Math.floor(
+      Math.random() * 1000
+    )
+      .toString()
+      .padStart(3, '0')}`;
+
     const yaml = `executionId: ${executionId}
 createdAt: ${new Date().toISOString()}
 runtime: ${selectedRuntime}
 tests:
-${cart.map(item => `  - id: ${item.test.id}
+${cart
+  .map(
+    item => `  - id: ${item.test.id}
     name: ${item.test.name}
     goldenDialogId: GD-${item.test.id.slice(-3)}
     dialogGroupIdFile:
       bucket: my-test-dialogs
       path: golden-dialogs/${item.test.labels.flow.toLowerCase()}-flow/dialog-${item.test.id.slice(-3)}.yaml
     dataRequirements:
-${item.test.dataRequirements.map(req => `      - ${req}`).join('\n')}${item.assignedTestData ? `
+${item.test.dataRequirements.map(req => `      - ${req}`).join('\n')}${
+      item.assignedTestData
+        ? `
     testData:
       id: ${item.assignedTestData.id}
       accountId: ${item.assignedTestData.accountId}
       referenceId: ${item.assignedTestData.referenceId}
       customerId: ${item.assignedTestData.customerId}
       assignedAt: ${item.assignedTestData.assignedAt}
-      status: ${item.assignedTestData.status}` : ''}`).join('\n')}`;
+      status: ${item.assignedTestData.status}`
+        : ''
+    }`
+  )
+  .join('\n')}`;
 
     setGeneratedYaml(yaml);
     setShowYamlDialog(true);
@@ -564,7 +639,11 @@ ${item.test.dataRequirements.map(req => `      - ${req}`).join('\n')}${item.assi
   const downloadYaml = () => {
     const yaml = generatedYaml;
     if (yaml) {
-      const executionId = `EX-${new Date().toISOString().slice(0, 10).replace(/-/g, '')}-${Math.floor(Math.random() * 1000).toString().padStart(3, '0')}`;
+      const executionId = `EX-${new Date().toISOString().slice(0, 10).replace(/-/g, '')}-${Math.floor(
+        Math.random() * 1000
+      )
+        .toString()
+        .padStart(3, '0')}`;
       const blob = new Blob([yaml], { type: 'text/yaml' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -600,8 +679,8 @@ ${item.test.dataRequirements.map(req => `      - ${req}`).join('\n')}${item.assi
         { value: 'Login', label: 'Login' },
         { value: 'Transfer', label: 'Transfer' },
         { value: 'Inquiry', label: 'Inquiry' },
-        { value: 'Activation', label: 'Activation' }
-      ]
+        { value: 'Activation', label: 'Activation' },
+      ],
     },
     {
       key: 'status',
@@ -614,8 +693,8 @@ ${item.test.dataRequirements.map(req => `      - ${req}`).join('\n')}${item.assi
         { value: 'all', label: 'All' },
         { value: 'passed', label: 'Passed' },
         { value: 'failed', label: 'Failed' },
-        { value: 'never', label: 'Never Run' }
-      ]
+        { value: 'never', label: 'Never Run' },
+      ],
     },
     {
       key: 'runtime',
@@ -628,8 +707,8 @@ ${item.test.dataRequirements.map(req => `      - ${req}`).join('\n')}${item.assi
         { value: 'all', label: 'All' },
         { value: 'OCP Testing Studio', label: 'OCP Testing Studio' },
         { value: 'Xero', label: 'Xero' },
-        { value: 'Sierra', label: 'Sierra' }
-      ]
+        { value: 'Sierra', label: 'Sierra' },
+      ],
     },
     {
       key: 'team',
@@ -643,11 +722,10 @@ ${item.test.dataRequirements.map(req => `      - ${req}`).join('\n')}${item.assi
         { value: 'QA Team', label: 'QA Team' },
         { value: 'Core Team', label: 'Core Team' },
         { value: 'Mobile Team', label: 'Mobile Team' },
-        { value: 'Web Team', label: 'Web Team' }
-      ]
-    }
+        { value: 'Web Team', label: 'Web Team' },
+      ],
+    },
   ];
-
 
   // Add to cart functionality
   const handleSelectTest = (testId: string, checked: boolean) => {
@@ -696,20 +774,26 @@ ${item.test.dataRequirements.map(req => `      - ${req}`).join('\n')}${item.assi
     const newCartItems = testsToAdd
       .filter(test => !cart.some(item => item.test.id === test.id))
       .map(test => ({ test }));
-    
+
     setCart([...cart, ...newCartItems]);
     setSelectedTests(new Set()); // Clear selection after adding
   };
 
   const selectedCount = selectedTests.size;
-  const isCurrentPageSelected = paginatedTests.length > 0 && paginatedTests.every(test => selectedTests.has(test.id));
-  const isAllPagesSelected = filteredTests.length > 0 && filteredTests.every(test => selectedTests.has(test.id));
-  const isAllSelected = selectAllPages ? isAllPagesSelected : isCurrentPageSelected;
+  const isCurrentPageSelected =
+    paginatedTests.length > 0 &&
+    paginatedTests.every(test => selectedTests.has(test.id));
+  const isAllPagesSelected =
+    filteredTests.length > 0 &&
+    filteredTests.every(test => selectedTests.has(test.id));
+  const isAllSelected = selectAllPages
+    ? isAllPagesSelected
+    : isCurrentPageSelected;
   const isIndeterminate = selectedCount > 0 && !isAllSelected;
 
   return (
     <>
-      <div className="grid grid-cols-12 gap-6 h-[calc(100vh-200px)]">
+      <div className="grid h-[calc(100vh-200px)] grid-cols-12 gap-6">
         {/* Left Panel - Test Search and Filters */}
         <div className="col-span-5 space-y-4">
           <SearchAndFilters
@@ -740,7 +824,7 @@ ${item.test.dataRequirements.map(req => `      - ${req}`).join('\n')}${item.assi
               <Dialog open={showCsvDialog} onOpenChange={setShowCsvDialog}>
                 <DialogTrigger asChild>
                   <Button size="sm" variant="outline" className="flex-1">
-                    <Upload className="w-4 h-4 mr-2" />
+                    <Upload className="mr-2 h-4 w-4" />
                     Import CSV
                   </Button>
                 </DialogTrigger>
@@ -753,9 +837,11 @@ ${item.test.dataRequirements.map(req => `      - ${req}`).join('\n')}${item.assi
                   </DialogHeader>
                   <div className="space-y-4">
                     <div>
-                      <label className="text-sm font-medium">Expected format:</label>
-                      <pre className="text-xs bg-gray-100 p-2 rounded mt-1">
-{`testId
+                      <label className="text-sm font-medium">
+                        Expected format:
+                      </label>
+                      <pre className="mt-1 rounded bg-gray-100 p-2 text-xs">
+                        {`testId
 TC-00123
 TC-00145
 TC-00198`}
@@ -764,14 +850,18 @@ TC-00198`}
                     <Textarea
                       placeholder="Paste your CSV here..."
                       value={csvInput}
-                      onChange={(e) => setCsvInput(e.target.value)}
+                      onChange={e => setCsvInput(e.target.value)}
                       rows={8}
                     />
                     <div className="flex gap-2">
                       <Button onClick={handleCsvImport} className="flex-1">
                         Import
                       </Button>
-                      <Button variant="outline" onClick={() => setShowCsvDialog(false)} className="flex-1">
+                      <Button
+                        variant="outline"
+                        onClick={() => setShowCsvDialog(false)}
+                        className="flex-1"
+                      >
                         Cancel
                       </Button>
                     </div>
@@ -780,7 +870,7 @@ TC-00198`}
               </Dialog>
               {selectedTests.size > 0 && (
                 <Button onClick={addSelectedToCart} className="flex-1">
-                  <ShoppingCart className="w-4 h-4 mr-2" />
+                  <ShoppingCart className="mr-2 h-4 w-4" />
                   Add to Cart ({selectedTests.size})
                 </Button>
               )}
@@ -804,18 +894,23 @@ TC-00198`}
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {paginatedTests.map((test) => (
+                    {paginatedTests.map(test => (
                       <TableRow key={test.id}>
                         <TableCell>
                           <Checkbox
                             checked={selectedTests.has(test.id)}
-                            onCheckedChange={(checked) => handleSelectTest(test.id, checked as boolean)}
+                            onCheckedChange={checked =>
+                              handleSelectTest(test.id, checked as boolean)
+                            }
                           />
                         </TableCell>
                         <TableCell>
                           <div>
-                            <div className="font-medium text-sm">{test.id}</div>
-                            <div className="text-xs text-gray-600 truncate" title={test.name}>
+                            <div className="text-sm font-medium">{test.id}</div>
+                            <div
+                              className="truncate text-xs text-gray-600"
+                              title={test.name}
+                            >
                               {test.name}
                             </div>
                           </div>
@@ -831,11 +926,8 @@ TC-00198`}
                           </div>
                         </TableCell>
                         <TableCell>
-                          <Button
-                            size="sm"
-                            onClick={() => addToCart(test)}
-                          >
-                            <Plus className="w-4 h-4" />
+                          <Button size="sm" onClick={() => addToCart(test)}>
+                            <Plus className="h-4 w-4" />
                           </Button>
                         </TableCell>
                       </TableRow>
@@ -844,45 +936,58 @@ TC-00198`}
                 </Table>
               </div>
             </CardContent>
-            
+
             {/* Pagination */}
             {totalPages > 1 && (
               <div className="border-t px-6 py-4">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-4">
                     <p className="text-sm text-muted-foreground">
-                      Showing {startIndex + 1} to {Math.min(endIndex, filteredTests.length)} of {filteredTests.length} results
+                      Showing {startIndex + 1} to{' '}
+                      {Math.min(endIndex, filteredTests.length)} of{' '}
+                      {filteredTests.length} results
                     </p>
                     {filteredTests.length > ITEMS_PER_PAGE && (
                       <div className="flex items-center gap-2">
                         <Checkbox
                           id="select-all-pages-execution"
                           checked={selectAllPages}
-                          onCheckedChange={(checked) => {
-                        setSelectAllPages(checked as boolean);
-                        // If selecting across all pages and no items are selected, select all
-                        if (checked && selectedCount === 0) {
-                          const allIds = new Set(filteredTests.map(test => test.id));
-                          setSelectedTests(allIds);
-                        }
-                      }}
+                          onCheckedChange={checked => {
+                            setSelectAllPages(checked as boolean);
+                            // If selecting across all pages and no items are selected, select all
+                            if (checked && selectedCount === 0) {
+                              const allIds = new Set(
+                                filteredTests.map(test => test.id)
+                              );
+                              setSelectedTests(allIds);
+                            }
+                          }}
                         />
-                        <label htmlFor="select-all-pages-execution" className="text-sm text-muted-foreground cursor-pointer">
+                        <label
+                          htmlFor="select-all-pages-execution"
+                          className="cursor-pointer text-sm text-muted-foreground"
+                        >
                           Select across all pages
                         </label>
                       </div>
                     )}
                   </div>
-                  
+
                   <Pagination>
                     <PaginationContent>
                       <PaginationItem>
-                        <PaginationPrevious 
-                          onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-                          className={currentPage === 1 ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+                        <PaginationPrevious
+                          onClick={() =>
+                            setCurrentPage(prev => Math.max(1, prev - 1))
+                          }
+                          className={
+                            currentPage === 1
+                              ? 'pointer-events-none opacity-50'
+                              : 'cursor-pointer'
+                          }
                         />
                       </PaginationItem>
-                      
+
                       {getPageNumbers().map((page, index) => (
                         <PaginationItem key={index}>
                           {page === 'ellipsis' ? (
@@ -898,11 +1003,19 @@ TC-00198`}
                           )}
                         </PaginationItem>
                       ))}
-                      
+
                       <PaginationItem>
                         <PaginationNext
-                          onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
-                          className={currentPage === totalPages ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+                          onClick={() =>
+                            setCurrentPage(prev =>
+                              Math.min(totalPages, prev + 1)
+                            )
+                          }
+                          className={
+                            currentPage === totalPages
+                              ? 'pointer-events-none opacity-50'
+                              : 'cursor-pointer'
+                          }
                         />
                       </PaginationItem>
                     </PaginationContent>
@@ -917,14 +1030,14 @@ TC-00198`}
         <div className="col-span-7 space-y-4">
           <Card>
             <CardHeader>
-              <div className="flex justify-between items-center">
+              <div className="flex items-center justify-between">
                 <CardTitle className="flex items-center gap-2">
-                  <ShoppingCart className="w-5 h-5" />
+                  <ShoppingCart className="h-5 w-5" />
                   Execution Cart ({cart.length})
                 </CardTitle>
                 <div className="flex gap-2">
                   <Button size="sm" variant="outline" onClick={clearCart}>
-                    <Trash2 className="w-4 h-4 mr-2" />
+                    <Trash2 className="mr-2 h-4 w-4" />
                     Clear
                   </Button>
                 </div>
@@ -932,18 +1045,23 @@ TC-00198`}
             </CardHeader>
             <CardContent>
               {cart.length === 0 ? (
-                <div className="text-center py-8 text-gray-500">
-                  <ShoppingCart className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+                <div className="py-8 text-center text-gray-500">
+                  <ShoppingCart className="mx-auto mb-4 h-12 w-12 text-gray-300" />
                   <p>No tests in cart</p>
                   <p className="text-sm">Select tests from the left list</p>
                 </div>
               ) : (
                 <div className="space-y-4">
                   {/* Cart Filter Controls */}
-                  <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg">
-                    <div className="flex items-center gap-4 flex-1">
-                      <label className="text-sm font-medium text-gray-700">Filter by Flow:</label>
-                      <Select value={cartSearchFilter} onValueChange={setCartSearchFilter}>
+                  <div className="flex items-center gap-4 rounded-lg bg-gray-50 p-4">
+                    <div className="flex flex-1 items-center gap-4">
+                      <label className="text-sm font-medium text-gray-700">
+                        Filter by Flow:
+                      </label>
+                      <Select
+                        value={cartSearchFilter}
+                        onValueChange={setCartSearchFilter}
+                      >
                         <SelectTrigger className="w-48">
                           <SelectValue placeholder="Filter by flow" />
                         </SelectTrigger>
@@ -957,17 +1075,19 @@ TC-00198`}
                         </SelectContent>
                       </Select>
                       <span className="text-sm text-gray-600">
-                        Showing {cartStartIndex + 1} to {Math.min(cartEndIndex, filteredCart.length)} of {filteredCart.length} items
+                        Showing {cartStartIndex + 1} to{' '}
+                        {Math.min(cartEndIndex, filteredCart.length)} of{' '}
+                        {filteredCart.length} items
                       </span>
                     </div>
                     {cartSearchFilter !== 'all' && filteredCart.length > 0 && (
-                      <Button 
-                        size="sm" 
-                        variant="outline" 
+                      <Button
+                        size="sm"
+                        variant="outline"
                         onClick={removeFromFilteredCart}
-                        className="text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200"
+                        className="border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700"
                       >
-                        <Trash2 className="w-4 h-4 mr-2" />
+                        <Trash2 className="mr-2 h-4 w-4" />
                         Remove Filtered ({filteredCart.length})
                       </Button>
                     )}
@@ -984,91 +1104,124 @@ TC-00198`}
                         </TableRow>
                       </TableHeader>
                       <TableBody>
-                        {paginatedCart.map((item) => (
-                        <TableRow key={item.test.id}>
-                          <TableCell>
-                            <div>
-                              <div className="font-medium text-sm">{item.test.id}</div>
-                              <div className="text-xs text-gray-600">{item.test.labels.flow}</div>
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            <div className="text-xs">
-                              {item.test.dataRequirements.slice(0, 2).join(', ')}
-                              {item.test.dataRequirements.length > 2 && ' ...'}
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            {item.assignedTestData ? (
-                              <div className="text-xs">
-                                <div className="font-mono">{item.assignedTestData.id}</div>
-                                <div className="text-gray-500">{item.assignedTestData.referenceId}</div>
-                                <Badge className="bg-green-100 text-green-800 text-xs">
-                                  {item.assignedTestData.status}
-                                </Badge>
+                        {paginatedCart.map(item => (
+                          <TableRow key={item.test.id}>
+                            <TableCell>
+                              <div>
+                                <div className="text-sm font-medium">
+                                  {item.test.id}
+                                </div>
+                                <div className="text-xs text-gray-600">
+                                  {item.test.labels.flow}
+                                </div>
                               </div>
-                            ) : (
-                              <Badge variant="outline" className="text-xs">Not assigned</Badge>
-                            )}
-                          </TableCell>
-                          <TableCell>
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => removeFromCart(item.test.id)}
-                            >
-                              <X className="w-4 h-4" />
-                            </Button>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </div>
-
-                {/* Cart Pagination */}
-                {cartTotalPages > 1 && (
-                  <div className="flex items-center justify-between pt-4">
-                    <p className="text-sm text-muted-foreground">
-                      Showing {cartStartIndex + 1} to {Math.min(cartEndIndex, filteredCart.length)} of {filteredCart.length} items
-                    </p>
-                    
-                    <Pagination>
-                      <PaginationContent>
-                        <PaginationItem>
-                          <PaginationPrevious 
-                            onClick={() => setCartCurrentPage(prev => Math.max(1, prev - 1))}
-                            className={cartCurrentPage === 1 ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
-                          />
-                        </PaginationItem>
-                        
-                        {getCartPageNumbers().map((page, index) => (
-                          <PaginationItem key={index}>
-                            {page === 'ellipsis' ? (
-                              <PaginationEllipsis />
-                            ) : (
-                              <PaginationLink
-                                onClick={() => setCartCurrentPage(page as number)}
-                                isActive={cartCurrentPage === page}
-                                className="cursor-pointer"
+                            </TableCell>
+                            <TableCell>
+                              <div className="text-xs">
+                                {item.test.dataRequirements
+                                  .slice(0, 2)
+                                  .join(', ')}
+                                {item.test.dataRequirements.length > 2 &&
+                                  ' ...'}
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              {item.assignedTestData ? (
+                                <div className="text-xs">
+                                  <div className="font-mono">
+                                    {item.assignedTestData.id}
+                                  </div>
+                                  <div className="text-gray-500">
+                                    {item.assignedTestData.referenceId}
+                                  </div>
+                                  <Badge className="bg-green-100 text-xs text-green-800">
+                                    {item.assignedTestData.status}
+                                  </Badge>
+                                </div>
+                              ) : (
+                                <Badge variant="outline" className="text-xs">
+                                  Not assigned
+                                </Badge>
+                              )}
+                            </TableCell>
+                            <TableCell>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => removeFromCart(item.test.id)}
                               >
-                                {page}
-                              </PaginationLink>
-                            )}
-                          </PaginationItem>
+                                <X className="h-4 w-4" />
+                              </Button>
+                            </TableCell>
+                          </TableRow>
                         ))}
-                        
-                        <PaginationItem>
-                          <PaginationNext
-                            onClick={() => setCartCurrentPage(prev => Math.min(cartTotalPages, prev + 1))}
-                            className={cartCurrentPage === cartTotalPages ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
-                          />
-                        </PaginationItem>
-                      </PaginationContent>
-                    </Pagination>
+                      </TableBody>
+                    </Table>
                   </div>
-                )}
-              </div>
+
+                  {/* Cart Pagination */}
+                  {cartTotalPages > 1 && (
+                    <div className="flex items-center justify-between pt-4">
+                      <p className="text-sm text-muted-foreground">
+                        Showing {cartStartIndex + 1} to{' '}
+                        {Math.min(cartEndIndex, filteredCart.length)} of{' '}
+                        {filteredCart.length} items
+                      </p>
+
+                      <Pagination>
+                        <PaginationContent>
+                          <PaginationItem>
+                            <PaginationPrevious
+                              onClick={() =>
+                                setCartCurrentPage(prev =>
+                                  Math.max(1, prev - 1)
+                                )
+                              }
+                              className={
+                                cartCurrentPage === 1
+                                  ? 'pointer-events-none opacity-50'
+                                  : 'cursor-pointer'
+                              }
+                            />
+                          </PaginationItem>
+
+                          {getCartPageNumbers().map((page, index) => (
+                            <PaginationItem key={index}>
+                              {page === 'ellipsis' ? (
+                                <PaginationEllipsis />
+                              ) : (
+                                <PaginationLink
+                                  onClick={() =>
+                                    setCartCurrentPage(page as number)
+                                  }
+                                  isActive={cartCurrentPage === page}
+                                  className="cursor-pointer"
+                                >
+                                  {page}
+                                </PaginationLink>
+                              )}
+                            </PaginationItem>
+                          ))}
+
+                          <PaginationItem>
+                            <PaginationNext
+                              onClick={() =>
+                                setCartCurrentPage(prev =>
+                                  Math.min(cartTotalPages, prev + 1)
+                                )
+                              }
+                              className={
+                                cartCurrentPage === cartTotalPages
+                                  ? 'pointer-events-none opacity-50'
+                                  : 'cursor-pointer'
+                              }
+                            />
+                          </PaginationItem>
+                        </PaginationContent>
+                      </Pagination>
+                    </div>
+                  )}
+                </div>
               )}
             </CardContent>
           </Card>
@@ -1080,13 +1233,20 @@ TC-00198`}
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <label className="text-sm font-medium">Execution Runtime *</label>
-                <Select value={selectedRuntime} onValueChange={setSelectedRuntime}>
+                <label className="text-sm font-medium">
+                  Execution Runtime *
+                </label>
+                <Select
+                  value={selectedRuntime}
+                  onValueChange={setSelectedRuntime}
+                >
                   <SelectTrigger>
                     <SelectValue placeholder="Select runtime to execute" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="OCP Testing Studio">OCP Testing Studio</SelectItem>
+                    <SelectItem value="OCP Testing Studio">
+                      OCP Testing Studio
+                    </SelectItem>
                     <SelectItem value="Xero">Xero</SelectItem>
                     <SelectItem value="Sierra">Sierra</SelectItem>
                   </SelectContent>
@@ -1094,29 +1254,28 @@ TC-00198`}
               </div>
 
               <div className="flex gap-2">
-                <Button 
-                  onClick={assignTestData} 
+                <Button
+                  onClick={assignTestData}
                   variant="outline"
                   disabled={cart.length === 0}
                   className="flex-1"
                 >
                   Assign Test Data Automatically
                 </Button>
-                <Button 
-                  onClick={handleExportYaml}
-                  className="flex-1"
-                >
-                  <FileText className="w-4 h-4 mr-2" />
+                <Button onClick={handleExportYaml} className="flex-1">
+                  <FileText className="mr-2 h-4 w-4" />
                   Export Execution YAML
                 </Button>
               </div>
 
               {cart.length > 0 && selectedRuntime && (
-                <div className="text-sm text-gray-600 p-3 bg-blue-50 rounded-md">
-                  <strong>Summary:</strong> {cart.length} tests selected to run on {selectedRuntime}.
+                <div className="rounded-md bg-blue-50 p-3 text-sm text-gray-600">
+                  <strong>Summary:</strong> {cart.length} tests selected to run
+                  on {selectedRuntime}.
                   {cart.filter(item => item.assignedTestData).length > 0 && (
                     <div className="mt-1">
-                      ✓ {cart.filter(item => item.assignedTestData).length} tests have assigned test data
+                      ✓ {cart.filter(item => item.assignedTestData).length}{' '}
+                      tests have assigned test data
                     </div>
                   )}
                 </div>
@@ -1135,20 +1294,20 @@ TC-00198`}
               Please complete the required fields before proceeding.
             </DialogDescription>
           </DialogHeader>
-          <div className="flex flex-col items-center text-center space-y-6 p-6">
-            <div className="w-16 h-16 bg-gray-100 rounded-2xl flex items-center justify-center">
-              <AlertTriangle className="w-10 h-10 text-orange-500" />
+          <div className="flex flex-col items-center space-y-6 p-6 text-center">
+            <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-gray-100">
+              <AlertTriangle className="h-10 w-10 text-orange-500" />
             </div>
-            
+
             <div className="space-y-2">
               <h3 className="text-lg font-semibold text-gray-900">
                 Select at least one test and one runtime
               </h3>
             </div>
 
-            <Button 
+            <Button
               onClick={() => setShowValidationModal(false)}
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+              className="w-full bg-blue-600 text-white hover:bg-blue-700"
             >
               OK
             </Button>
@@ -1158,9 +1317,9 @@ TC-00198`}
 
       {/* YAML Export Dialog */}
       <Dialog open={showYamlDialog} onOpenChange={setShowYamlDialog}>
-        <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+        <DialogContent className="max-h-[80vh] max-w-4xl overflow-y-auto">
           <DialogHeader>
-            <div className="flex justify-between items-center">
+            <div className="flex items-center justify-between">
               <div>
                 <DialogTitle>Execution YAML</DialogTitle>
                 <DialogDescription>
@@ -1168,12 +1327,16 @@ TC-00198`}
                 </DialogDescription>
               </div>
               <div className="flex gap-2">
-                <Button size="sm" variant="outline" onClick={copyYamlToClipboard}>
-                  <Copy className="w-4 h-4 mr-2" />
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={copyYamlToClipboard}
+                >
+                  <Copy className="mr-2 h-4 w-4" />
                   Copy
                 </Button>
                 <Button size="sm" onClick={downloadYaml}>
-                  <Download className="w-4 h-4 mr-2" />
+                  <Download className="mr-2 h-4 w-4" />
                   Download
                 </Button>
               </div>
@@ -1183,7 +1346,7 @@ TC-00198`}
             <Textarea
               value={generatedYaml}
               readOnly
-              className="font-mono text-sm min-h-[500px] resize-none"
+              className="min-h-[500px] resize-none font-mono text-sm"
             />
           </div>
         </DialogContent>

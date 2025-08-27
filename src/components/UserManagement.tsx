@@ -1,3 +1,5 @@
+import { useEffect, useState } from 'react';
+
 import {
   Edit,
   Eye,
@@ -10,9 +12,10 @@ import {
   UserCheck,
   Users,
 } from 'lucide-react';
-import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
+
 import { configService, UserConfig } from '../services/configService';
+
 import { UserProfile } from './Login';
 import {
   AlertDialog,
@@ -166,7 +169,6 @@ export function UserManagement() {
     newPassword: '',
     confirmPassword: '',
   });
-
 
   const getProfileBadge = (profile: UserProfile) => {
     if (!userConfig) return null;
