@@ -1,5 +1,7 @@
 # Service Layer Architecture
 
+https://javierhbr.github.io/test-inventory/
+
 This document explains the service layer implementation that separates business logic from UI components.
 
 ## Architecture Overview
