@@ -16,21 +16,28 @@ interface Test {
   name: string;
   flow: string;
   labels: {
-    flujo: string;
+    flow: string;
     intent: string;
     experience: string;
-    proyecto: string;
+    project: string;
   };
   dataRequirements: string[];
   supportedRuntimes: string[];
-  lastExecution: any;
+  lastExecution: {
+    date: string;
+    status: 'PASSED' | 'FAILED' | 'SKIPPED' | 'BLOCKED';
+    runtime: string;
+  } | null;
   lastModified: string;
   version: string;
+  team: string;
 }
 
 interface CreateTestDialogProps {
   children: React.ReactNode;
   onTestCreated: (test: Test) => void;
+  editTest?: Test;
+  onClose?: () => void;
 }
 
 const availableClassifications = [
@@ -51,8 +58,8 @@ const availableRuntimes = [
   'Sierra'
 ];
 
-export function CreateTestDialog({ children, onTestCreated }: CreateTestDialogProps) {
-  const [open, setOpen] = useState(false);
+export function CreateTestDialog({ children, onTestCreated, editTest, onClose }: CreateTestDialogProps) {
+  const [open, setOpen] = useState(!!editTest);
   const [activeTab, setActiveTab] = useState('runtime');
   
   // Common form fields
@@ -63,10 +70,11 @@ export function CreateTestDialog({ children, onTestCreated }: CreateTestDialogPr
   const [module, setModule] = useState('');
   
   // Labels
-  const [labelFlujo, setLabelFlujo] = useState('');
+  const [labelFlow, setLabelFlow] = useState('');
   const [labelIntent, setLabelIntent] = useState('');
   const [labelExperience, setLabelExperience] = useState('');
-  const [labelProyecto, setLabelProyecto] = useState('');
+  const [labelProject, setLabelProject] = useState('');
+  const [team, setTeam] = useState('');
   
   // Data requirements and runtimes
   const [selectedClassifications, setSelectedClassifications] = useState<string[]>([]);
@@ -88,10 +96,11 @@ export function CreateTestDialog({ children, onTestCreated }: CreateTestDialogPr
     setGoldenDialogId('');
     setPriority('Medium');
     setModule('');
-    setLabelFlujo('');
+    setLabelFlow('');
     setLabelIntent('');
     setLabelExperience('');
-    setLabelProyecto('');
+    setLabelProject('');
+    setTeam('');
     setSelectedClassifications([]);
     setSelectedRuntimes([]);
     setDialogGroupId('');
@@ -100,6 +109,22 @@ export function CreateTestDialog({ children, onTestCreated }: CreateTestDialogPr
     setGoldenDialogFile(null);
     setActiveTab('runtime');
   };
+
+  // Initialize form with edit data
+  React.useEffect(() => {
+    if (editTest) {
+      setName(editTest.name);
+      setFlow(editTest.flow);
+      setLabelFlow(editTest.labels.flow);
+      setLabelIntent(editTest.labels.intent);
+      setLabelExperience(editTest.labels.experience);
+      setLabelProject(editTest.labels.project);
+      setTeam(editTest.team);
+      setSelectedClassifications(editTest.dataRequirements);
+      setSelectedRuntimes(editTest.supportedRuntimes);
+      setOpen(true);
+    }
+  }, [editTest]);
 
   const handleClassificationChange = (classification: string, checked: boolean) => {
     if (checked) {
@@ -170,41 +195,48 @@ export function CreateTestDialog({ children, onTestCreated }: CreateTestDialogPr
     }
 
     const newTest: Test = {
-      id: generateTestId(),
+      id: editTest ? editTest.id : generateTestId(),
       name,
       flow,
       labels: {
-        flujo: labelFlujo,
+        flow: labelFlow,
         intent: labelIntent,
         experience: labelExperience,
-        proyecto: labelProyecto
+        project: labelProject
       },
       dataRequirements: selectedClassifications,
       supportedRuntimes: selectedRuntimes,
-      lastExecution: null,
+      lastExecution: editTest ? editTest.lastExecution : null,
       lastModified: new Date().toISOString(),
-      version: 'v1.0'
+      version: editTest ? editTest.version : 'v1.0',
+      team
     };
 
     onTestCreated(newTest);
     setOpen(false);
     resetForm();
+    if (onClose) onClose();
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={(isOpen) => {
+      setOpen(isOpen);
+      if (!isOpen && onClose) onClose();
+    }}>
       <DialogTrigger asChild>
         {children}
       </DialogTrigger>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>Create New Test</DialogTitle>
-          <DialogDescription>
-            Create a new test case specifying its characteristics and requirements
+      <DialogContent className="flex h-[90vh] !w-[50vw] !max-w-[50vw] flex-col bg-gradient-to-br from-white to-gray-50 p-0 sm:!max-w-[50vw]">
+        <DialogHeader className="shrink-0 border-b border-gray-200 px-6 pb-4 pt-6">
+          <DialogTitle className="text-2xl font-bold text-gray-900">{editTest ? 'Edit Test' : 'Create New Test'}</DialogTitle>
+          <DialogDescription className="text-lg font-medium text-gray-700">
+            {editTest ? 'Update test case information and requirements' : 'Create a new test case specifying its characteristics and requirements'}
           </DialogDescription>
         </DialogHeader>
-
-        <form onSubmit={handleSubmit} className="space-y-6">
+        
+        <div className="flex-1 overflow-hidden p-6">
+          <div className="h-full overflow-y-auto">
+            <form onSubmit={handleSubmit} className="space-y-6">
           <Tabs value={activeTab} onValueChange={setActiveTab}>
             <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="runtime">By Runtime ID</TabsTrigger>
@@ -370,11 +402,11 @@ export function CreateTestDialog({ children, onTestCreated }: CreateTestDialogPr
               <CardContent>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <Label htmlFor="labelFlujo">Flow</Label>
+                    <Label htmlFor="labelFlow">Flow</Label>
                     <Input
-                      id="labelFlujo"
-                      value={labelFlujo}
-                      onChange={(e) => setLabelFlujo(e.target.value)}
+                      id="labelFlow"
+                      value={labelFlow}
+                      onChange={(e) => setLabelFlow(e.target.value)}
                       placeholder="E.g.: Payment, Login, Transfer"
                     />
                   </div>
@@ -405,13 +437,27 @@ export function CreateTestDialog({ children, onTestCreated }: CreateTestDialogPr
                     </Select>
                   </div>
                   <div>
-                    <Label htmlFor="labelProyecto">Project</Label>
+                    <Label htmlFor="labelProject">Project</Label>
                     <Input
-                      id="labelProyecto"
-                      value={labelProyecto}
-                      onChange={(e) => setLabelProyecto(e.target.value)}
+                      id="labelProject"
+                      value={labelProject}
+                      onChange={(e) => setLabelProject(e.target.value)}
                       placeholder="E.g.: Release Q3, Core Banking"
                     />
+                  </div>
+                  <div>
+                    <Label htmlFor="team">Team</Label>
+                    <Select value={team} onValueChange={setTeam}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select team" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="QA Team">QA Team</SelectItem>
+                        <SelectItem value="Core Team">Core Team</SelectItem>
+                        <SelectItem value="Mobile Team">Mobile Team</SelectItem>
+                        <SelectItem value="Web Team">Web Team</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
                 </div>
               </CardContent>
@@ -547,19 +593,24 @@ export function CreateTestDialog({ children, onTestCreated }: CreateTestDialogPr
 
             <div className="flex gap-4 pt-6">
               <Button type="submit" className="flex-1">
-                Create Test
+                {editTest ? 'Update Test' : 'Create Test'}
               </Button>
               <Button 
                 type="button" 
                 variant="outline" 
-                onClick={() => setOpen(false)}
+                onClick={() => {
+                  setOpen(false);
+                  if (onClose) onClose();
+                }}
                 className="flex-1"
               >
                 Cancel
               </Button>
             </div>
           </Tabs>
-        </form>
+            </form>
+          </div>
+        </div>
       </DialogContent>
     </Dialog>
   );

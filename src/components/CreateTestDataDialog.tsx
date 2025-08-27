@@ -226,15 +226,17 @@ export function CreateTestDataDialog({ children, onTestDataCreated }: CreateTest
       <DialogTrigger asChild>
         {children}
       </DialogTrigger>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>Create New Test Data</DialogTitle>
-          <DialogDescription>
+      <DialogContent className="flex h-[90vh] !w-[50vw] !max-w-[50vw] flex-col bg-gradient-to-br from-white to-gray-50 p-0 sm:!max-w-[50vw]">
+        <DialogHeader className="shrink-0 border-b border-gray-200 px-6 pb-4 pt-6">
+          <DialogTitle className="text-2xl font-bold text-gray-900">Create New Test Data</DialogTitle>
+          <DialogDescription className="text-lg font-medium text-gray-700">
             Create new test data through account/entity APIs. Data will be generated automatically.
           </DialogDescription>
         </DialogHeader>
-
-        <form onSubmit={handleSubmit} className="space-y-6">
+        
+        <div className="flex-1 overflow-hidden p-6">
+          <div className="h-full overflow-y-auto">
+            <form onSubmit={handleSubmit} className="space-y-6">
           {/* API Creation Notice */}
           <Card className="border-blue-200 bg-blue-50">
             <CardHeader>
@@ -498,7 +500,9 @@ export function CreateTestDataDialog({ children, onTestDataCreated }: CreateTest
               Cancel
             </Button>
           </div>
-        </form>
+            </form>
+          </div>
+        </div>
       </DialogContent>
     </Dialog>
   );

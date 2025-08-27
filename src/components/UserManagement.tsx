@@ -1,24 +1,66 @@
-import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
+import {
+  Edit,
+  Eye,
+  EyeOff,
+  Key,
+  Plus,
+  Search,
+  Shield,
+  Trash2,
+  UserCheck,
+  Users,
+} from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { toast } from 'sonner';
+import { configService, UserConfig } from '../services/configService';
+import { UserProfile } from './Login';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from './ui/alert-dialog';
+import { Badge } from './ui/badge';
 import { Button } from './ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
+import { Checkbox } from './ui/checkbox';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from './ui/dialog';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from './ui/table';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from './ui/dialog';
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from './ui/alert-dialog';
-import { Badge } from './ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
-import { toast } from 'sonner@2.0.3';
-import { Plus, Edit, Trash2, Key, Users, UserCheck, Shield, Eye, EyeOff, Search } from 'lucide-react';
-import { UserProfile } from './Login';
-import { configService, UserConfig, UserProfileConfig } from '../services/configService';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from './ui/select';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from './ui/table';
 
 interface AppUser {
   id: string;
   username: string;
   email: string;
   profile: UserProfile;
+  roles: string[]; // Added roles field
   createdAt: string;
   lastLogin?: string;
   isActive: boolean;
@@ -30,6 +72,7 @@ interface NewUser {
   password: string;
   confirmPassword: string;
   profile: UserProfile;
+  roles: string[]; // Added roles field
 }
 
 interface PasswordChange {
@@ -45,37 +88,41 @@ const initialUsers: AppUser[] = [
     username: 'admin',
     email: 'admin@testing.com',
     profile: 'admin',
+    roles: ['admin'], // Admin has all permissions
     createdAt: '2025-01-01T00:00:00Z',
     lastLogin: '2025-08-21T10:30:00Z',
-    isActive: true
+    isActive: true,
   },
   {
     id: '2',
     username: 'qa_lead',
     email: 'qa.lead@testing.com',
     profile: 'automation',
+    roles: ['test_manager'],
     createdAt: '2025-02-15T00:00:00Z',
     lastLogin: '2025-08-20T16:45:00Z',
-    isActive: true
+    isActive: true,
   },
   {
     id: '3',
     username: 'dev_user',
     email: 'developer@testing.com',
-    profile: 'developer',
+    profile: 'dev',
+    roles: ['qa_engineer'],
     createdAt: '2025-03-10T00:00:00Z',
     lastLogin: '2025-08-19T14:22:00Z',
-    isActive: true
+    isActive: true,
   },
   {
     id: '4',
     username: 'product_owner',
     email: 'product@testing.com',
     profile: 'product',
+    roles: ['viewer'],
     createdAt: '2025-04-05T00:00:00Z',
     lastLogin: '2025-08-18T09:15:00Z',
-    isActive: false
-  }
+    isActive: false,
+  },
 ];
 
 export function UserManagement() {
@@ -109,31 +156,31 @@ export function UserManagement() {
     email: '',
     password: '',
     confirmPassword: '',
-    profile: 'developer'
+    profile: 'dev',
+    roles: ['qa_engineer'], // Default role
   });
 
   const [editUser, setEditUser] = useState<Partial<AppUser>>({});
   const [passwordChange, setPasswordChange] = useState<PasswordChange>({
     userId: '',
     newPassword: '',
-    confirmPassword: ''
+    confirmPassword: '',
   });
 
-  const profileOptions = [
-    { value: 'developer', label: 'Developer', description: 'Tests and Test Data (read/write)' },
-    { value: 'automation', label: 'Automation', description: 'All modules, complete Execution Builder' },
-    { value: 'product', label: 'Product', description: 'Read-only in all modules' },
-    { value: 'admin', label: 'Admin', description: 'Full access and configurations' }
-  ];
 
   const getProfileBadge = (profile: UserProfile) => {
     if (!userConfig) return null;
-    
-    const profileConfig = configService.getUserProfileConfig(profile, userConfig.userProfiles);
+
+    const profileConfig = configService.getUserProfileConfig(
+      profile,
+      userConfig.userProfiles
+    );
     if (!profileConfig) return null;
 
     return (
-      <Badge className={`${profileConfig.badgeStyle.bgColor} ${profileConfig.badgeStyle.textColor}`}>
+      <Badge
+        className={`${profileConfig.badgeStyle.bgColor} ${profileConfig.badgeStyle.textColor}`}
+      >
         <span className="mr-1">{profileConfig.icon}</span>
         {profileConfig.label}
       </Badge>
@@ -146,20 +193,25 @@ export function UserManagement() {
       email: '',
       password: '',
       confirmPassword: '',
-      profile: 'developer'
+      profile: 'dev',
+      roles: ['qa_engineer'],
     });
     setEditUser({});
     setPasswordChange({
       userId: '',
       newPassword: '',
-      confirmPassword: ''
+      confirmPassword: '',
     });
     setSelectedUser(null);
   };
 
-  const getMessage = (messageKey: string, variables: Record<string, string> = {}) => {
+  const getMessage = (
+    messageKey: string,
+    variables: Record<string, string> = {}
+  ) => {
     if (!userConfig) return messageKey;
-    const message = userConfig.userManagement.messages[messageKey] || messageKey;
+    const message =
+      userConfig.userManagement.messages[messageKey] || messageKey;
     return configService.interpolateMessage(message, variables);
   };
 
@@ -190,8 +242,9 @@ export function UserManagement() {
       username: newUser.username,
       email: newUser.email,
       profile: newUser.profile,
+      roles: newUser.roles, // Include roles as-is
       createdAt: new Date().toISOString(),
-      isActive: true
+      isActive: true,
     };
 
     setUsers([...users, user]);
@@ -209,29 +262,38 @@ export function UserManagement() {
       return;
     }
 
-    if (users.some(u => u.id !== selectedUser.id && u.username === editUser.username)) {
+    if (
+      users.some(
+        u => u.id !== selectedUser.id && u.username === editUser.username
+      )
+    ) {
       toast.error(getMessage('usernameExists'));
       return;
     }
 
-    if (users.some(u => u.id !== selectedUser.id && u.email === editUser.email)) {
+    if (
+      users.some(u => u.id !== selectedUser.id && u.email === editUser.email)
+    ) {
       toast.error(getMessage('emailExists'));
       return;
     }
 
-    setUsers(users.map(u => 
-      u.id === selectedUser.id 
-        ? { ...u, ...editUser }
-        : u
-    ));
+    setUsers(
+      users.map(u => (u.id === selectedUser.id ? { ...u, ...editUser } : u))
+    );
 
-    toast.success(getMessage('userUpdated', { username: editUser.username || '' }));
+    toast.success(
+      getMessage('userUpdated', { username: editUser.username || '' })
+    );
     setIsEditDialogOpen(false);
     resetForms();
   };
 
   const handleDeleteUser = (user: AppUser) => {
-    if (user.profile === 'admin' && users.filter(u => u.profile === 'admin' && u.isActive).length === 1) {
+    if (
+      user.profile === 'admin' &&
+      users.filter(u => u.profile === 'admin' && u.isActive).length === 1
+    ) {
       toast.error(getMessage('cannotDeleteLastAdmin'));
       return;
     }
@@ -241,16 +303,18 @@ export function UserManagement() {
   };
 
   const handleToggleUserStatus = (user: AppUser) => {
-    if (user.profile === 'admin' && user.isActive && users.filter(u => u.profile === 'admin' && u.isActive).length === 1) {
+    if (
+      user.profile === 'admin' &&
+      user.isActive &&
+      users.filter(u => u.profile === 'admin' && u.isActive).length === 1
+    ) {
       toast.error(getMessage('cannotDeactivateLastAdmin'));
       return;
     }
 
-    setUsers(users.map(u => 
-      u.id === user.id 
-        ? { ...u, isActive: !u.isActive }
-        : u
-    ));
+    setUsers(
+      users.map(u => (u.id === user.id ? { ...u, isActive: !u.isActive } : u))
+    );
 
     const messageKey = user.isActive ? 'userDeactivated' : 'userActivated';
     toast.success(getMessage(messageKey, { username: user.username }));
@@ -286,7 +350,8 @@ export function UserManagement() {
       username: user.username,
       email: user.email,
       profile: user.profile,
-      isActive: user.isActive
+      roles: user.roles || [], // Include roles
+      isActive: user.isActive,
     });
     setIsEditDialogOpen(true);
   };
@@ -296,16 +361,17 @@ export function UserManagement() {
     setPasswordChange({
       userId: user.id,
       newPassword: '',
-      confirmPassword: ''
+      confirmPassword: '',
     });
     setIsPasswordDialogOpen(true);
   };
 
   // Filter users by email search
   const filteredUsers = users.filter(user => {
-    const matchesEmail = searchEmail === '' || 
-                        user.email.toLowerCase().includes(searchEmail.toLowerCase()) ||
-                        user.username.toLowerCase().includes(searchEmail.toLowerCase());
+    const matchesEmail =
+      searchEmail === '' ||
+      user.email.toLowerCase().includes(searchEmail.toLowerCase()) ||
+      user.username.toLowerCase().includes(searchEmail.toLowerCase());
     return matchesEmail;
   });
 
@@ -314,7 +380,7 @@ export function UserManagement() {
     const icons = {
       Users,
       UserCheck,
-      Shield
+      Shield,
     };
     return icons[iconName as keyof typeof icons] || Users;
   };
@@ -332,28 +398,28 @@ export function UserManagement() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex justify-between items-center">
+      <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-xl font-semibold flex items-center gap-2">
-            <Users className="w-5 h-5" />
+          <h2 className="flex items-center gap-2 text-xl font-semibold">
+            <Users className="h-5 w-5" />
             {config.title}
           </h2>
-          <p className="text-sm text-muted-foreground mt-1">
+          <p className="mt-1 text-sm text-muted-foreground">
             {config.description}
           </p>
         </div>
         <Button onClick={() => setIsCreateDialogOpen(true)}>
-          <Plus className="w-4 h-4 mr-2" />
+          <Plus className="mr-2 h-4 w-4" />
           {config.buttons.newUser}
         </Button>
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        {config.statCards.map((stat) => {
+      <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+        {config.statCards.map(stat => {
           const IconComponent = getIconComponent(stat.icon);
           let count = 0;
-          
+
           switch (stat.id) {
             case 'total':
               count = users.length;
@@ -373,9 +439,11 @@ export function UserManagement() {
             <Card key={stat.id}>
               <CardContent className="p-4">
                 <div className="flex items-center gap-2">
-                  <IconComponent className={`w-4 h-4 ${stat.color}`} />
+                  <IconComponent className={`h-4 w-4 ${stat.color}`} />
                   <div>
-                    <p className="text-sm text-muted-foreground">{stat.label}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {stat.label}
+                    </p>
                     <p className="text-lg font-semibold">{count}</p>
                   </div>
                 </div>
@@ -389,17 +457,19 @@ export function UserManagement() {
       <Card>
         <CardContent className="p-4">
           <div className="flex items-center gap-4">
-            <div className="relative flex-1 max-w-md">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+            <div className="relative max-w-md flex-1">
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 transform text-muted-foreground" />
               <Input
                 placeholder={config.searchPlaceholder}
                 value={searchEmail}
-                onChange={(e) => setSearchEmail(e.target.value)}
+                onChange={e => setSearchEmail(e.target.value)}
                 className="pl-9"
               />
             </div>
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <span>Showing {filteredUsers.length} of {users.length} users</span>
+              <span>
+                Showing {filteredUsers.length} of {users.length} users
+              </span>
             </div>
             {searchEmail && (
               <Button
@@ -424,40 +494,71 @@ export function UserManagement() {
             <TableHeader>
               <TableRow>
                 {config.tableHeaders.map((header, index) => (
-                  <TableHead key={index} className={index === config.tableHeaders.length - 1 ? "text-right" : ""}>
+                  <TableHead
+                    key={index}
+                    className={
+                      index === config.tableHeaders.length - 1
+                        ? 'text-right'
+                        : ''
+                    }
+                  >
                     {header}
                   </TableHead>
                 ))}
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredUsers.map((user) => (
+              {filteredUsers.map(user => (
                 <TableRow key={user.id}>
                   <TableCell>
                     <div>
                       <div className="font-medium">{user.username}</div>
-                      <div className="text-xs text-muted-foreground">ID: {user.id}</div>
+                      <div className="text-xs text-muted-foreground">
+                        ID: {user.id}
+                      </div>
                     </div>
                   </TableCell>
                   <TableCell>{user.email}</TableCell>
-                  <TableCell>{getProfileBadge(user.profile)}</TableCell>
                   <TableCell>
-                    <Badge variant={user.isActive ? "default" : "secondary"}>
+                    <div className="space-y-1">
+                      <div>{getProfileBadge(user.profile)}</div>
+                      <div className="flex flex-wrap gap-1">
+                        {user.roles?.map(role => (
+                          <Badge
+                            key={role}
+                            variant="outline"
+                            className={
+                              role === 'admin'
+                                ? 'border-red-200 text-red-600'
+                                : role === 'test_manager'
+                                  ? 'border-blue-200 text-blue-600'
+                                  : role === 'qa_engineer'
+                                    ? 'border-green-200 text-green-600'
+                                    : 'border-gray-200 text-gray-600'
+                            }
+                          >
+                            {role.replace('_', ' ')}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <Badge variant={user.isActive ? 'default' : 'secondary'}>
                       {user.isActive ? 'Active' : 'Inactive'}
                     </Badge>
                   </TableCell>
                   <TableCell>
                     <div className="text-sm">
-                      {user.lastLogin 
+                      {user.lastLogin
                         ? new Date(user.lastLogin).toLocaleDateString('en-US', {
                             day: '2-digit',
                             month: '2-digit',
                             year: '2-digit',
                             hour: '2-digit',
-                            minute: '2-digit'
+                            minute: '2-digit',
                           })
-                        : 'Never'
-                      }
+                        : 'Never'}
                     </div>
                   </TableCell>
                   <TableCell>
@@ -465,7 +566,7 @@ export function UserManagement() {
                       {new Date(user.createdAt).toLocaleDateString('en-US', {
                         day: '2-digit',
                         month: '2-digit',
-                        year: '2-digit'
+                        year: '2-digit',
                       })}
                     </div>
                   </TableCell>
@@ -476,41 +577,53 @@ export function UserManagement() {
                         variant="outline"
                         onClick={() => openEditDialog(user)}
                       >
-                        <Edit className="w-3 h-3" />
+                        <Edit className="h-3 w-3" />
                       </Button>
                       <Button
                         size="sm"
                         variant="outline"
                         onClick={() => openPasswordDialog(user)}
                       >
-                        <Key className="w-3 h-3" />
+                        <Key className="h-3 w-3" />
                       </Button>
                       <Button
                         size="sm"
                         variant="outline"
                         onClick={() => handleToggleUserStatus(user)}
                       >
-                        <UserCheck className="w-3 h-3" />
+                        <UserCheck className="h-3 w-3" />
                       </Button>
                       <AlertDialog>
                         <AlertDialogTrigger asChild>
                           <Button
                             size="sm"
                             variant="outline"
-                            disabled={user.profile === 'admin' && users.filter(u => u.profile === 'admin' && u.isActive).length === 1}
+                            disabled={
+                              user.profile === 'admin' &&
+                              users.filter(
+                                u => u.profile === 'admin' && u.isActive
+                              ).length === 1
+                            }
                           >
-                            <Trash2 className="w-3 h-3 text-red-600" />
+                            <Trash2 className="h-3 w-3 text-red-600" />
                           </Button>
                         </AlertDialogTrigger>
                         <AlertDialogContent>
                           <AlertDialogHeader>
-                            <AlertDialogTitle>{config.dialogs.confirmDelete.title}</AlertDialogTitle>
+                            <AlertDialogTitle>
+                              {config.dialogs.confirmDelete.title}
+                            </AlertDialogTitle>
                             <AlertDialogDescription>
-                              {configService.interpolateMessage(config.dialogs.confirmDelete.description, { username: user.username })}
+                              {configService.interpolateMessage(
+                                config.dialogs.confirmDelete.description,
+                                { username: user.username }
+                              )}
                             </AlertDialogDescription>
                           </AlertDialogHeader>
                           <AlertDialogFooter>
-                            <AlertDialogCancel>{config.buttons.cancel}</AlertDialogCancel>
+                            <AlertDialogCancel>
+                              {config.buttons.cancel}
+                            </AlertDialogCancel>
                             <AlertDialogAction
                               onClick={() => handleDeleteUser(user)}
                               className="bg-red-600 hover:bg-red-700"
@@ -544,7 +657,9 @@ export function UserManagement() {
               <Input
                 id="username"
                 value={newUser.username}
-                onChange={(e) => setNewUser({...newUser, username: e.target.value})}
+                onChange={e =>
+                  setNewUser({ ...newUser, username: e.target.value })
+                }
                 placeholder={config.placeholders.username}
               />
             </div>
@@ -554,7 +669,9 @@ export function UserManagement() {
                 id="email"
                 type="email"
                 value={newUser.email}
-                onChange={(e) => setNewUser({...newUser, email: e.target.value})}
+                onChange={e =>
+                  setNewUser({ ...newUser, email: e.target.value })
+                }
                 placeholder={config.placeholders.email}
               />
             </div>
@@ -563,9 +680,11 @@ export function UserManagement() {
               <div className="relative">
                 <Input
                   id="password"
-                  type={showPassword ? "text" : "password"}
+                  type={showPassword ? 'text' : 'password'}
                   value={newUser.password}
-                  onChange={(e) => setNewUser({...newUser, password: e.target.value})}
+                  onChange={e =>
+                    setNewUser({ ...newUser, password: e.target.value })
+                  }
                   placeholder={config.placeholders.password}
                 />
                 <Button
@@ -584,13 +703,17 @@ export function UserManagement() {
               </div>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="confirmPassword">{config.formLabels.confirmPassword}</Label>
+              <Label htmlFor="confirmPassword">
+                {config.formLabels.confirmPassword}
+              </Label>
               <div className="relative">
                 <Input
                   id="confirmPassword"
-                  type={showConfirmPassword ? "text" : "password"}
+                  type={showConfirmPassword ? 'text' : 'password'}
                   value={newUser.confirmPassword}
-                  onChange={(e) => setNewUser({...newUser, confirmPassword: e.target.value})}
+                  onChange={e =>
+                    setNewUser({ ...newUser, confirmPassword: e.target.value })
+                  }
                   placeholder={config.placeholders.confirmPassword}
                 />
                 <Button
@@ -610,16 +733,23 @@ export function UserManagement() {
             </div>
             <div className="space-y-2">
               <Label htmlFor="profile">{config.formLabels.profile}</Label>
-              <Select value={newUser.profile} onValueChange={(value: UserProfile) => setNewUser({...newUser, profile: value})}>
+              <Select
+                value={newUser.profile}
+                onValueChange={(value: UserProfile) =>
+                  setNewUser({ ...newUser, profile: value })
+                }
+              >
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {userConfig.userProfiles.map((option) => (
+                  {userConfig.userProfiles.map(option => (
                     <SelectItem key={option.value} value={option.value}>
                       <div className="flex flex-col">
                         <span>{option.label}</span>
-                        <span className="text-xs text-muted-foreground">{option.description}</span>
+                        <span className="text-xs text-muted-foreground">
+                          {option.description}
+                        </span>
                       </div>
                     </SelectItem>
                   ))}
@@ -628,12 +758,13 @@ export function UserManagement() {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setIsCreateDialogOpen(false)}>
+            <Button
+              variant="outline"
+              onClick={() => setIsCreateDialogOpen(false)}
+            >
               {config.buttons.cancel}
             </Button>
-            <Button onClick={handleCreateUser}>
-              {config.buttons.create}
-            </Button>
+            <Button onClick={handleCreateUser}>{config.buttons.create}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -644,16 +775,23 @@ export function UserManagement() {
           <DialogHeader>
             <DialogTitle>{config.dialogs.edit.title}</DialogTitle>
             <DialogDescription>
-              {configService.interpolateMessage(config.dialogs.edit.description + " {username}", { username: selectedUser?.username || '' })}
+              {configService.interpolateMessage(
+                config.dialogs.edit.description + ' {username}',
+                { username: selectedUser?.username || '' }
+              )}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="edit-username">{config.formLabels.username}</Label>
+              <Label htmlFor="edit-username">
+                {config.formLabels.username}
+              </Label>
               <Input
                 id="edit-username"
                 value={editUser.username || ''}
-                onChange={(e) => setEditUser({...editUser, username: e.target.value})}
+                onChange={e =>
+                  setEditUser({ ...editUser, username: e.target.value })
+                }
               />
             </div>
             <div className="space-y-2">
@@ -662,57 +800,195 @@ export function UserManagement() {
                 id="edit-email"
                 type="email"
                 value={editUser.email || ''}
-                onChange={(e) => setEditUser({...editUser, email: e.target.value})}
+                onChange={e =>
+                  setEditUser({ ...editUser, email: e.target.value })
+                }
               />
             </div>
             <div className="space-y-2">
               <Label htmlFor="edit-profile">{config.formLabels.profile}</Label>
-              <Select value={editUser.profile} onValueChange={(value: UserProfile) => setEditUser({...editUser, profile: value})}>
+              <Select
+                value={editUser.profile}
+                onValueChange={(value: UserProfile) => {
+                  setEditUser({ ...editUser, profile: value });
+                }}
+              >
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {userConfig.userProfiles.map((option) => (
+                  {userConfig.userProfiles.map(option => (
                     <SelectItem key={option.value} value={option.value}>
                       <div className="flex flex-col">
                         <span>{option.label}</span>
-                        <span className="text-xs text-muted-foreground">{option.description}</span>
+                        <span className="text-xs text-muted-foreground">
+                          {option.description}
+                        </span>
                       </div>
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
+
+            {/* Multi-role selection */}
+            <div className="space-y-2">
+              <Label>Permission Roles</Label>
+              <div className="space-y-2 rounded-lg border p-3">
+                <div className="flex items-start space-x-3">
+                  <Checkbox
+                    id="edit-role-admin"
+                    checked={editUser.roles?.includes('admin') || false}
+                    onCheckedChange={checked => {
+                      const currentRoles = editUser.roles || [];
+                      const newRoles = checked
+                        ? [...currentRoles.filter(r => r !== 'admin'), 'admin']
+                        : currentRoles.filter(r => r !== 'admin');
+                      setEditUser({ ...editUser, roles: newRoles });
+                    }}
+                  />
+                  <div className="flex-1">
+                    <label
+                      htmlFor="edit-role-admin"
+                      className="cursor-pointer text-sm font-medium"
+                    >
+                      Admin
+                    </label>
+                    <p className="text-xs text-muted-foreground">
+                      Full access including delete permissions
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-start space-x-3">
+                  <Checkbox
+                    id="edit-role-test-manager"
+                    checked={editUser.roles?.includes('test_manager') || false}
+                    onCheckedChange={checked => {
+                      const currentRoles = editUser.roles || [];
+                      const newRoles = checked
+                        ? [
+                            ...currentRoles.filter(r => r !== 'test_manager'),
+                            'test_manager',
+                          ]
+                        : currentRoles.filter(r => r !== 'test_manager');
+                      setEditUser({ ...editUser, roles: newRoles });
+                    }}
+                  />
+                  <div className="flex-1">
+                    <label
+                      htmlFor="edit-role-test-manager"
+                      className="cursor-pointer text-sm font-medium"
+                    >
+                      Test Manager
+                    </label>
+                    <p className="text-xs text-muted-foreground">
+                      Can manage tests and data
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-start space-x-3">
+                  <Checkbox
+                    id="edit-role-qa-engineer"
+                    checked={editUser.roles?.includes('qa_engineer') || false}
+                    onCheckedChange={checked => {
+                      const currentRoles = editUser.roles || [];
+                      const newRoles = checked
+                        ? [
+                            ...currentRoles.filter(r => r !== 'qa_engineer'),
+                            'qa_engineer',
+                          ]
+                        : currentRoles.filter(r => r !== 'qa_engineer');
+                      setEditUser({ ...editUser, roles: newRoles });
+                    }}
+                  />
+                  <div className="flex-1">
+                    <label
+                      htmlFor="edit-role-qa-engineer"
+                      className="cursor-pointer text-sm font-medium"
+                    >
+                      QA Engineer
+                    </label>
+                    <p className="text-xs text-muted-foreground">
+                      Can create and edit tests
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-start space-x-3">
+                  <Checkbox
+                    id="edit-role-viewer"
+                    checked={editUser.roles?.includes('viewer') || false}
+                    onCheckedChange={checked => {
+                      const currentRoles = editUser.roles || [];
+                      const newRoles = checked
+                        ? [
+                            ...currentRoles.filter(r => r !== 'viewer'),
+                            'viewer',
+                          ]
+                        : currentRoles.filter(r => r !== 'viewer');
+                      setEditUser({ ...editUser, roles: newRoles });
+                    }}
+                  />
+                  <div className="flex-1">
+                    <label
+                      htmlFor="edit-role-viewer"
+                      className="cursor-pointer text-sm font-medium"
+                    >
+                      Viewer
+                    </label>
+                    <p className="text-xs text-muted-foreground">
+                      Read-only access
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>
+            <Button
+              variant="outline"
+              onClick={() => setIsEditDialogOpen(false)}
+            >
               {config.buttons.cancel}
             </Button>
-            <Button onClick={handleEditUser}>
-              {config.buttons.save}
-            </Button>
+            <Button onClick={handleEditUser}>{config.buttons.save}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
       {/* Change Password Dialog */}
-      <Dialog open={isPasswordDialogOpen} onOpenChange={setIsPasswordDialogOpen}>
+      <Dialog
+        open={isPasswordDialogOpen}
+        onOpenChange={setIsPasswordDialogOpen}
+      >
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>{config.dialogs.changePassword.title}</DialogTitle>
             <DialogDescription>
-              {configService.interpolateMessage(config.dialogs.changePassword.description + " {username}", { username: selectedUser?.username || '' })}
+              {configService.interpolateMessage(
+                config.dialogs.changePassword.description + ' {username}',
+                { username: selectedUser?.username || '' }
+              )}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="new-password">{config.formLabels.newPassword}</Label>
+              <Label htmlFor="new-password">
+                {config.formLabels.newPassword}
+              </Label>
               <div className="relative">
                 <Input
                   id="new-password"
-                  type={showPassword ? "text" : "password"}
+                  type={showPassword ? 'text' : 'password'}
                   value={passwordChange.newPassword}
-                  onChange={(e) => setPasswordChange({...passwordChange, newPassword: e.target.value})}
+                  onChange={e =>
+                    setPasswordChange({
+                      ...passwordChange,
+                      newPassword: e.target.value,
+                    })
+                  }
                   placeholder={config.placeholders.newPassword}
                 />
                 <Button
@@ -731,13 +1007,20 @@ export function UserManagement() {
               </div>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="confirm-new-password">{config.formLabels.confirmPassword}</Label>
+              <Label htmlFor="confirm-new-password">
+                {config.formLabels.confirmPassword}
+              </Label>
               <div className="relative">
                 <Input
                   id="confirm-new-password"
-                  type={showConfirmPassword ? "text" : "password"}
+                  type={showConfirmPassword ? 'text' : 'password'}
                   value={passwordChange.confirmPassword}
-                  onChange={(e) => setPasswordChange({...passwordChange, confirmPassword: e.target.value})}
+                  onChange={e =>
+                    setPasswordChange({
+                      ...passwordChange,
+                      confirmPassword: e.target.value,
+                    })
+                  }
                   placeholder={config.placeholders.confirmNewPassword}
                 />
                 <Button
@@ -757,7 +1040,10 @@ export function UserManagement() {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setIsPasswordDialogOpen(false)}>
+            <Button
+              variant="outline"
+              onClick={() => setIsPasswordDialogOpen(false)}
+            >
               {config.buttons.cancel}
             </Button>
             <Button onClick={handleChangePassword}>

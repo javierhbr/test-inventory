@@ -1,11 +1,31 @@
-import React, { useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
+import {
+  Copy,
+  Database,
+  Download,
+  FileText,
+  History,
+  User,
+} from 'lucide-react';
+import { useState } from 'react';
 import { Badge } from './ui/badge';
 import { Button } from './ui/button';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from './ui/card';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from './ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from './ui/table';
 import { Textarea } from './ui/textarea';
-import { Copy, Download, History, FileText, User, Database } from 'lucide-react';
 
 interface TestData {
   id: string;
@@ -22,22 +42,23 @@ interface TestData {
   };
   classifications: string[];
   labels: {
-    proyecto: string;
-    ambiente: string;
+    project: string;
+    environment: string;
     dataOwner: string;
-    grupo?: string;
-    fuente?: string;
+    group?: string;
+    source?: string;
   };
   scope: {
     visibility: 'manual' | 'automated' | 'platform';
     platforms?: string[];
   };
-  status: 'Disponible' | 'En uso' | 'Consumida' | 'Reacondicionamiento' | 'Inactiva';
+  status: 'Available' | 'In Use' | 'Consumed' | 'Reconditioning' | 'Inactive';
   lastUsed: {
     date: string;
     testId: string;
     runtime: string;
   } | null;
+  team: string;
 }
 
 interface UsageHistoryItem {
@@ -65,7 +86,7 @@ const mockUsageHistory: UsageHistoryItem[] = [
     runtime: 'OCP Testing Studio',
     date: '2025-08-15T10:30:00Z',
     result: 'FAILED',
-    duration: '45s'
+    duration: '45s',
   },
   {
     id: 'UH-002',
@@ -73,8 +94,8 @@ const mockUsageHistory: UsageHistoryItem[] = [
     runtime: 'OCP Testing Studio',
     date: '2025-08-10T14:22:00Z',
     result: 'PASSED',
-    duration: '32s'
-  }
+    duration: '32s',
+  },
 ];
 
 const mockStateTransitions: StateTransition[] = [
@@ -84,7 +105,7 @@ const mockStateTransitions: StateTransition[] = [
     toStatus: 'Consumida',
     at: '2025-08-15T10:30:00Z',
     by: 'automation-bot',
-    reason: 'Payment completed - account consumed'
+    reason: 'Payment completed - account consumed',
   },
   {
     id: 'ST-002',
@@ -92,7 +113,7 @@ const mockStateTransitions: StateTransition[] = [
     toStatus: 'En uso',
     at: '2025-08-15T10:25:00Z',
     by: 'execution-engine',
-    reason: 'Assigned to test execution'
+    reason: 'Assigned to test execution',
   },
   {
     id: 'ST-003',
@@ -100,8 +121,8 @@ const mockStateTransitions: StateTransition[] = [
     toStatus: 'Disponible',
     at: '2025-08-10T09:00:00Z',
     by: 'data-team',
-    reason: 'Manual reconditioning completed'
-  }
+    reason: 'Manual reconditioning completed',
+  },
 ];
 
 export function TestDataDetail({ testData }: { testData: TestData }) {
@@ -120,20 +141,36 @@ account:
 classifications:
 ${testData.classifications.map(c => `  - ${c}`).join('\n')}
 scope:
-  visibility: ${testData.scope.visibility}${testData.scope.platforms ? `
+  visibility: ${testData.scope.visibility}${
+    testData.scope.platforms
+      ? `
   platforms:
-${testData.scope.platforms.map(p => `    - ${p}`).join('\n')}` : ''}
+${testData.scope.platforms.map(p => `    - ${p}`).join('\n')}`
+      : ''
+  }
 status: ${testData.status}
 labels:
-  proyecto: ${testData.labels.proyecto}
-  ambiente: ${testData.labels.ambiente}
-  dataOwner: ${testData.labels.dataOwner}${testData.labels.grupo ? `
-  grupo: ${testData.labels.grupo}` : ''}${testData.labels.fuente ? `
-  fuente: ${testData.labels.fuente}` : ''}
-lastUsed: ${testData.lastUsed ? `
+  project: ${testData.labels.project}
+  environment: ${testData.labels.environment}
+  dataOwner: ${testData.labels.dataOwner}${
+    testData.labels.group
+      ? `
+  group: ${testData.labels.group}`
+      : ''
+  }${
+    testData.labels.source
+      ? `
+  source: ${testData.labels.source}`
+      : ''
+  }
+lastUsed: ${
+    testData.lastUsed
+      ? `
   date: ${testData.lastUsed.date}
   testId: ${testData.lastUsed.testId}
-  runtime: ${testData.lastUsed.runtime}` : 'null'}
+  runtime: ${testData.lastUsed.runtime}`
+      : 'null'
+  }
 usageHistory: []`;
 
   const copyToClipboard = (text: string) => {
@@ -142,15 +179,20 @@ usageHistory: []`;
 
   const getStatusBadge = (status: string) => {
     const variants = {
-      'Disponible': 'bg-green-100 text-green-800',
-      'En uso': 'bg-blue-100 text-blue-800',
-      'Consumida': 'bg-red-100 text-red-800',
-      'Reacondicionamiento': 'bg-yellow-100 text-yellow-800',
-      'Inactiva': 'bg-gray-100 text-gray-800'
+      Available: 'bg-green-100 text-green-800',
+      'In Use': 'bg-blue-100 text-blue-800',
+      Consumed: 'bg-red-100 text-red-800',
+      Reconditioning: 'bg-yellow-100 text-yellow-800',
+      Inactive: 'bg-gray-100 text-gray-800',
     };
-    
+
     return (
-      <Badge className={variants[status as keyof typeof variants] || 'bg-gray-100 text-gray-800'}>
+      <Badge
+        className={
+          variants[status as keyof typeof variants] ||
+          'bg-gray-100 text-gray-800'
+        }
+      >
         {status}
       </Badge>
     );
@@ -158,13 +200,18 @@ usageHistory: []`;
 
   const getResultBadge = (result: string) => {
     const variants = {
-      'PASSED': 'bg-green-100 text-green-800',
-      'FAILED': 'bg-red-100 text-red-800',
-      'SKIPPED': 'bg-yellow-100 text-yellow-800'
+      PASSED: 'bg-green-100 text-green-800',
+      FAILED: 'bg-red-100 text-red-800',
+      SKIPPED: 'bg-yellow-100 text-yellow-800',
     };
-    
+
     return (
-      <Badge className={variants[result as keyof typeof variants] || 'bg-gray-100 text-gray-800'}>
+      <Badge
+        className={
+          variants[result as keyof typeof variants] ||
+          'bg-gray-100 text-gray-800'
+        }
+      >
         {result}
       </Badge>
     );
@@ -172,56 +219,69 @@ usageHistory: []`;
 
   const getScopeBadge = (scope: any) => {
     const variants = {
-      'manual': 'bg-purple-100 text-purple-800',
-      'automated': 'bg-blue-100 text-blue-800',
-      'platform': 'bg-orange-100 text-orange-800'
+      manual: 'bg-purple-100 text-purple-800',
+      automated: 'bg-blue-100 text-blue-800',
+      platform: 'bg-orange-100 text-orange-800',
     };
-    
+
     return (
-      <Badge className={variants[scope.visibility as keyof typeof variants] || 'bg-gray-100 text-gray-800'}>
+      <Badge
+        className={
+          variants[scope.visibility as keyof typeof variants] ||
+          'bg-gray-100 text-gray-800'
+        }
+      >
         {scope.visibility}
       </Badge>
     );
   };
 
   return (
-    <div className="space-y-4">
+    <div className="h-full min-h-[600px] space-y-4">
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="general" className="flex items-center gap-2">
-            <Database className="w-4 h-4" />
+            <Database className="h-4 w-4" />
             General Info
           </TabsTrigger>
           <TabsTrigger value="history" className="flex items-center gap-2">
-            <History className="w-4 h-4" />
+            <History className="h-4 w-4" />
             History
           </TabsTrigger>
           <TabsTrigger value="yaml" className="flex items-center gap-2">
-            <FileText className="w-4 h-4" />
+            <FileText className="h-4 w-4" />
             YAML View
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="general" className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <TabsContent value="general" className="min-h-[500px] space-y-4">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <User className="w-5 h-5" />
+                  <User className="h-5 w-5" />
                   Customer Information
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
                 <div>
-                  <label className="text-sm font-medium text-gray-500">Customer ID</label>
-                  <div className="font-mono">{testData.customer.customerId}</div>
+                  <label className="text-sm font-medium text-gray-500">
+                    Customer ID
+                  </label>
+                  <div className="font-mono">
+                    {testData.customer.customerId}
+                  </div>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-gray-500">Name</label>
+                  <label className="text-sm font-medium text-gray-500">
+                    Name
+                  </label>
                   <div>{testData.customer.name}</div>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-gray-500">Type</label>
+                  <label className="text-sm font-medium text-gray-500">
+                    Type
+                  </label>
                   <Badge variant="outline">{testData.customer.type}</Badge>
                 </div>
               </CardContent>
@@ -230,26 +290,38 @@ usageHistory: []`;
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <Database className="w-5 h-5" />
+                  <Database className="h-5 w-5" />
                   Account Information
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
                 <div>
-                  <label className="text-sm font-medium text-gray-500">Account ID</label>
+                  <label className="text-sm font-medium text-gray-500">
+                    Account ID
+                  </label>
                   <div className="font-mono">{testData.account.accountId}</div>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-gray-500">Reference ID</label>
-                  <div className="font-mono">{testData.account.referenceId}</div>
+                  <label className="text-sm font-medium text-gray-500">
+                    Reference ID
+                  </label>
+                  <div className="font-mono">
+                    {testData.account.referenceId}
+                  </div>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-gray-500">Account Type</label>
+                  <label className="text-sm font-medium text-gray-500">
+                    Account Type
+                  </label>
                   <Badge variant="outline">{testData.account.type}</Badge>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-gray-500">Created At</label>
-                  <div>{new Date(testData.account.createdAt).toLocaleString()}</div>
+                  <label className="text-sm font-medium text-gray-500">
+                    Created At
+                  </label>
+                  <div>
+                    {new Date(testData.account.createdAt).toLocaleString()}
+                  </div>
                 </div>
               </CardContent>
             </Card>
@@ -261,7 +333,11 @@ usageHistory: []`;
               <CardContent>
                 <div className="space-y-2">
                   {testData.classifications.map((classification, index) => (
-                    <Badge key={index} variant="secondary" className="mr-2 mb-2">
+                    <Badge
+                      key={index}
+                      variant="secondary"
+                      className="mb-2 mr-2"
+                    >
                       {classification}
                     </Badge>
                   ))}
@@ -276,27 +352,39 @@ usageHistory: []`;
               <CardContent className="space-y-3">
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="text-sm font-medium text-gray-500">Proyecto</label>
-                    <Badge variant="outline">{testData.labels.proyecto}</Badge>
+                    <label className="text-sm font-medium text-gray-500">
+                      Project
+                    </label>
+                    <Badge variant="outline">{testData.labels.project}</Badge>
                   </div>
                   <div>
-                    <label className="text-sm font-medium text-gray-500">Ambiente</label>
-                    <Badge variant="outline">{testData.labels.ambiente}</Badge>
+                    <label className="text-sm font-medium text-gray-500">
+                      Environment
+                    </label>
+                    <Badge variant="outline">
+                      {testData.labels.environment}
+                    </Badge>
                   </div>
                   <div>
-                    <label className="text-sm font-medium text-gray-500">Data Owner</label>
+                    <label className="text-sm font-medium text-gray-500">
+                      Data Owner
+                    </label>
                     <Badge variant="outline">{testData.labels.dataOwner}</Badge>
                   </div>
-                  {testData.labels.grupo && (
+                  {testData.labels.group && (
                     <div>
-                      <label className="text-sm font-medium text-gray-500">Grupo</label>
-                      <Badge variant="outline">{testData.labels.grupo}</Badge>
+                      <label className="text-sm font-medium text-gray-500">
+                        Group
+                      </label>
+                      <Badge variant="outline">{testData.labels.group}</Badge>
                     </div>
                   )}
-                  {testData.labels.fuente && (
+                  {testData.labels.source && (
                     <div>
-                      <label className="text-sm font-medium text-gray-500">Fuente</label>
-                      <Badge variant="outline">{testData.labels.fuente}</Badge>
+                      <label className="text-sm font-medium text-gray-500">
+                        Source
+                      </label>
+                      <Badge variant="outline">{testData.labels.source}</Badge>
                     </div>
                   )}
                 </div>
@@ -309,12 +397,16 @@ usageHistory: []`;
               </CardHeader>
               <CardContent className="space-y-3">
                 <div>
-                  <label className="text-sm font-medium text-gray-500">Visibility</label>
+                  <label className="text-sm font-medium text-gray-500">
+                    Visibility
+                  </label>
                   <div>{getScopeBadge(testData.scope)}</div>
                 </div>
                 {testData.scope.platforms && (
                   <div>
-                    <label className="text-sm font-medium text-gray-500">Platforms</label>
+                    <label className="text-sm font-medium text-gray-500">
+                      Platforms
+                    </label>
                     <div className="space-y-2">
                       {testData.scope.platforms.map((platform, index) => (
                         <Badge key={index} variant="outline" className="mr-2">
@@ -325,7 +417,9 @@ usageHistory: []`;
                   </div>
                 )}
                 <div>
-                  <label className="text-sm font-medium text-gray-500">Current Status</label>
+                  <label className="text-sm font-medium text-gray-500">
+                    Current Status
+                  </label>
                   <div>{getStatusBadge(testData.status)}</div>
                 </div>
               </CardContent>
@@ -339,16 +433,28 @@ usageHistory: []`;
                 {testData.lastUsed ? (
                   <div className="space-y-2">
                     <div>
-                      <label className="text-sm font-medium text-gray-500">Date</label>
-                      <div>{new Date(testData.lastUsed.date).toLocaleString()}</div>
+                      <label className="text-sm font-medium text-gray-500">
+                        Date
+                      </label>
+                      <div>
+                        {new Date(testData.lastUsed.date).toLocaleString()}
+                      </div>
                     </div>
                     <div>
-                      <label className="text-sm font-medium text-gray-500">Test ID</label>
-                      <div className="font-mono">{testData.lastUsed.testId}</div>
+                      <label className="text-sm font-medium text-gray-500">
+                        Test ID
+                      </label>
+                      <div className="font-mono">
+                        {testData.lastUsed.testId}
+                      </div>
                     </div>
                     <div>
-                      <label className="text-sm font-medium text-gray-500">Runtime</label>
-                      <Badge variant="outline">{testData.lastUsed.runtime}</Badge>
+                      <label className="text-sm font-medium text-gray-500">
+                        Runtime
+                      </label>
+                      <Badge variant="outline">
+                        {testData.lastUsed.runtime}
+                      </Badge>
                     </div>
                   </div>
                 ) : (
@@ -359,7 +465,7 @@ usageHistory: []`;
           </div>
         </TabsContent>
 
-        <TabsContent value="history" className="space-y-4">
+        <TabsContent value="history" className="min-h-[500px] space-y-4">
           <div className="grid grid-cols-1 gap-4">
             <Card>
               <CardHeader>
@@ -380,11 +486,15 @@ usageHistory: []`;
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {mockUsageHistory.map((usage) => (
+                    {mockUsageHistory.map(usage => (
                       <TableRow key={usage.id}>
-                        <TableCell className="font-mono">{usage.testId}</TableCell>
+                        <TableCell className="font-mono">
+                          {usage.testId}
+                        </TableCell>
                         <TableCell>{usage.runtime}</TableCell>
-                        <TableCell>{new Date(usage.date).toLocaleString()}</TableCell>
+                        <TableCell>
+                          {new Date(usage.date).toLocaleString()}
+                        </TableCell>
                         <TableCell>{getResultBadge(usage.result)}</TableCell>
                         <TableCell>{usage.duration}</TableCell>
                       </TableRow>
@@ -413,13 +523,22 @@ usageHistory: []`;
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {mockStateTransitions.map((transition) => (
+                    {mockStateTransitions.map(transition => (
                       <TableRow key={transition.id}>
-                        <TableCell>{getStatusBadge(transition.fromStatus)}</TableCell>
-                        <TableCell>{getStatusBadge(transition.toStatus)}</TableCell>
-                        <TableCell>{new Date(transition.at).toLocaleString()}</TableCell>
+                        <TableCell>
+                          {getStatusBadge(transition.fromStatus)}
+                        </TableCell>
+                        <TableCell>
+                          {getStatusBadge(transition.toStatus)}
+                        </TableCell>
+                        <TableCell>
+                          {new Date(transition.at).toLocaleString()}
+                        </TableCell>
                         <TableCell>{transition.by}</TableCell>
-                        <TableCell className="max-w-xs truncate" title={transition.reason}>
+                        <TableCell
+                          className="max-w-xs truncate"
+                          title={transition.reason}
+                        >
                           {transition.reason}
                         </TableCell>
                       </TableRow>
@@ -431,10 +550,10 @@ usageHistory: []`;
           </div>
         </TabsContent>
 
-        <TabsContent value="yaml">
+        <TabsContent value="yaml" className="min-h-[500px]">
           <Card>
             <CardHeader>
-              <div className="flex justify-between items-center">
+              <div className="flex items-center justify-between">
                 <div>
                   <CardTitle>YAML Definition</CardTitle>
                   <CardDescription>
@@ -442,12 +561,16 @@ usageHistory: []`;
                   </CardDescription>
                 </div>
                 <div className="flex gap-2">
-                  <Button size="sm" variant="outline" onClick={() => copyToClipboard(testDataYaml)}>
-                    <Copy className="w-4 h-4 mr-2" />
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => copyToClipboard(testDataYaml)}
+                  >
+                    <Copy className="mr-2 h-4 w-4" />
                     Copy
                   </Button>
                   <Button size="sm" variant="outline">
-                    <Download className="w-4 h-4 mr-2" />
+                    <Download className="mr-2 h-4 w-4" />
                     Export YAML
                   </Button>
                 </div>
@@ -457,7 +580,7 @@ usageHistory: []`;
               <Textarea
                 value={testDataYaml}
                 readOnly
-                className="font-mono text-sm min-h-[400px] resize-none"
+                className="h-[400px] resize-none font-mono text-sm"
               />
             </CardContent>
           </Card>

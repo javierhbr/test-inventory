@@ -1,10 +1,25 @@
-import React from 'react';
-import { Button } from './ui/button';
-import { Badge } from './ui/badge';
+import {
+  Code,
+  Cog,
+  LogOut,
+  Package,
+  Settings,
+  Shield,
+  TestTube,
+  User,
+} from 'lucide-react';
+import { User as UserType } from './Login';
 import { Avatar, AvatarFallback } from './ui/avatar';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from './ui/dropdown-menu';
-import { TestTube, LogOut, User, Settings, Code, Cog, Package, Shield } from 'lucide-react';
-import { User as UserType, UserProfile } from './Login';
+import { Badge } from './ui/badge';
+import { Button } from './ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from './ui/dropdown-menu';
+import { PermissionsManager } from './PermissionsManager';
 
 interface HeaderProps {
   user: UserType;
@@ -15,14 +30,14 @@ const profileIcons = {
   dev: Code,
   automation: Cog,
   product: Package,
-  admin: Shield
+  admin: Shield,
 };
 
 const profileColors = {
   dev: 'bg-blue-100 text-blue-800',
   automation: 'bg-green-100 text-green-800',
   product: 'bg-purple-100 text-purple-800',
-  admin: 'bg-red-100 text-red-800'
+  admin: 'bg-red-100 text-red-800',
 };
 
 export function Header({ user, onLogout }: HeaderProps) {
@@ -30,27 +45,30 @@ export function Header({ user, onLogout }: HeaderProps) {
 
   return (
     <div className="border-b border-gray-200 bg-white px-6 py-4">
-      <div className="max-w-7xl mx-auto flex justify-between items-center">
+      <div className="mx-auto flex max-w-7xl items-center justify-between">
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-3">
-            <TestTube className="w-8 h-8 text-primary" />
+            <TestTube className="h-8 w-8 text-primary" />
             <div>
               <h1 className="text-xl font-bold text-gray-900">
-                Sistema de Inventario de Testing
+                Testing Inventory System
               </h1>
               <p className="text-sm text-gray-600">
-                Gestión integral de Test Cases, Test Data y Ejecuciones
+                Comprehensive management of Test Cases, Test Data, and
+                Executions
               </p>
             </div>
           </div>
         </div>
 
         <div className="flex items-center gap-4">
+          <PermissionsManager />
+          
           <div className="flex items-center gap-2 text-sm">
-            <span className="text-gray-600">Bienvenido,</span>
+            <span className="text-gray-600">Welcome,</span>
             <span className="font-medium">{user.name}</span>
             <Badge className={profileColors[user.profile]}>
-              <ProfileIcon className="w-3 h-3 mr-1" />
+              <ProfileIcon className="mr-1 h-3 w-3" />
               {user.profile.toUpperCase()}
             </Badge>
           </div>
@@ -77,18 +95,18 @@ export function Header({ user, onLogout }: HeaderProps) {
               <DropdownMenuSeparator />
               <DropdownMenuItem>
                 <User className="mr-2 h-4 w-4" />
-                <span>Mi Perfil</span>
+                <span>My Profile</span>
               </DropdownMenuItem>
               {user.profile === 'admin' && (
                 <DropdownMenuItem>
                   <Settings className="mr-2 h-4 w-4" />
-                  <span>Configuraciones</span>
+                  <span>Settings</span>
                 </DropdownMenuItem>
               )}
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={onLogout}>
                 <LogOut className="mr-2 h-4 w-4" />
-                <span>Cerrar Sesión</span>
+                <span>Sign Out</span>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

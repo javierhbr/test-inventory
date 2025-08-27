@@ -174,8 +174,9 @@ export function hasPermission(profile: UserProfile, action: string): boolean {
 export function logoutUser(): Promise<void> {
   return new Promise((resolve) => {
     setTimeout(() => {
-      // Clear any stored session data
-      localStorage.removeItem('user');
+      // Clear all stored session data
+      localStorage.clear();
+      sessionStorage.clear();
       resolve();
     }, 500);
   });

@@ -117,7 +117,7 @@ const APP_CONFIG: AppConfig = {
       label: "Tests Inventory",
       icon: "TestTube",
       component: "TestsInventory",
-      permissions: ["developer", "automation", "product", "admin"],
+      permissions: ["dev", "automation", "product", "admin"],
       description: "Manage test cases and scenarios"
     },
     {
@@ -125,7 +125,7 @@ const APP_CONFIG: AppConfig = {
       label: "Test Data Inventory", 
       icon: "Database",
       component: "TestDataInventory",
-      permissions: ["developer", "automation", "product", "admin"],
+      permissions: ["dev", "automation", "product", "admin"],
       description: "Manage test data and banking sources"
     },
     {
@@ -133,7 +133,7 @@ const APP_CONFIG: AppConfig = {
       label: "Execution Builder",
       icon: "Play", 
       component: "ExecutionBuilder",
-      permissions: ["developer", "automation", "admin"],
+      permissions: ["dev", "automation", "admin"],
       description: "Build and manage test execution batches"
     },
     {
@@ -222,7 +222,7 @@ const SYSTEM_CONFIG: SystemConfig = {
       descriptionColor: "text-blue-700"
     },
     roles: {
-      developer: {
+      dev: {
         name: "Developer",
         permissions: [
           "Tests (read/write)",
@@ -258,7 +258,7 @@ const SYSTEM_CONFIG: SystemConfig = {
 const USER_CONFIG: UserConfig = {
   userProfiles: [
     {
-      value: "developer",
+      value: "dev",
       label: "Developer", 
       description: "Tests and Test Data (read/write)",
       icon: "💻",

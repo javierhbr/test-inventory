@@ -12,10 +12,10 @@ interface Test {
   name: string;
   flow: string;
   labels: {
-    flujo: string;
+    flow: string;
     intent: string;
     experience: string;
-    proyecto: string;
+    project: string;
   };
   dataRequirements: string[];
   supportedRuntimes: string[];
@@ -26,6 +26,7 @@ interface Test {
   } | null;
   lastModified: string;
   version: string;
+  team: string;
 }
 
 interface TestRun {
@@ -101,10 +102,10 @@ attributes:
   priority: High
   module: Pago
 labels:
-  flujo: ${test.labels.flujo}
+  flow: ${test.labels.flow}
   intent: ${test.labels.intent}
   experience: ${test.labels.experience}
-  proyecto: ${test.labels.proyecto}
+  project: ${test.labels.project}
 dataRequirements:
 ${test.dataRequirements.map(req => `  - ${req}`).join('\n')}
 supportedRuntimes:
@@ -139,7 +140,7 @@ executions:
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 h-full min-h-[600px]">
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="general" className="flex items-center gap-2">
@@ -160,31 +161,35 @@ executions:
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="general" className="space-y-4">
+        <TabsContent value="general" className="space-y-4 min-h-[500px]">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Card>
               <CardHeader>
-                <CardTitle>Información Básica</CardTitle>
+                <CardTitle>Basic Information</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
                 <div>
-                  <label className="text-sm font-medium text-gray-500">ID</label>
+                  <label className="text-sm font-medium text-gray-500">Test ID</label>
                   <div className="font-mono">{test.id}</div>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-gray-500">Nombre</label>
+                  <label className="text-sm font-medium text-gray-500">Name</label>
                   <div>{test.name}</div>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-gray-500">Flujo</label>
+                  <label className="text-sm font-medium text-gray-500">Flow</label>
                   <div>{test.flow}</div>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-gray-500">Versión Actual</label>
+                  <label className="text-sm font-medium text-gray-500">Team</label>
+                  <Badge variant="outline">{test.team}</Badge>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-500">Current Version</label>
                   <Badge variant="outline">{test.version}</Badge>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-gray-500">Última Modificación</label>
+                  <label className="text-sm font-medium text-gray-500">Last Modified</label>
                   <div>{new Date(test.lastModified).toLocaleString()}</div>
                 </div>
               </CardContent>
@@ -197,8 +202,8 @@ executions:
               <CardContent className="space-y-3">
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="text-sm font-medium text-gray-500">Flujo</label>
-                    <Badge variant="outline">{test.labels.flujo}</Badge>
+                    <label className="text-sm font-medium text-gray-500">Flow</label>
+                    <Badge variant="outline">{test.labels.flow}</Badge>
                   </div>
                   <div>
                     <label className="text-sm font-medium text-gray-500">Intent</label>
@@ -209,8 +214,8 @@ executions:
                     <Badge variant="outline">{test.labels.experience}</Badge>
                   </div>
                   <div>
-                    <label className="text-sm font-medium text-gray-500">Proyecto</label>
-                    <Badge variant="outline">{test.labels.proyecto}</Badge>
+                    <label className="text-sm font-medium text-gray-500">Project</label>
+                    <Badge variant="outline">{test.labels.project}</Badge>
                   </div>
                 </div>
               </CardContent>
@@ -270,12 +275,12 @@ executions:
           </Card>
         </TabsContent>
 
-        <TabsContent value="executions">
+        <TabsContent value="executions" className="min-h-[500px]">
           <Card>
             <CardHeader>
-              <CardTitle>Historial de Ejecuciones</CardTitle>
+              <CardTitle>Execution History</CardTitle>
               <CardDescription>
-                Registro completo de todas las ejecuciones del test
+                Complete record of all test executions
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -283,11 +288,11 @@ executions:
                 <TableHeader>
                   <TableRow>
                     <TableHead>Run ID</TableHead>
-                    <TableHead>Fecha</TableHead>
-                    <TableHead>Ejecutado por</TableHead>
+                    <TableHead>Date</TableHead>
+                    <TableHead>Executed by</TableHead>
                     <TableHead>Runtime</TableHead>
-                    <TableHead>Estado</TableHead>
-                    <TableHead>Duración</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Duration</TableHead>
                     <TableHead>Test Data</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -309,23 +314,23 @@ executions:
           </Card>
         </TabsContent>
 
-        <TabsContent value="versions">
+        <TabsContent value="versions" className="min-h-[500px]">
           <Card>
             <CardHeader>
-              <CardTitle>Historial de Versiones</CardTitle>
+              <CardTitle>Version History</CardTitle>
               <CardDescription>
-                Control de versiones y cambios realizados
+                Version control and changes made
               </CardDescription>
             </CardHeader>
             <CardContent>
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Versión</TableHead>
-                    <TableHead>Fecha</TableHead>
-                    <TableHead>Modificado por</TableHead>
-                    <TableHead>Resumen de Cambios</TableHead>
-                    <TableHead>Acciones</TableHead>
+                    <TableHead>Version</TableHead>
+                    <TableHead>Date</TableHead>
+                    <TableHead>Modified by</TableHead>
+                    <TableHead>Change Summary</TableHead>
+                    <TableHead>Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -356,14 +361,14 @@ executions:
           </Card>
         </TabsContent>
 
-        <TabsContent value="yaml">
+        <TabsContent value="yaml" className="min-h-[500px]">
           <Card>
             <CardHeader>
               <div className="flex justify-between items-center">
                 <div>
                   <CardTitle>YAML Definition</CardTitle>
                   <CardDescription>
-                    Representación YAML del test case
+                    YAML representation of the test case
                   </CardDescription>
                 </div>
                 <div className="flex gap-2">
@@ -382,7 +387,7 @@ executions:
               <Textarea
                 value={testYaml}
                 readOnly
-                className="font-mono text-sm min-h-[400px] resize-none"
+                className="font-mono text-sm h-[400px] resize-none"
               />
             </CardContent>
           </Card>

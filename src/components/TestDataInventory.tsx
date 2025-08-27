@@ -1,16 +1,25 @@
-import React, { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
+import { useState, useMemo } from 'react';
+import { Card, CardContent } from './ui/card';
 import { Button } from './ui/button';
-import { Input } from './ui/input';
 import { Badge } from './ui/badge';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from './ui/table';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from './ui/dialog';
 import { Checkbox } from './ui/checkbox';
-import { Plus, Search, Filter, Eye, RefreshCw, Download } from 'lucide-react';
+import { Plus, Eye, RefreshCw, Download, Pencil, Trash2 } from 'lucide-react';
 import { TestDataDetail } from './TestDataDetail';
 import { CreateTestDataDialog } from './CreateTestDataDialog';
+import { EditTestDataDialog } from './EditTestDataDialog';
 import { SearchAndFilters, FilterConfig } from './SearchAndFilters';
+import { usePermissions } from '../contexts/PermissionsContext';
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from './ui/pagination';
 
 interface TestData {
   id: string;
@@ -27,11 +36,11 @@ interface TestData {
   };
   classifications: string[];
   labels: {
-    proyecto: string;
-    ambiente: string;
+    project: string;
+    environment: string;
     dataOwner: string;
-    grupo?: string;
-    fuente?: string;
+    group?: string;
+    source?: string;
   };
   scope: {
     visibility: 'manual' | 'automated' | 'platform';
@@ -62,11 +71,11 @@ const mockTestData: TestData[] = [
     },
     classifications: ['Expired account', 'Expired credit card', 'Authorized user'],
     labels: {
-      proyecto: 'Core Migration',
-      ambiente: 'QA',
+      project: 'Core Migration',
+      environment: 'QA',
       dataOwner: 'AutomationBot',
-      grupo: 'SME',
-      fuente: 'Core API'
+      group: 'SME',
+      source: 'Core API'
     },
     scope: {
       visibility: 'platform',
@@ -95,11 +104,11 @@ const mockTestData: TestData[] = [
     },
     classifications: ['Business account', 'Primary user', 'Active account'],
     labels: {
-      proyecto: 'Release Q3',
-      ambiente: 'QA',
+      project: 'Release Q3',
+      environment: 'QA',
       dataOwner: 'QA-Team',
-      grupo: 'VIP',
-      fuente: 'Bulk load'
+      group: 'VIP',
+      source: 'Bulk load'
     },
     scope: {
       visibility: 'automated'
@@ -123,11 +132,11 @@ const mockTestData: TestData[] = [
     },
     classifications: ['Active account', 'Authorized user'],
     labels: {
-      proyecto: 'Core Banking',
-      ambiente: 'Preprod',
+      project: 'Core Banking',
+      environment: 'Preprod',
       dataOwner: 'DataTeam',
-      grupo: 'Retail',
-      fuente: 'Generated'
+      group: 'Retail',
+      source: 'Generated'
     },
     scope: {
       visibility: 'manual'
@@ -139,10 +148,330 @@ const mockTestData: TestData[] = [
       runtime: 'Manual Testing'
     },
     team: 'DataTeam'
+  },
+  {
+    id: 'TD-20032',
+    customer: {
+      customerId: 'CUST-54321',
+      name: 'Individual User John',
+      type: 'Individual'
+    },
+    account: {
+      accountId: 'ACC-78945',
+      referenceId: 'REF-ACC-78945',
+      type: 'Savings Account',
+      createdAt: '2025-08-18T09:30:00Z'
+    },
+    classifications: ['Premium account', 'Verified customer', 'High balance'],
+    labels: {
+      project: 'Customer Portal',
+      environment: 'Production',
+      dataOwner: 'DataTeam',
+      group: 'Premium',
+      source: 'CRM System'
+    },
+    scope: {
+      visibility: 'automated',
+      platforms: ['Sierra', 'Xero']
+    },
+    status: 'Available',
+    lastUsed: null,
+    team: 'QA Team'
+  },
+  {
+    id: 'TD-20033',
+    customer: {
+      customerId: 'CUST-67890',
+      name: 'Business Corp Ltd',
+      type: 'Company'
+    },
+    account: {
+      accountId: 'ACC-11223',
+      referenceId: 'REF-ACC-11223',
+      type: 'Business Account',
+      createdAt: '2025-08-19T14:15:00Z'
+    },
+    classifications: ['Business account', 'Primary user', 'Multi-user access'],
+    labels: {
+      project: 'Core Banking',
+      environment: 'QA',
+      dataOwner: 'AutomationBot',
+      group: 'Business',
+      source: 'Core API'
+    },
+    scope: {
+      visibility: 'platform',
+      platforms: ['OCP Testing Studio', 'Sierra']
+    },
+    status: 'Reconditioning',
+    lastUsed: {
+      date: '2025-08-18T14:22:00Z',
+      testId: 'TC-00145',
+      runtime: 'Sierra'
+    },
+    team: 'Core Team'
+  },
+  {
+    id: 'TD-20034',
+    customer: {
+      customerId: 'CUST-13579',
+      name: 'Mobile User Sarah',
+      type: 'Individual'
+    },
+    account: {
+      accountId: 'ACC-44556',
+      referenceId: 'REF-ACC-44556',
+      type: 'Checking Account',
+      createdAt: '2025-08-17T11:45:00Z'
+    },
+    classifications: ['Mobile app user', 'Biometric enabled', 'Active user'],
+    labels: {
+      project: 'Mobile Security',
+      environment: 'Staging',
+      dataOwner: 'MobileTeam',
+      group: 'Standard',
+      source: 'Mobile API'
+    },
+    scope: {
+      visibility: 'automated',
+      platforms: ['OCP Testing Studio']
+    },
+    status: 'In Use',
+    lastUsed: {
+      date: '2025-08-17T14:15:00Z',
+      testId: 'TC-00212',
+      runtime: 'OCP Testing Studio'
+    },
+    team: 'Mobile Team'
+  },
+  {
+    id: 'TD-20035',
+    customer: {
+      customerId: 'CUST-24680',
+      name: 'International Corp',
+      type: 'Company'
+    },
+    account: {
+      accountId: 'ACC-77889',
+      referenceId: 'REF-ACC-77889',
+      type: 'International Account',
+      createdAt: '2025-08-16T08:30:00Z'
+    },
+    classifications: ['International account', 'Compliance verified', 'High value'],
+    labels: {
+      project: 'International Banking',
+      environment: 'Production',
+      dataOwner: 'ComplianceTeam',
+      group: 'International',
+      source: 'SWIFT Network'
+    },
+    scope: {
+      visibility: 'manual',
+      platforms: ['Sierra']
+    },
+    status: 'Available',
+    lastUsed: null,
+    team: 'Web Team'
+  },
+  {
+    id: 'TD-20036',
+    customer: {
+      customerId: 'CUST-97531',
+      name: 'Tech Startup Inc',
+      type: 'Company'
+    },
+    account: {
+      accountId: 'ACC-33667',
+      referenceId: 'REF-ACC-33667',
+      type: 'Business Credit',
+      createdAt: '2025-08-20T13:20:00Z'
+    },
+    classifications: ['New card', 'Customer profile', 'Phone verified'],
+    labels: {
+      project: 'Card Services',
+      environment: 'QA',
+      dataOwner: 'CardTeam',
+      group: 'SME',
+      source: 'Card Processing'
+    },
+    scope: {
+      visibility: 'platform',
+      platforms: ['OCP Testing Studio', 'Xero']
+    },
+    status: 'Consumed',
+    lastUsed: {
+      date: '2025-08-16T13:30:00Z',
+      testId: 'TC-00178',
+      runtime: 'Xero'
+    },
+    team: 'QA Team'
+  },
+  {
+    id: 'TD-20037',
+    customer: {
+      customerId: 'CUST-86420',
+      name: 'Low Balance User',
+      type: 'Individual'
+    },
+    account: {
+      accountId: 'ACC-55778',
+      referenceId: 'REF-ACC-55778',
+      type: 'Basic Account',
+      createdAt: '2025-08-15T16:10:00Z'
+    },
+    classifications: ['Low balance account', 'Payment request', 'Insufficient funds'],
+    labels: {
+      project: 'Payment Gateway',
+      environment: 'QA',
+      dataOwner: 'PaymentTeam',
+      group: 'Basic',
+      source: 'Payment API'
+    },
+    scope: {
+      visibility: 'automated',
+      platforms: ['Sierra', 'OCP Testing Studio']
+    },
+    status: 'Available',
+    lastUsed: {
+      date: '2025-08-20T07:45:00Z',
+      testId: 'TC-00189',
+      runtime: 'Sierra'
+    },
+    team: 'Core Team'
+  },
+  {
+    id: 'TD-20038',
+    customer: {
+      customerId: 'CUST-19283',
+      name: 'MFA Enabled User',
+      type: 'Individual'
+    },
+    account: {
+      accountId: 'ACC-99001',
+      referenceId: 'REF-ACC-99001',
+      type: 'Secure Account',
+      createdAt: '2025-08-19T12:00:00Z'
+    },
+    classifications: ['MFA enabled account', 'Mobile device', 'Email access'],
+    labels: {
+      project: 'Security Enhancement',
+      environment: 'Production',
+      dataOwner: 'SecurityTeam',
+      group: 'Secure',
+      source: 'Auth Service'
+    },
+    scope: {
+      visibility: 'platform',
+      platforms: ['OCP Testing Studio', 'Sierra', 'Xero']
+    },
+    status: 'In Use',
+    lastUsed: {
+      date: '2025-08-19T15:20:00Z',
+      testId: 'TC-00190',
+      runtime: 'OCP Testing Studio'
+    },
+    team: 'Core Team'
+  },
+  {
+    id: 'TD-20039',
+    customer: {
+      customerId: 'CUST-74185',
+      name: 'Document Services Client',
+      type: 'Individual'
+    },
+    account: {
+      accountId: 'ACC-22334',
+      referenceId: 'REF-ACC-22334',
+      type: 'Standard Account',
+      createdAt: '2025-08-18T07:45:00Z'
+    },
+    classifications: ['Active account', 'Statement period data', 'Document access'],
+    labels: {
+      project: 'Document Services',
+      environment: 'Production',
+      dataOwner: 'DocumentTeam',
+      group: 'Standard',
+      source: 'Document API'
+    },
+    scope: {
+      visibility: 'automated',
+      platforms: ['Sierra', 'Xero', 'OCP Testing Studio']
+    },
+    status: 'Available',
+    lastUsed: {
+      date: '2025-08-20T10:00:00Z',
+      testId: 'TC-00223',
+      runtime: 'Xero'
+    },
+    team: 'Web Team'
+  },
+  {
+    id: 'TD-20040',
+    customer: {
+      customerId: 'CUST-96307',
+      name: 'Merchant Account Holder',
+      type: 'Company'
+    },
+    account: {
+      accountId: 'ACC-66778',
+      referenceId: 'REF-ACC-66778',
+      type: 'Merchant Account',
+      createdAt: '2025-08-17T15:30:00Z'
+    },
+    classifications: ['Active credit card', 'Merchant account', 'Payment processing'],
+    labels: {
+      project: 'Card Processing',
+      environment: 'QA',
+      dataOwner: 'MerchantTeam',
+      group: 'Merchant',
+      source: 'Payment Gateway'
+    },
+    scope: {
+      visibility: 'platform',
+      platforms: ['OCP Testing Studio', 'Xero']
+    },
+    status: 'Available',
+    lastUsed: {
+      date: '2025-08-19T12:45:00Z',
+      testId: 'TC-00234',
+      runtime: 'Xero'
+    },
+    team: 'QA Team'
+  },
+  {
+    id: 'TD-20042',
+    customer: {
+      customerId: 'CUST-52841',
+      name: 'Recovery Test User',
+      type: 'Individual'
+    },
+    account: {
+      accountId: 'ACC-88990',
+      referenceId: 'REF-ACC-88990',
+      type: 'Test Account',
+      createdAt: '2025-08-20T14:00:00Z'
+    },
+    classifications: ['User account', 'Security questions setup', 'Email access'],
+    labels: {
+      project: 'Account Recovery',
+      environment: 'Staging',
+      dataOwner: 'TestTeam',
+      group: 'Test',
+      source: 'Test Data Generator'
+    },
+    scope: {
+      visibility: 'manual'
+    },
+    status: 'Inactive',
+    lastUsed: null,
+    team: 'Core Team'
   }
 ];
 
+const ITEMS_PER_PAGE = 10;
+
 export function TestDataInventory() {
+  const { hasPermission } = usePermissions();
   const [testData, setTestData] = useState<TestData[]>(mockTestData);
   const [selectedTestData, setSelectedTestData] = useState<TestData | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
@@ -152,6 +481,8 @@ export function TestDataInventory() {
   const [filterProyecto, setFilterProyecto] = useState<string | string[]>('all');
   const [filterTeam, setFilterTeam] = useState<string | string[]>('all');
   const [selectedDataIds, setSelectedDataIds] = useState<Set<string>>(new Set());
+  const [currentPage, setCurrentPage] = useState(1);
+  const [selectAllPages, setSelectAllPages] = useState(false);
 
   const filteredTestData = testData.filter(data => {
     const matchesSearch = data.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -167,10 +498,10 @@ export function TestDataInventory() {
                         (Array.isArray(filterScope) ? filterScope.includes(data.scope.visibility) : data.scope.visibility === filterScope);
     
     const matchesAmbiente = filterAmbiente === 'all' || 
-                           (Array.isArray(filterAmbiente) ? filterAmbiente.includes(data.labels.ambiente) : data.labels.ambiente === filterAmbiente);
+                           (Array.isArray(filterAmbiente) ? filterAmbiente.includes(data.labels.environment) : data.labels.environment === filterAmbiente);
     
     const matchesProyecto = filterProyecto === 'all' || 
-                           (Array.isArray(filterProyecto) ? filterProyecto.includes(data.labels.proyecto) : data.labels.proyecto === filterProyecto);
+                           (Array.isArray(filterProyecto) ? filterProyecto.includes(data.labels.project) : data.labels.project === filterProyecto);
     
     const matchesTeam = filterTeam === 'all' || 
                        (Array.isArray(filterTeam) ? filterTeam.includes(data.team) : data.team === filterTeam);
@@ -178,13 +509,46 @@ export function TestDataInventory() {
     return matchesSearch && matchesStatus && matchesScope && matchesAmbiente && matchesProyecto && matchesTeam;
   });
 
+  // Pagination calculations
+  const totalPages = Math.ceil(filteredTestData.length / ITEMS_PER_PAGE);
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+  const endIndex = startIndex + ITEMS_PER_PAGE;
+  const paginatedTestData = filteredTestData.slice(startIndex, endIndex);
+
+  // Reset to first page when filters change
+  useMemo(() => {
+    setCurrentPage(1);
+  }, [searchTerm, filterStatus, filterScope, filterAmbiente, filterProyecto, filterTeam]);
+
   // Selection handlers
   const handleSelectAll = (checked: boolean) => {
     if (checked) {
-      const filteredIds = new Set(filteredTestData.map(data => data.id));
-      setSelectedDataIds(filteredIds);
+      if (selectAllPages) {
+        // Select all test data across all pages
+        const allIds = new Set(filteredTestData.map(data => data.id));
+        setSelectedDataIds(allIds);
+      } else {
+        // Select only current page
+        const currentPageIds = new Set(paginatedTestData.map(data => data.id));
+        setSelectedDataIds(prevIds => {
+          const newIds = new Set(prevIds);
+          currentPageIds.forEach(id => newIds.add(id));
+          return newIds;
+        });
+      }
     } else {
-      setSelectedDataIds(new Set());
+      if (selectAllPages) {
+        // Deselect all
+        setSelectedDataIds(new Set());
+      } else {
+        // Deselect only current page
+        const currentPageIds = new Set(paginatedTestData.map(data => data.id));
+        setSelectedDataIds(prevIds => {
+          const newIds = new Set(prevIds);
+          currentPageIds.forEach(id => newIds.delete(id));
+          return newIds;
+        });
+      }
     }
   };
 
@@ -199,9 +563,46 @@ export function TestDataInventory() {
   };
 
   // Selection state helpers
-  const isAllSelected = filteredTestData.length > 0 && filteredTestData.every(data => selectedDataIds.has(data.id));
+  const isCurrentPageSelected = paginatedTestData.length > 0 && paginatedTestData.every(data => selectedDataIds.has(data.id));
+  const isAllPagesSelected = filteredTestData.length > 0 && filteredTestData.every(data => selectedDataIds.has(data.id));
+  const isAllSelected = selectAllPages ? isAllPagesSelected : isCurrentPageSelected;
   const isIndeterminate = selectedDataIds.size > 0 && !isAllSelected;
   const selectedCount = selectedDataIds.size;
+
+  // Generate page numbers for pagination
+  const getPageNumbers = () => {
+    const pages = [];
+    const maxVisiblePages = 5;
+    
+    if (totalPages <= maxVisiblePages) {
+      for (let i = 1; i <= totalPages; i++) {
+        pages.push(i);
+      }
+    } else {
+      if (currentPage <= 3) {
+        for (let i = 1; i <= 4; i++) {
+          pages.push(i);
+        }
+        pages.push('ellipsis');
+        pages.push(totalPages);
+      } else if (currentPage >= totalPages - 2) {
+        pages.push(1);
+        pages.push('ellipsis');
+        for (let i = totalPages - 3; i <= totalPages; i++) {
+          pages.push(i);
+        }
+      } else {
+        pages.push(1);
+        pages.push('ellipsis');
+        pages.push(currentPage - 1);
+        pages.push(currentPage);
+        pages.push(currentPage + 1);
+        pages.push('ellipsis');
+        pages.push(totalPages);
+      }
+    }
+    return pages;
+  };
 
   const getStatusBadge = (status: string) => {
     const variants = {
@@ -243,6 +644,36 @@ export function TestDataInventory() {
     ));
   };
 
+  const handleTestDataUpdate = (updatedData: TestData) => {
+    setTestData(prev => prev.map(data => 
+      data.id === updatedData.id ? updatedData : data
+    ));
+  };
+
+  const handleDeleteTestData = (testDataId: string) => {
+    if (window.confirm('Are you sure you want to delete this test data? This action cannot be undone.')) {
+      setTestData(prev => prev.filter(data => data.id !== testDataId));
+      // Remove from selection if it was selected
+      setSelectedDataIds(prev => {
+        const newSelection = new Set(prev);
+        newSelection.delete(testDataId);
+        return newSelection;
+      });
+    }
+  };
+
+  const handleBulkDelete = () => {
+    if (selectedCount === 0) {
+      alert('Please select at least one test data record to delete');
+      return;
+    }
+    
+    if (window.confirm(`Are you sure you want to delete ${selectedCount} test data record${selectedCount !== 1 ? 's' : ''}? This action cannot be undone.`)) {
+      setTestData(prev => prev.filter(data => !selectedDataIds.has(data.id)));
+      setSelectedDataIds(new Set());
+    }
+  };
+
   const generateTestDataYaml = () => {
     // Export only selected test data, or all filtered test data if none selected
     const dataToExport = selectedCount > 0 
@@ -269,11 +700,11 @@ ${dataToExport.map(data => `  - id: ${data.id}
     classifications:
 ${data.classifications.map(cls => `      - ${cls}`).join('\n')}
     labels:
-      proyecto: ${data.labels.proyecto}
-      ambiente: ${data.labels.ambiente}
-      dataOwner: ${data.labels.dataOwner}${data.labels.grupo ? `
-      grupo: ${data.labels.grupo}` : ''}${data.labels.fuente ? `
-      fuente: ${data.labels.fuente}` : ''}
+      project: ${data.labels.project}
+      environment: ${data.labels.environment}
+      dataOwner: ${data.labels.dataOwner}${data.labels.group ? `
+      group: ${data.labels.group}` : ''}${data.labels.source ? `
+      source: ${data.labels.source}` : ''}
     scope:
       visibility: ${data.scope.visibility}${data.scope.platforms ? `
       platforms:
@@ -343,7 +774,7 @@ ${data.scope.platforms.map(platform => `        - ${platform}`).join('\n')}` : '
       ]
     },
     {
-      key: 'ambiente',
+      key: 'environment',
       label: 'ENVIRONMENT',
       placeholder: 'Environment',
       value: filterAmbiente,
@@ -357,7 +788,7 @@ ${data.scope.platforms.map(platform => `        - ${platform}`).join('\n')}` : '
       ]
     },
     {
-      key: 'proyecto',
+      key: 'project',
       label: 'PROJECT',
       placeholder: 'Project',
       value: filterProyecto,
@@ -403,21 +834,35 @@ ${data.scope.platforms.map(platform => `        - ${platform}`).join('\n')}` : '
           <p className="text-gray-600">Test data and banking entities management</p>
         </div>
         <div className="flex gap-2">
-          <CreateTestDataDialog onTestDataCreated={(newData) => setTestData([...testData, newData])}>
-            <Button>
-              <Plus className="w-4 h-4 mr-2" />
-              Create Test Data
+          {hasPermission('create_test_data') && (
+            <CreateTestDataDialog onTestDataCreated={(newData) => setTestData([...testData, newData])}>
+              <Button>
+                <Plus className="w-4 h-4 mr-2" />
+                Create Test Data
+              </Button>
+            </CreateTestDataDialog>
+          )}
+          {hasPermission('export_tests') && (
+            <Button 
+              size="sm" 
+              variant="outline" 
+              onClick={exportYaml}
+              disabled={selectedCount === 0}
+            >
+              <Download className="w-4 h-4 mr-2" />
+              {selectedCount > 0 ? `Export YAML (${selectedCount})` : 'Export YAML'}
             </Button>
-          </CreateTestDataDialog>
-          <Button 
-            size="sm" 
-            variant="outline" 
-            onClick={exportYaml}
-            disabled={selectedCount === 0}
-          >
-            <Download className="w-4 h-4 mr-2" />
-            {selectedCount > 0 ? `Export YAML (${selectedCount})` : 'Export YAML'}
-          </Button>
+          )}
+          {hasPermission('delete_test_data') && selectedCount > 0 && (
+            <Button 
+              size="sm" 
+              variant="destructive" 
+              onClick={handleBulkDelete}
+            >
+              <Trash2 className="w-4 h-4 mr-2" />
+              Delete Selected ({selectedCount})
+            </Button>
+          )}
         </div>
       </div>
 
@@ -474,7 +919,7 @@ ${data.scope.platforms.map(platform => `        - ${platform}`).join('\n')}` : '
                   <Checkbox
                     checked={isAllSelected}
                     ref={(el) => {
-                      if (el) el.indeterminate = isIndeterminate;
+                      if (el) (el as any).indeterminate = isIndeterminate;
                     }}
                     onCheckedChange={handleSelectAll}
                   />
@@ -493,7 +938,7 @@ ${data.scope.platforms.map(platform => `        - ${platform}`).join('\n')}` : '
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredTestData.map((data) => (
+              {paginatedTestData.map((data) => (
                 <TableRow key={data.id}>
                   <TableCell>
                     <Checkbox
@@ -535,10 +980,10 @@ ${data.scope.platforms.map(platform => `        - ${platform}`).join('\n')}` : '
                   <TableCell>
                     <div className="space-y-1">
                       <Badge variant="outline" className="text-xs">
-                        {data.labels.proyecto}
+                        {data.labels.project}
                       </Badge>
                       <div className="text-xs text-gray-500">
-                        {data.labels.ambiente} • {data.labels.dataOwner}
+                        {data.labels.environment} • {data.labels.dataOwner}
                       </div>
                     </div>
                   </TableCell>
@@ -580,23 +1025,80 @@ ${data.scope.platforms.map(platform => `        - ${platform}`).join('\n')}` : '
                             <Eye className="w-4 h-4" />
                           </Button>
                         </DialogTrigger>
-                        <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
-                          <DialogHeader>
-                            <DialogTitle>Test Data Details: {data.id}</DialogTitle>
-                            <DialogDescription>
-                              {data.customer.name} - {data.account.referenceId}
-                            </DialogDescription>
+                        <DialogContent className="flex h-[90vh] !w-[50vw] !max-w-[50vw] flex-col bg-gradient-to-br from-white to-gray-50 p-0 sm:!max-w-[50vw]">
+                          <DialogHeader className="border-b border-gray-200 pb-4 px-6 pt-6 shrink-0">
+                            <div className="flex items-start justify-between">
+                              <div className="space-y-2">
+                                <div className="flex items-center gap-3">
+                                  <DialogTitle className="text-2xl font-bold text-gray-900">
+                                    Test Data Details of {data.id}
+                                  </DialogTitle>
+                                  <Badge className={`px-3 py-1 ${
+                                    data.status === 'Available' ? 'bg-green-100 text-green-800' :
+                                    data.status === 'In Use' ? 'bg-blue-100 text-blue-800' :
+                                    data.status === 'Consumed' ? 'bg-red-100 text-red-800' :
+                                    data.status === 'Reconditioning' ? 'bg-yellow-100 text-yellow-800' :
+                                    'bg-gray-100 text-gray-800'
+                                  }`}>
+                                    {data.status}
+                                  </Badge>
+                                  <Badge variant="outline" className="px-3 py-1">
+                                    {data.scope.visibility}
+                                  </Badge>
+                                </div>
+                                <DialogDescription className="text-lg font-medium text-gray-700">
+                                  {data.customer.name} - {data.customer.type}
+                                </DialogDescription>
+                                <div className="flex items-center gap-4 text-sm text-gray-500">
+                                  <span>Account: <span className="font-medium text-gray-700 font-mono">{data.account.referenceId}</span></span>
+                                  <span>•</span>
+                                  <span>Team: <span className="font-medium text-gray-700">{data.team}</span></span>
+                                  <span>•</span>
+                                  <span>Environment: <span className="font-medium text-gray-700">{data.labels.environment}</span></span>
+                                </div>
+                              </div>
+                              <div className="flex gap-2">
+                                {data.status === 'Consumed' && hasPermission('edit_test_data') && (
+                                  <Button 
+                                    size="sm" 
+                                    variant="outline"
+                                    onClick={() => handleRecondition(data.id)}
+                                    className="hover:bg-yellow-50"
+                                  >
+                                    <RefreshCw className="w-4 h-4 mr-2" />
+                                    Recondition
+                                  </Button>
+                                )}
+                              </div>
+                            </div>
                           </DialogHeader>
-                          {selectedTestData && <TestDataDetail testData={selectedTestData} />}
+                          <div className="flex-1 overflow-hidden p-6">
+                            <div className="h-full overflow-y-auto">
+                              {selectedTestData && <TestDataDetail testData={selectedTestData} />}
+                            </div>
+                          </div>
                         </DialogContent>
                       </Dialog>
-                      {data.status === 'Consumed' && (
+                      
+                      {hasPermission('edit_test_data') && (
+                        <EditTestDataDialog 
+                          testData={data} 
+                          onTestDataUpdated={handleTestDataUpdate}
+                        >
+                          <Button size="sm" variant="outline">
+                            <Pencil className="w-4 h-4" />
+                          </Button>
+                        </EditTestDataDialog>
+                      )}
+                      
+                      {hasPermission('delete_test_data') && (
                         <Button 
                           size="sm" 
                           variant="outline"
-                          onClick={() => handleRecondition(data.id)}
+                          onClick={() => handleDeleteTestData(data.id)}
+                          className="text-red-600 hover:text-red-700 hover:bg-red-50"
                         >
-                          <RefreshCw className="w-4 h-4" />
+                          <Trash2 className="w-4 h-4" />
                         </Button>
                       )}
                     </div>
@@ -606,6 +1108,72 @@ ${data.scope.platforms.map(platform => `        - ${platform}`).join('\n')}` : '
             </TableBody>
           </Table>
         </CardContent>
+        
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div className="border-t px-6 py-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <p className="text-sm text-muted-foreground">
+                  Showing {startIndex + 1} to {Math.min(endIndex, filteredTestData.length)} of {filteredTestData.length} results
+                </p>
+                {filteredTestData.length > ITEMS_PER_PAGE && (
+                  <div className="flex items-center gap-2">
+                    <Checkbox
+                      id="select-all-pages-testdata"
+                      checked={selectAllPages}
+                      onCheckedChange={(checked) => {
+                        setSelectAllPages(checked as boolean);
+                        // If selecting across all pages and no items are selected, select all
+                        if (checked && selectedCount === 0) {
+                          const allIds = new Set(filteredTestData.map(data => data.id));
+                          setSelectedDataIds(allIds);
+                        }
+                      }}
+                    />
+                    <label htmlFor="select-all-pages-testdata" className="text-sm text-muted-foreground cursor-pointer">
+                      Select across all pages
+                    </label>
+                  </div>
+                )}
+              </div>
+              
+              <Pagination>
+                <PaginationContent>
+                  <PaginationItem>
+                    <PaginationPrevious 
+                      onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                      className={currentPage === 1 ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+                    />
+                  </PaginationItem>
+                  
+                  {getPageNumbers().map((page, index) => (
+                    <PaginationItem key={index}>
+                      {page === 'ellipsis' ? (
+                        <PaginationEllipsis />
+                      ) : (
+                        <PaginationLink
+                          onClick={() => setCurrentPage(page as number)}
+                          isActive={currentPage === page}
+                          className="cursor-pointer"
+                        >
+                          {page}
+                        </PaginationLink>
+                      )}
+                    </PaginationItem>
+                  ))}
+                  
+                  <PaginationItem>
+                    <PaginationNext
+                      onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                      className={currentPage === totalPages ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+                    />
+                  </PaginationItem>
+                </PaginationContent>
+              </Pagination>
+            </div>
+          </div>
+        )}
       </Card>
     </div>
   );
