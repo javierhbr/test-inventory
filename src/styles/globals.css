@@ -59,6 +59,39 @@
   }
 }
 
+/* Forced overrides to guarantee active tab appearance (highest specificity + !important)
+   This is intentionally specific to override third-party or inline styles. */
+#app [data-slot='tabs-list'] [data-slot='tabs-trigger'][data-state='active'],
+[data-slot='tabs-list'] [data-slot='tabs-trigger'][data-state='active'] {
+  background-color: #ffffff !important;
+  color: #0f172a !important; /* slate-900 */
+  font-weight: 600 !important;
+  box-shadow: 0 1px 3px rgba(2, 6, 23, 0.06) !important;
+  border-radius: 9999px !important;
+}
+
+[data-slot='tabs-list'] [data-slot='tabs-trigger'][data-state='active'] svg {
+  color: #0f172a !important;
+}
+
+/* Also honor the JS-applied .forced-active class (very high specificity + !important)
+   This targets several selector forms in case the DOM structure differs. */
+#app [data-slot='tabs-list'] [data-slot='tabs-trigger'].forced-active,
+[data-slot='tabs-list'] [data-slot='tabs-trigger'].forced-active,
+[data-slot='tabs-trigger'].forced-active,
+[data-slot='tabs-list'] .forced-active {
+  background-color: #ffffff !important;
+  color: #0f172a !important; /* slate-900 */
+  font-weight: 600 !important;
+  box-shadow: 0 1px 3px rgba(2, 6, 23, 0.06) !important;
+  border-radius: 9999px !important;
+}
+
+[data-slot='tabs-trigger'].forced-active svg,
+.forced-active svg {
+  color: #0f172a !important;
+}
+
 @layer base {
   * {
     @apply border-border;
@@ -70,15 +103,14 @@
 
 @layer components {
   /* Ensure active tab styles persist */
+  /* Active tab: soft white pill on gray bar (no heavy border/underline)
+     This replaces the previous bold/underline style so pills render cleanly */
   [data-slot='tabs-trigger'][data-state='active'] {
-    @apply !z-20 !scale-105 !border-2 !border-b-0 !border-blue-500 !bg-white !font-bold !text-blue-700 !shadow-lg;
+    @apply rounded-full !bg-white !font-semibold !text-slate-900 !shadow-sm;
   }
 
-  [data-slot='tabs-trigger'][data-state='active']:after {
-    @apply !h-1 !bg-blue-600;
-  }
-
+  /* Ensure icon color matches text for active tab */
   [data-slot='tabs-trigger'][data-state='active'] svg {
-    @apply !text-blue-700;
+    @apply !text-slate-900;
   }
 }

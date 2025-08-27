@@ -1,10 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-interface NavigationState {
-  tab: string;
-  timestamp: number;
-}
-
 export function useNavigationHistory(initialTab: string) {
   const [currentTab, setCurrentTab] = useState(initialTab);
   const ignoreNextPush = useRef(false);
@@ -16,7 +11,9 @@ export function useNavigationHistory(initialTab: string) {
     if (!currentUrl.searchParams.has('tab')) {
       const newUrl = new URL(window.location.href);
       newUrl.searchParams.set('tab', initialTab);
-      window.history.replaceState({ tab: initialTab }, '', newUrl.toString());
+      // Use pushState so the original entry (for example the login screen)
+      // remains in the history stack and the back button can return to it.
+      window.history.pushState({ tab: initialTab }, '', newUrl.toString());
     } else {
       const urlTab = currentUrl.searchParams.get('tab');
       if (urlTab && urlTab !== initialTab) {

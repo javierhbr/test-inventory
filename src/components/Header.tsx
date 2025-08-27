@@ -61,7 +61,7 @@ export function Header({
   const ProfileIcon = profileIcons[user.profile];
 
   return (
-    <div className="border-b border-gray-200 bg-white px-6 py-4">
+    <div className="border-b border-gray-200 bg-white px-6 py-4 shadow-sm">
       <div className="mx-auto flex max-w-7xl items-center justify-between">
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2">
