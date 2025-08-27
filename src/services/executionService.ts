@@ -2,17 +2,17 @@
 
 import { findAvailableTestData } from './testDataService';
 import {
-  Test,
-  CartItem,
   AssignedTestData,
-  YamlGenerationOptions,
+  CartItem,
   FilterOptions,
+  Test,
+  YamlGenerationOptions,
 } from './types';
 import {
-  generateId,
-  downloadFile,
   copyToClipboard,
+  downloadFile,
   filterItems,
+  generateId,
 } from './utils';
 
 /**
@@ -41,7 +41,9 @@ export function filterTestsForExecution(
     }
 
     if (filters.runtime && filters.runtime !== 'all') {
-      const runtime = Array.isArray(filters.runtime) ? filters.runtime[0] : filters.runtime;
+      const runtime = Array.isArray(filters.runtime)
+        ? filters.runtime[0]
+        : filters.runtime;
       return test.supportedRuntimes.includes(runtime);
     }
 

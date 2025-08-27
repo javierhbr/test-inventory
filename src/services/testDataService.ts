@@ -1,11 +1,7 @@
 // Test Data service - handles all test data-related business logic
 
 import { TestData, CreateTestDataFormData, FilterOptions } from './types';
-import {
-  generateId,
-  filterItems,
-  validateRequiredFields,
-} from './utils';
+import { generateId, filterItems, validateRequiredFields } from './utils';
 
 // Mock test data
 const mockTestData: TestData[] = [
@@ -18,6 +14,7 @@ const mockTestData: TestData[] = [
     status: 'Disponible',
     createdAt: '2025-08-18T09:30:00Z',
     lastUsed: null,
+    team: 'Banking Team',
     s3Location: {
       bucket: 'test-data-storage',
       path: 'banking/accounts/active/ACC-45123.json',
@@ -152,7 +149,10 @@ export function filterTestData(
     }
 
     if (filters.classification && filters.classification !== 'all') {
-      return data.classification.includes(filters.classification);
+      const classificationFilter = Array.isArray(filters.classification)
+        ? filters.classification[0]
+        : filters.classification;
+      return data.classification.includes(classificationFilter);
     }
 
     if (

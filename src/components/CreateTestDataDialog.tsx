@@ -257,7 +257,7 @@ export function CreateTestDataDialog({
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>{children}</DialogTrigger>
+      <DialogTrigger>{children}</DialogTrigger>
       <DialogContent className="flex h-[90vh] !w-[50vw] !max-w-[50vw] flex-col bg-gradient-to-br from-white to-gray-50 p-0 sm:!max-w-[50vw]">
         <DialogHeader className="shrink-0 border-b border-gray-200 px-6 pb-4 pt-6">
           <DialogTitle className="text-2xl font-bold text-gray-900">
@@ -304,10 +304,12 @@ export function CreateTestDataDialog({
                       <Label htmlFor="customerType">Customer Type *</Label>
                       <Select
                         value={customerType}
-                        onValueChange={setCustomerType}
+                        onValueChange={value =>
+                          setCustomerType(value as string)
+                        }
                       >
                         <SelectTrigger>
-                          <SelectValue placeholder="Select customer type" />
+                          <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
                           {customerTypes.map(type => (
@@ -322,10 +324,10 @@ export function CreateTestDataDialog({
                       <Label htmlFor="accountType">Account Type *</Label>
                       <Select
                         value={accountType}
-                        onValueChange={setAccountType}
+                        onValueChange={value => setAccountType(value as string)}
                       >
                         <SelectTrigger>
-                          <SelectValue placeholder="Select account type" />
+                          <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
                           {accountTypes.map(type => (
@@ -413,9 +415,12 @@ export function CreateTestDataDialog({
                     </div>
                     <div>
                       <Label htmlFor="ambiente">Environment *</Label>
-                      <Select value={ambiente} onValueChange={setAmbiente}>
+                      <Select
+                        value={ambiente}
+                        onValueChange={value => setAmbiente(value as string)}
+                      >
                         <SelectTrigger>
-                          <SelectValue placeholder="Select environment" />
+                          <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="QA">QA</SelectItem>
@@ -436,9 +441,12 @@ export function CreateTestDataDialog({
                     </div>
                     <div>
                       <Label htmlFor="grupo">Customer Group</Label>
-                      <Select value={grupo} onValueChange={setGrupo}>
+                      <Select
+                        value={grupo}
+                        onValueChange={value => setGrupo(value as string)}
+                      >
                         <SelectTrigger>
-                          <SelectValue placeholder="Select group (optional)" />
+                          <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="VIP">VIP</SelectItem>

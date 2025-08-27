@@ -14,37 +14,34 @@ function DropdownMenu({
 function DropdownMenuPortal({
   ...props
 }: React.ComponentProps<typeof BaseMenu.Portal>) {
-  return (
-    <BaseMenu.Portal data-slot="dropdown-menu-portal" {...props} />
-  );
+  return <BaseMenu.Portal data-slot="dropdown-menu-portal" {...props} />;
 }
 
 function DropdownMenuTrigger({
   ...props
-}: React.ComponentProps<typeof BaseMenu.Trigger>) {
-  return (
-    <BaseMenu.Trigger
-      data-slot="dropdown-menu-trigger"
-      {...props}
-    />
-  );
+}: React.ComponentProps<typeof BaseMenu.Trigger | typeof BaseMenu.Trigger>) {
+  // The package exposes Menu.Trigger under the Menu namespace as "Trigger"
+  // and the popup/content element is named "Popup" in this package. We keep
+  // the same prop typing but render the underlying Trigger.
+  return <BaseMenu.Trigger data-slot="dropdown-menu-trigger" {...props} />;
 }
 
 function DropdownMenuContent({
   className,
-  sideOffset = 4,
   ...props
-}: React.ComponentProps<typeof BaseMenu.Content>) {
+}: React.ComponentProps<typeof BaseMenu.Popup>) {
+  // The package uses Menu.Popup as the content container for menus.
   return (
     <BaseMenu.Portal>
-      <BaseMenu.Content
+      <BaseMenu.Popup
         data-slot="dropdown-menu-content"
-        sideOffset={sideOffset}
+        // The Popup implementation accepts positioning via the Menu positioner context.
+        // Avoid forwarding unknown props like `sideOffset` which the package typings don't accept.
         className={cn(
           'max-h-(--radix-dropdown-menu-content-available-height) origin-(--radix-dropdown-menu-content-transform-origin) z-50 min-w-[8rem] overflow-y-auto overflow-x-hidden rounded-md border bg-popover p-1 text-popover-foreground shadow-md data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2',
           className
         )}
-        {...props}
+        {...(props as any)}
       />
     </BaseMenu.Portal>
   );
@@ -53,9 +50,7 @@ function DropdownMenuContent({
 function DropdownMenuGroup({
   ...props
 }: React.ComponentProps<typeof BaseMenu.Group>) {
-  return (
-    <BaseMenu.Group data-slot="dropdown-menu-group" {...props} />
-  );
+  return <BaseMenu.Group data-slot="dropdown-menu-group" {...props} />;
 }
 
 function DropdownMenuItem({
@@ -98,9 +93,10 @@ function DropdownMenuCheckboxItem({
       {...props}
     >
       <span className="pointer-events-none absolute left-2 flex size-3.5 items-center justify-center">
-        <BaseMenu.ItemIndicator>
+        {/* Use the specific checkbox item indicator exported by the package */}
+        <BaseMenu.CheckboxItemIndicator>
           <CheckIcon className="size-4" />
-        </BaseMenu.ItemIndicator>
+        </BaseMenu.CheckboxItemIndicator>
       </span>
       {children}
     </BaseMenu.CheckboxItem>
@@ -111,10 +107,7 @@ function DropdownMenuRadioGroup({
   ...props
 }: React.ComponentProps<typeof BaseMenu.RadioGroup>) {
   return (
-    <BaseMenu.RadioGroup
-      data-slot="dropdown-menu-radio-group"
-      {...props}
-    />
+    <BaseMenu.RadioGroup data-slot="dropdown-menu-radio-group" {...props} />
   );
 }
 
@@ -133,9 +126,10 @@ function DropdownMenuRadioItem({
       {...props}
     >
       <span className="pointer-events-none absolute left-2 flex size-3.5 items-center justify-center">
-        <BaseMenu.ItemIndicator>
+        {/* Use the specific radio item indicator exported by the package */}
+        <BaseMenu.RadioItemIndicator>
           <CircleIcon className="size-2 fill-current" />
-        </BaseMenu.ItemIndicator>
+        </BaseMenu.RadioItemIndicator>
       </span>
       {children}
     </BaseMenu.RadioItem>
@@ -146,11 +140,11 @@ function DropdownMenuLabel({
   className,
   inset,
   ...props
-}: React.ComponentProps<typeof BaseMenu.Label> & {
+}: React.ComponentProps<typeof BaseMenu.GroupLabel> & {
   inset?: boolean;
 }) {
   return (
-    <BaseMenu.Label
+    <BaseMenu.GroupLabel
       data-slot="dropdown-menu-label"
       data-inset={inset}
       className={cn(
@@ -193,8 +187,9 @@ function DropdownMenuShortcut({
 
 function DropdownMenuSub({
   ...props
-}: React.ComponentProps<typeof BaseMenu.Sub>) {
-  return <BaseMenu.Sub data-slot="dropdown-menu-sub" {...props} />;
+}: React.ComponentProps<typeof BaseMenu.SubmenuRoot>) {
+  // Map Sub to the package's SubmenuRoot export
+  return <BaseMenu.SubmenuRoot data-slot="dropdown-menu-sub" {...props} />;
 }
 
 function DropdownMenuSubTrigger({
@@ -202,11 +197,11 @@ function DropdownMenuSubTrigger({
   inset,
   children,
   ...props
-}: React.ComponentProps<typeof BaseMenu.SubTrigger> & {
+}: React.ComponentProps<typeof BaseMenu.SubmenuTrigger> & {
   inset?: boolean;
 }) {
   return (
-    <BaseMenu.SubTrigger
+    <BaseMenu.SubmenuTrigger
       data-slot="dropdown-menu-sub-trigger"
       data-inset={inset}
       className={cn(
@@ -217,40 +212,41 @@ function DropdownMenuSubTrigger({
     >
       {children}
       <ChevronRightIcon className="ml-auto size-4" />
-    </BaseMenu.SubTrigger>
+    </BaseMenu.SubmenuTrigger>
   );
 }
 
 function DropdownMenuSubContent({
   className,
   ...props
-}: React.ComponentProps<typeof BaseMenu.SubContent>) {
+}: React.ComponentProps<typeof BaseMenu.Popup>) {
+  // Reuse the Popup export for submenu content
   return (
-    <BaseMenu.SubContent
+    <BaseMenu.Popup
       data-slot="dropdown-menu-sub-content"
       className={cn(
         'origin-(--radix-dropdown-menu-content-transform-origin) z-50 min-w-[8rem] overflow-hidden rounded-md border bg-popover p-1 text-popover-foreground shadow-lg data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2',
         className
       )}
-      {...props}
+      {...(props as any)}
     />
   );
 }
 
 export {
   DropdownMenu,
-  DropdownMenuPortal,
-  DropdownMenuTrigger,
+  DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuGroup,
-  DropdownMenuLabel,
   DropdownMenuItem,
-  DropdownMenuCheckboxItem,
+  DropdownMenuLabel,
+  DropdownMenuPortal,
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
   DropdownMenuSeparator,
   DropdownMenuShortcut,
   DropdownMenuSub,
-  DropdownMenuSubTrigger,
   DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
+  DropdownMenuTrigger,
 };

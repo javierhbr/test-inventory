@@ -31,6 +31,7 @@ const profileIcons = {
   dev: Code,
   automation: Cog,
   product: Package,
+  qa_engineer: TestTube,
   admin: Shield,
 };
 
@@ -38,6 +39,7 @@ const profileColors = {
   dev: 'bg-blue-100 text-blue-800',
   automation: 'bg-green-100 text-green-800',
   product: 'bg-purple-100 text-purple-800',
+  qa_engineer: 'bg-orange-100 text-orange-800',
   admin: 'bg-red-100 text-red-800',
 };
 
@@ -75,7 +77,7 @@ export function Header({ user, onLogout }: HeaderProps) {
           </div>
 
           <DropdownMenu>
-            <DropdownMenuTrigger asChild>
+            <DropdownMenuTrigger>
               <Button variant="ghost" className="relative h-8 w-8 rounded-full">
                 <Avatar className="h-8 w-8">
                   <AvatarFallback className="bg-primary text-primary-foreground">
@@ -84,7 +86,7 @@ export function Header({ user, onLogout }: HeaderProps) {
                 </Avatar>
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-56" align="end" forceMount>
+            <DropdownMenuContent className="w-56">
               <div className="flex items-center justify-start gap-2 p-2">
                 <div className="flex flex-col space-y-1 leading-none">
                   <p className="font-medium">{user.name}</p>

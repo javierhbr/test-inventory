@@ -596,7 +596,7 @@ export function UserManagement() {
                         <UserCheck className="h-3 w-3" />
                       </Button>
                       <AlertDialog>
-                        <AlertDialogTrigger asChild>
+                        <AlertDialogTrigger>
                           <Button
                             size="sm"
                             variant="outline"
@@ -737,8 +737,8 @@ export function UserManagement() {
               <Label htmlFor="profile">{config.formLabels.profile}</Label>
               <Select
                 value={newUser.profile}
-                onValueChange={(value: UserProfile) =>
-                  setNewUser({ ...newUser, profile: value })
+                onValueChange={value =>
+                  setNewUser({ ...newUser, profile: value as UserProfile })
                 }
               >
                 <SelectTrigger>
@@ -811,8 +811,8 @@ export function UserManagement() {
               <Label htmlFor="edit-profile">{config.formLabels.profile}</Label>
               <Select
                 value={editUser.profile}
-                onValueChange={(value: UserProfile) => {
-                  setEditUser({ ...editUser, profile: value });
+                onValueChange={value => {
+                  setEditUser({ ...editUser, profile: value as UserProfile });
                 }}
               >
                 <SelectTrigger>

@@ -6,7 +6,12 @@ export interface User {
   profile: UserProfile;
 }
 
-export type UserProfile = 'dev' | 'automation' | 'product' | 'admin';
+export type UserProfile =
+  | 'dev'
+  | 'automation'
+  | 'product'
+  | 'qa_engineer'
+  | 'admin';
 
 export interface Test {
   id: string;
@@ -38,6 +43,7 @@ export interface TestData {
   status: 'Disponible' | 'En uso' | 'Consumida' | 'Reacondicionamiento';
   createdAt: string;
   lastUsed: string | null;
+  team: string;
   s3Location: {
     bucket: string;
     path: string;
@@ -74,6 +80,7 @@ export interface CreateTestFormData {
   };
   dataRequirements: string[];
   supportedRuntimes: string[];
+  [key: string]: unknown;
 }
 
 export interface CreateTestDataFormData {
@@ -86,6 +93,7 @@ export interface CreateTestDataFormData {
     environment: string;
     region: string;
   };
+  [key: string]: unknown;
 }
 
 export interface FilterOptions {

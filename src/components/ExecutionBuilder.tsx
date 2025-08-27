@@ -822,7 +822,7 @@ ${item.test.dataRequirements.map(req => `      - ${req}`).join('\n')}${
           <div className="space-y-4">
             <div className="flex gap-2">
               <Dialog open={showCsvDialog} onOpenChange={setShowCsvDialog}>
-                <DialogTrigger asChild>
+                <DialogTrigger>
                   <Button size="sm" variant="outline" className="flex-1">
                     <Upload className="mr-2 h-4 w-4" />
                     Import CSV
@@ -1060,10 +1060,12 @@ TC-00198`}
                       </label>
                       <Select
                         value={cartSearchFilter}
-                        onValueChange={setCartSearchFilter}
+                        onValueChange={value =>
+                          setCartSearchFilter(value as string)
+                        }
                       >
                         <SelectTrigger className="w-48">
-                          <SelectValue placeholder="Filter by flow" />
+                          <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="all">All Flows</SelectItem>
@@ -1238,10 +1240,10 @@ TC-00198`}
                 </label>
                 <Select
                   value={selectedRuntime}
-                  onValueChange={setSelectedRuntime}
+                  onValueChange={value => setSelectedRuntime(value as string)}
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="Select runtime to execute" />
+                    <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="OCP Testing Studio">

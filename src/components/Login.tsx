@@ -12,13 +12,7 @@ import {
   CardTitle,
 } from './ui/card';
 import { Label } from './ui/label';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from './ui/select';
+// Using native select element instead of UI primitives due to runtime issues with external primitives
 import { Separator } from './ui/separator';
 
 // Import types and functions from services
@@ -27,7 +21,6 @@ export type UserProfile =
   | 'automation'
   | 'product'
   | 'admin'
-  | 'delete'
   | 'qa_engineer';
 
 export interface User {
@@ -46,6 +39,7 @@ const mockUsers: User[] = [
   { id: 'automation-001', name: 'María García', profile: 'automation' },
   { id: 'product-001', name: 'Carlos López', profile: 'product' },
   { id: 'admin-001', name: 'Ana Martínez', profile: 'admin' },
+  { id: 'qa-001', name: 'Laura Ruiz', profile: 'qa_engineer' },
 ];
 
 const availableProfiles: UserProfile[] = [
@@ -53,6 +47,7 @@ const availableProfiles: UserProfile[] = [
   'automation',
   'product',
   'admin',
+  'qa_engineer',
 ];
 
 const profileInfo = {
@@ -98,6 +93,17 @@ const profileInfo = {
       'Runtime configuration',
     ],
   },
+  qa_engineer: {
+    title: 'QA Engineer',
+    description: 'Create and execute tests, manage test data for QA processes',
+    permissions: [
+      'View Tests Inventory',
+      'Create and edit tests',
+      'View Test Data Inventory',
+      'Create and edit test data',
+      'Run tests and view execution reports',
+    ],
+  },
 };
 
 const profileConfig = {
@@ -116,6 +122,10 @@ const profileConfig = {
   admin: {
     icon: Shield,
     badge: 'bg-red-100 text-red-800',
+  },
+  qa_engineer: {
+    icon: TestTube,
+    badge: 'bg-emerald-100 text-emerald-800',
   },
 };
 
@@ -267,31 +277,24 @@ export function Login({ onLogin }: LoginProps) {
             <form onSubmit={handleLogin} className="space-y-6">
               <div>
                 <Label htmlFor="profile">User Profile</Label>
-                <Select
+                <select
+                  id="profile"
                   value={selectedProfile}
-                  onValueChange={(val: string) =>
-                    setSelectedProfile(val as UserProfile)
+                  onChange={e =>
+                    setSelectedProfile(e.target.value as UserProfile)
                   }
+                  className="mt-1 block w-full rounded-md border border-input px-3 py-2 text-sm outline-none"
                 >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select your profile" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {availableProfiles.map(profile => {
-                      const config = profileConfig[profile];
-                      const info = profileInfo[profile];
-                      const IconComponent = config.icon;
-                      return (
-                        <SelectItem key={profile} value={profile}>
-                          <div className="flex items-center gap-2">
-                            <IconComponent className="h-4 w-4" />
-                            {info.title}
-                          </div>
-                        </SelectItem>
-                      );
-                    })}
-                  </SelectContent>
-                </Select>
+                  <option value="">Select your profile</option>
+                  {availableProfiles.map((profile: UserProfile) => {
+                    const info = profileInfo[profile];
+                    return (
+                      <option key={profile} value={profile}>
+                        {info.title}
+                      </option>
+                    );
+                  })}
+                </select>
               </div>
 
               {error && (
@@ -328,7 +331,7 @@ export function Login({ onLogin }: LoginProps) {
                       <strong>Permisos:</strong>
                       <ul className="ml-4 mt-1 list-disc">
                         {selectedProfileInfo.permissions.map(
-                          (permission, index) => (
+                          (permission: string, index: number) => (
                             <li key={index} className="text-gray-600">
                               {permission}
                             </li>
@@ -395,7 +398,7 @@ export function Login({ onLogin }: LoginProps) {
                 Quick access for demonstration:
               </div>
               <div className="grid grid-cols-2 gap-2 md:grid-cols-4">
-                {availableProfiles.map(profile => {
+                {availableProfiles.map((profile: UserProfile) => {
                   const config = profileConfig[profile];
                   const info = profileInfo[profile];
                   const IconComponent = config.icon;
@@ -419,7 +422,7 @@ export function Login({ onLogin }: LoginProps) {
             <div className="mt-6 rounded-lg bg-gray-100 p-4">
               <h4 className="mb-2 font-medium">Permissions by Profile:</h4>
               <div className="space-y-1 text-sm">
-                {availableProfiles.map(profile => {
+                {availableProfiles.map((profile: UserProfile) => {
                   const info = profileInfo[profile];
                   return (
                     <div key={profile}>

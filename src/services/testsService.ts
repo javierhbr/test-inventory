@@ -1,11 +1,7 @@
 // Tests service - handles all test-related business logic
 
 import { Test, CreateTestFormData, FilterOptions } from './types';
-import {
-  generateId,
-  filterItems,
-  validateRequiredFields,
-} from './utils';
+import { generateId, filterItems, validateRequiredFields } from './utils';
 
 // Mock test data
 const mockTests: Test[] = [
@@ -168,7 +164,10 @@ export function filterTests(tests: Test[], filters: FilterOptions): Test[] {
     }
 
     if (filters.runtime && filters.runtime !== 'all') {
-      return test.supportedRuntimes.includes(filters.runtime);
+      const runtimeFilter = Array.isArray(filters.runtime)
+        ? filters.runtime[0]
+        : filters.runtime;
+      return test.supportedRuntimes.includes(runtimeFilter);
     }
 
     return true;

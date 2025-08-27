@@ -266,7 +266,7 @@ export function CreateTestDialog({
         if (!isOpen && onClose) onClose();
       }}
     >
-      <DialogTrigger asChild>{children}</DialogTrigger>
+      <DialogTrigger>{children}</DialogTrigger>
       <DialogContent className="flex h-[90vh] !w-[50vw] !max-w-[50vw] flex-col bg-gradient-to-br from-white to-gray-50 p-0 sm:!max-w-[50vw]">
         <DialogHeader className="shrink-0 border-b border-gray-200 px-6 pb-4 pt-6">
           <DialogTitle className="text-2xl font-bold text-gray-900">
@@ -282,7 +282,10 @@ export function CreateTestDialog({
         <div className="flex-1 overflow-hidden p-6">
           <div className="h-full overflow-y-auto">
             <form onSubmit={handleSubmit} className="space-y-6">
-              <Tabs value={activeTab} onValueChange={setActiveTab}>
+              <Tabs
+                value={activeTab}
+                onValueChange={value => setActiveTab(value as string)}
+              >
                 <TabsList className="grid w-full grid-cols-2">
                   <TabsTrigger value="runtime">By Runtime ID</TabsTrigger>
                   <TabsTrigger value="upload">Upload File</TabsTrigger>
@@ -327,7 +330,10 @@ export function CreateTestDialog({
                   <div className="grid grid-cols-3 gap-4">
                     <div>
                       <Label htmlFor="priority">Priority</Label>
-                      <Select value={priority} onValueChange={setPriority}>
+                      <Select
+                        value={priority}
+                        onValueChange={value => setPriority(value as string)}
+                      >
                         <SelectTrigger>
                           <SelectValue />
                         </SelectTrigger>
@@ -379,10 +385,12 @@ export function CreateTestDialog({
                           </Label>
                           <Select
                             value={selectedRuntime}
-                            onValueChange={setSelectedRuntime}
+                            onValueChange={value =>
+                              setSelectedRuntime(value as string)
+                            }
                           >
                             <SelectTrigger>
-                              <SelectValue placeholder="Select runtime" />
+                              <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
                               {availableRuntimes.map(runtime => (
@@ -472,10 +480,12 @@ export function CreateTestDialog({
                         <Label htmlFor="labelIntent">Intent</Label>
                         <Select
                           value={labelIntent}
-                          onValueChange={setLabelIntent}
+                          onValueChange={value =>
+                            setLabelIntent(value as string)
+                          }
                         >
                           <SelectTrigger>
-                            <SelectValue placeholder="Select intent" />
+                            <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
                             <SelectItem value="Positive">Positive</SelectItem>
@@ -488,10 +498,12 @@ export function CreateTestDialog({
                         <Label htmlFor="labelExperience">Experience</Label>
                         <Select
                           value={labelExperience}
-                          onValueChange={setLabelExperience}
+                          onValueChange={value =>
+                            setLabelExperience(value as string)
+                          }
                         >
                           <SelectTrigger>
-                            <SelectValue placeholder="Select experience" />
+                            <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
                             <SelectItem value="Web">Web</SelectItem>
@@ -511,9 +523,12 @@ export function CreateTestDialog({
                       </div>
                       <div>
                         <Label htmlFor="team">Team</Label>
-                        <Select value={team} onValueChange={setTeam}>
+                        <Select
+                          value={team}
+                          onValueChange={value => setTeam(value as string)}
+                        >
                           <SelectTrigger>
-                            <SelectValue placeholder="Select team" />
+                            <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
                             <SelectItem value="QA Team">QA Team</SelectItem>

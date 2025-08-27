@@ -89,6 +89,16 @@ export function getProfileInfo(profile: UserProfile): {
         'Acceso a métricas y dashboards',
       ],
     },
+    qa_engineer: {
+      title: 'QA Engineer',
+      description: 'Acceso completo a testing y datos de prueba',
+      permissions: [
+        'Acceso completo a Tests Inventory',
+        'Acceso completo a Test Data Inventory',
+        'Acceso completo a Execution Builder',
+        'Gestión de ejecuciones',
+      ],
+    },
     admin: {
       title: 'System Administrator',
       description: 'Acceso completo incluyendo configuración del sistema',
@@ -153,6 +163,16 @@ export function hasPermission(profile: UserProfile, action: string): boolean {
       'settings.read': false,
       'settings.write': false,
     },
+    qa_engineer: {
+      'tests.read': true,
+      'tests.write': true,
+      'testdata.read': true,
+      'testdata.write': true,
+      'execution.read': true,
+      'execution.write': true,
+      'settings.read': false,
+      'settings.write': false,
+    },
     admin: {
       'tests.read': true,
       'tests.write': true,
@@ -165,7 +185,7 @@ export function hasPermission(profile: UserProfile, action: string): boolean {
     },
   };
 
-  return permissions[profile][action] || false;
+  return (permissions[profile] as Record<string, boolean>)?.[action] || false;
 }
 
 /**

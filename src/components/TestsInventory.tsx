@@ -953,7 +953,7 @@ ${test.supportedRuntimes.map(runtime => `      - ${runtime}`).join('\n')}
                   <TableCell>
                     <div className="flex items-center gap-1">
                       <Dialog>
-                        <DialogTrigger asChild>
+                        <DialogTrigger>
                           <Button
                             size="sm"
                             variant="outline"

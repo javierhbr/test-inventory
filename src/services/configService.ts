@@ -230,6 +230,14 @@ const SYSTEM_CONFIG: SystemConfig = {
         name: 'Automation',
         permissions: ['All modules', 'Complete Execution Builder'],
       },
+      qa_engineer: {
+        name: 'QA Engineer',
+        permissions: [
+          'Tests (read/write)',
+          'Test Data (read/write)',
+          'Execution Builder',
+        ],
+      },
       product: {
         name: 'Product',
         permissions: ['Read-only in all modules', 'Cannot create/edit'],

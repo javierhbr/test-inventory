@@ -1166,7 +1166,7 @@ ${data.scope.platforms.map(platform => `        - ${platform}`).join('\n')}`
                   <TableCell>
                     <div className="flex gap-2">
                       <Dialog>
-                        <DialogTrigger asChild>
+                        <DialogTrigger>
                           <Button
                             size="sm"
                             variant="outline"

@@ -3,9 +3,9 @@ import { useState } from 'react';
 import { Settings, Shield, User } from 'lucide-react';
 
 import {
+  getPermissionsFromRoles,
   usePermissions,
   UserPermissions,
-  getPermissionsFromRoles,
 } from '../contexts/PermissionsContext';
 
 import { Badge } from './ui/badge';

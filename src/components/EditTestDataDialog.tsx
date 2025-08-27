@@ -148,7 +148,7 @@ export function EditTestDataDialog({
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogTrigger asChild>{children}</DialogTrigger>
+      <DialogTrigger>{children}</DialogTrigger>
       <DialogContent className="flex h-[90vh] !w-[50vw] !max-w-[50vw] flex-col bg-gradient-to-br from-white to-gray-50 p-0 sm:!max-w-[50vw]">
         <DialogHeader className="shrink-0 border-b border-gray-200 px-6 pb-4 pt-6">
           <DialogTitle className="flex items-center gap-2 text-2xl font-bold text-gray-900">
@@ -306,7 +306,7 @@ export function EditTestDataDialog({
                     <Select
                       value={formData.environment}
                       onValueChange={value =>
-                        handleInputChange('environment', value)
+                        handleInputChange('environment', value as string)
                       }
                     >
                       <SelectTrigger className="mt-1">
@@ -371,7 +371,7 @@ export function EditTestDataDialog({
                     <Select
                       value={formData.visibility}
                       onValueChange={value =>
-                        handleInputChange('visibility', value)
+                        handleInputChange('visibility', value as string)
                       }
                     >
                       <SelectTrigger className="mt-1">
@@ -412,7 +412,7 @@ export function EditTestDataDialog({
                     <Select
                       value={formData.status}
                       onValueChange={value =>
-                        handleInputChange('status', value)
+                        handleInputChange('status', value as string)
                       }
                     >
                       <SelectTrigger className="mt-1">

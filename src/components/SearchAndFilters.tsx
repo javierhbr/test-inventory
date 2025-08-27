@@ -1,5 +1,3 @@
-import React from 'react';
-
 import { Search, Filter, X } from 'lucide-react';
 
 import { Badge } from './ui/badge';
@@ -55,7 +53,6 @@ export function SearchAndFilters({
   filteredCount,
   totalCount,
   itemType,
-  selectedCount,
   isAllSelected,
   isIndeterminate,
   onSelectAll,
@@ -221,14 +218,12 @@ export function SearchAndFilters({
                 }
                 onValueChange={value => {
                   if (!filter.multiple) {
-                    filter.onChange(value);
+                    filter.onChange(value as string);
                   }
                 }}
               >
                 <SelectTrigger className="h-10">
-                  <SelectValue placeholder={filter.placeholder}>
-                    {getSelectedOptionsLabel(filter)}
-                  </SelectValue>
+                  <SelectValue>{getSelectedOptionsLabel(filter)}</SelectValue>
                 </SelectTrigger>
                 <SelectContent>
                   {filter.multiple ? (
@@ -297,7 +292,9 @@ export function SearchAndFilters({
               <Checkbox
                 checked={isAllSelected}
                 ref={el => {
-                  if (el) el.indeterminate = isIndeterminate;
+                  if (el && 'indeterminate' in el) {
+                    (el as any).indeterminate = isIndeterminate;
+                  }
                 }}
                 onCheckedChange={onSelectAll}
               />
