@@ -6,7 +6,8 @@ import { Login, User } from './components/Login';
 import { SystemConfiguration } from './components/SystemConfiguration';
 import { TestDataInventory } from './components/TestDataInventory';
 import { TestsInventory } from './components/TestsInventory';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from './components/ui/tabs';
+import { Button } from './components/ui/button';
+import { cn } from './components/ui/utils';
 import { UserManagement } from './components/UserManagement';
 import { PermissionsProvider } from './contexts/PermissionsContext';
 import { useNavigationHistory } from './hooks/useNavigationHistory';
@@ -137,20 +138,42 @@ function AppContent({
 function SettingsComponent() {
   const [activeTab, setActiveTab] = useState('system');
 
+  const settingsMenuItems = [
+    {
+      id: 'system',
+      label: 'System Configuration',
+    },
+    {
+      id: 'users',
+      label: 'User Management',
+    },
+  ];
+
   return (
     <div className="space-y-6">
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="system">System Configuration</TabsTrigger>
-          <TabsTrigger value="users">User Management</TabsTrigger>
-        </TabsList>
-        <TabsContent value="system">
-          <SystemConfiguration />
-        </TabsContent>
-        <TabsContent value="users">
-          <UserManagement />
-        </TabsContent>
-      </Tabs>
+      {/* Header-style menu */}
+      <div className="flex items-center justify-center gap-6 border-b">
+        {settingsMenuItems.map(item => (
+          <Button
+            key={item.id}
+            variant="ghost"
+            onClick={() => setActiveTab(item.id)}
+            className={cn(
+              'flex items-center gap-2 pb-4 text-gray-600 hover:text-primary',
+              activeTab === item.id &&
+                'border-b-2 border-primary font-semibold text-primary'
+            )}
+          >
+            <span>{item.label}</span>
+          </Button>
+        ))}
+      </div>
+
+      {/* Content */}
+      <div>
+        {activeTab === 'system' && <SystemConfiguration />}
+        {activeTab === 'users' && <UserManagement />}
+      </div>
     </div>
   );
 }
