@@ -1,0 +1,54 @@
+{
+  "application": {
+    "name": "Testing Platform",
+    "description": "Comprehensive testing inventory and execution platform",
+    "version": "1.0.0",
+    "defaultTab": "tests"
+  },
+  "tabs": [
+    {
+      "id": "tests",
+      "label": "Tests Inventory",
+      "icon": "TestTube",
+      "component": "TestsInventory",
+      "permissions": ["developer", "automation", "product", "admin"],
+      "description": "Manage test cases and scenarios"
+    },
+    {
+      "id": "testdata",
+      "label": "Test Data Inventory",
+      "icon": "Database",
+      "component": "TestDataInventory",
+      "permissions": ["developer", "automation", "product", "admin"],
+      "description": "Manage test data and banking sources"
+    },
+    {
+      "id": "execution",
+      "label": "Execution Builder",
+      "icon": "Play",
+      "component": "ExecutionBuilder",
+      "permissions": ["developer", "automation", "admin"],
+      "description": "Build and manage test execution batches"
+    },
+    {
+      "id": "settings",
+      "label": "Settings",
+      "icon": "Settings",
+      "component": "Settings",
+      "permissions": ["admin"],
+      "description": "System configuration and user management"
+    }
+  ],
+  "settingsTabs": [
+    {
+      "id": "system",
+      "label": "System Configuration",
+      "description": "Management of catalogs and general configurations"
+    },
+    {
+      "id": "users",
+      "label": "User Management",
+      "description": "Manage users and their permissions"
+    }
+  ]
+}

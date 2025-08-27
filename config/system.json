@@ -1,0 +1,86 @@
+{
+  "systemConfiguration": {
+    "title": "System Configuration",
+    "description": "Management of catalogs and general configurations",
+    "adminOnlyBadge": {
+      "text": "Admin Only",
+      "bgColor": "bg-red-100",
+      "textColor": "text-red-800"
+    }
+  },
+  "configurationSections": [
+    {
+      "id": "classifications",
+      "title": "Classifications",
+      "description": "Manage classification catalog",
+      "type": "list",
+      "items": [
+        "Active account",
+        "Business account",
+        "Primary user",
+        "Expired credit card",
+        "Dormant account",
+        "VIP customer",
+        "New customer"
+      ]
+    },
+    {
+      "id": "runtimes",
+      "title": "Runtimes",
+      "description": "Available execution platforms",
+      "type": "list",
+      "items": [
+        "OCP Testing Studio",
+        "Xero",
+        "Sierra",
+        "Postman",
+        "Newman",
+        "Custom Runtime"
+      ]
+    },
+    {
+      "id": "s3config",
+      "title": "S3 Configuration",
+      "description": "Storage configuration",
+      "type": "keyvalue",
+      "items": {
+        "Bucket": "my-test-dialogs",
+        "Versioning": "Enabled",
+        "Region": "us-east-1",
+        "Encryption": "AES-256"
+      }
+    }
+  ],
+  "rolesPermissions": {
+    "title": "Roles and Permissions",
+    "description": "User profiles and permissions configuration",
+    "cardStyle": {
+      "borderColor": "border-blue-200",
+      "bgColor": "bg-blue-50",
+      "titleColor": "text-blue-800",
+      "descriptionColor": "text-blue-700"
+    },
+    "roles": {
+      "developer": {
+        "name": "Developer",
+        "permissions": ["Tests (read/write)", "Test Data (read/write)"]
+      },
+      "automation": {
+        "name": "Automation",
+        "permissions": ["All modules", "Complete Execution Builder"]
+      },
+      "product": {
+        "name": "Product",
+        "permissions": ["Read-only in all modules", "Cannot create/edit"]
+      },
+      "admin": {
+        "name": "Admin",
+        "permissions": [
+          "Full access",
+          "System configurations",
+          "User management"
+        ]
+      }
+    }
+  }
+}
