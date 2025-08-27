@@ -8,15 +8,38 @@ import { cn } from './utils';
 const DialogRoot = Dialog.Root;
 
 function DialogTrigger({
+  asChild,
+  children,
   className,
   ...props
-}: React.ComponentProps<typeof Dialog.Trigger>) {
+}: React.ComponentProps<typeof Dialog.Trigger> & { asChild?: boolean }) {
+  if (asChild && React.isValidElement(children)) {
+    // Check if the child renders as a button element
+    const isButton =
+      children.type === 'button' ||
+      (typeof children.type === 'object' &&
+        children.type?.displayName === 'Button');
+
+    return (
+      <Dialog.Trigger
+        data-slot="dialog-trigger"
+        nativeButton={isButton}
+        render={triggerProps =>
+          React.cloneElement(children, {
+            ...children.props,
+            ...triggerProps,
+            className: cn(className, children.props.className),
+            ...props,
+          })
+        }
+      />
+    );
+  }
+
   return (
-    <Dialog.Trigger
-      data-slot="dialog-trigger"
-      className={className}
-      {...props}
-    />
+    <Dialog.Trigger data-slot="dialog-trigger" className={className} {...props}>
+      {children}
+    </Dialog.Trigger>
   );
 }
 

@@ -18,12 +18,37 @@ function DropdownMenuPortal({
 }
 
 function DropdownMenuTrigger({
+  asChild,
+  children,
   ...props
-}: React.ComponentProps<typeof BaseMenu.Trigger>) {
-  // The package exposes Menu.Trigger under the Menu namespace as "Trigger"
-  // and the popup/content element is named "Popup" in this package. We keep
-  // the same prop typing but render the underlying Trigger.
-  return <BaseMenu.Trigger data-slot="dropdown-menu-trigger" {...props} />;
+}: React.ComponentProps<typeof BaseMenu.Trigger> & { asChild?: boolean }) {
+  if (asChild && React.isValidElement(children)) {
+    // Check if the child renders as a button element
+    const isButton =
+      children.type === 'button' ||
+      (typeof children.type === 'object' &&
+        children.type?.displayName === 'Button');
+
+    return (
+      <BaseMenu.Trigger
+        data-slot="dropdown-menu-trigger"
+        nativeButton={isButton}
+        render={triggerProps =>
+          React.cloneElement(children, {
+            ...children.props,
+            ...triggerProps,
+            ...props,
+          })
+        }
+      />
+    );
+  }
+
+  return (
+    <BaseMenu.Trigger data-slot="dropdown-menu-trigger" {...props}>
+      {children}
+    </BaseMenu.Trigger>
+  );
 }
 
 function DropdownMenuContent({

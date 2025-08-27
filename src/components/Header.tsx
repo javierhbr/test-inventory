@@ -15,7 +15,7 @@ import { User as UserType } from './Login';
 import { PermissionsManager } from './PermissionsManager';
 import { Avatar, AvatarFallback } from './ui/avatar';
 import { Badge } from './ui/badge';
-import { Button, buttonVariants } from './ui/button';
+import { Button } from './ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -32,6 +32,8 @@ interface HeaderProps {
   onForward?: () => void;
   canGoBack?: boolean;
   canGoForward?: boolean;
+  activeTab: string;
+  onTabChange: (tab: string) => void;
 }
 
 const profileIcons = {
@@ -57,12 +59,37 @@ export function Header({
   onForward,
   canGoBack = false,
   canGoForward = false,
+  activeTab,
+  onTabChange,
 }: HeaderProps) {
   const ProfileIcon = profileIcons[user.profile];
 
+  const menuItems = [
+    {
+      id: 'tests',
+      label: 'Tests Inventory',
+      icon: <TestTube className="h-5 w-5" />,
+    },
+    {
+      id: 'testdata',
+      label: 'Test Data Inventory',
+      icon: <Package className="h-5 w-5" />,
+    },
+    {
+      id: 'execution',
+      label: 'Execution Builder',
+      icon: <Cog className="h-5 w-5" />,
+    },
+    {
+      id: 'settings',
+      label: 'Settings',
+      icon: <Settings className="h-5 w-5" />,
+    },
+  ];
+
   return (
     <div className="border-b border-gray-200 bg-white px-6 py-4 shadow-sm">
-      <div className="mx-auto flex max-w-7xl items-center justify-between">
+      <div className="mx-auto flex w-[90%] items-center justify-between">
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2">
             <Button
@@ -86,70 +113,72 @@ export function Header({
               <ChevronRight className="h-4 w-4" />
             </Button>
           </div>
+        </div>
 
-          <div className="flex items-center gap-3">
-            <TestTube className="h-8 w-8 text-primary" />
-            <div>
-              <h1 className="text-xl font-bold text-gray-900">
-                Testing Inventory System
-              </h1>
-              <p className="text-sm text-gray-600">
-                Comprehensive management of Test Cases, Test Data, and
-                Executions
-              </p>
-            </div>
-          </div>
+        <div className="flex items-center gap-6">
+          {menuItems.map(item => (
+            <Button
+              key={item.id}
+              variant="ghost"
+              onClick={() => onTabChange(item.id)}
+              className={cn(
+                'flex items-center gap-2 text-gray-600 hover:text-primary',
+                activeTab === item.id &&
+                  'border-b-2 border-primary font-semibold text-primary'
+              )}
+            >
+              {item.icon}
+              <span className="hidden sm:inline">{item.label}</span>
+            </Button>
+          ))}
         </div>
 
         <div className="flex items-center gap-4">
           <PermissionsManager />
-
-          <div className="flex items-center gap-2 text-sm">
-            <span className="text-gray-600">Welcome,</span>
-            <span className="font-medium">{user.name}</span>
-            <Badge className={profileColors[user.profile]}>
-              <ProfileIcon className="mr-1 h-3 w-3" />
-              {user.profile.toUpperCase()}
-            </Badge>
-          </div>
-
           <DropdownMenu>
-            <DropdownMenuTrigger
-              className={cn(
-                buttonVariants({ variant: 'ghost', size: 'icon' }),
-                'relative h-8 w-8 rounded-full'
-              )}
-            >
-              <Avatar className="h-8 w-8">
-                <AvatarFallback className="bg-primary text-primary-foreground">
-                  {user.name?.charAt(0).toUpperCase() || 'U'}
-                </AvatarFallback>
-              </Avatar>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-56">
-              <div className="flex items-center justify-start gap-2 p-2">
-                <div className="flex flex-col space-y-1 leading-none">
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="ghost"
+                className="flex items-center gap-2"
+                aria-label="User menu"
+              >
+                <Avatar className="h-8 w-8">
+                  <AvatarFallback
+                    className={cn(
+                      'font-bold',
+                      profileColors[user.profile] || 'bg-gray-100 text-gray-800'
+                    )}
+                  >
+                    {user.name.charAt(0).toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="hidden text-left sm:block">
                   <p className="font-medium">{user.name}</p>
-                  <p className="text-xs text-muted-foreground">
+                  <Badge
+                    className={cn(
+                      'mt-1 px-2 py-0.5 text-xs font-semibold',
+                      profileColors[user.profile] || 'bg-gray-100 text-gray-800'
+                    )}
+                  >
+                    <ProfileIcon className="mr-1 h-3 w-3" />
                     {user.profile}
-                  </p>
+                  </Badge>
                 </div>
-              </div>
-              <DropdownMenuSeparator />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-56">
               <DropdownMenuItem>
                 <User className="mr-2 h-4 w-4" />
                 <span>My Profile</span>
               </DropdownMenuItem>
-              {user.profile === 'admin' && (
-                <DropdownMenuItem>
-                  <Settings className="mr-2 h-4 w-4" />
-                  <span>Settings</span>
-                </DropdownMenuItem>
-              )}
+              <DropdownMenuItem>
+                <Settings className="mr-2 h-4 w-4" />
+                <span>Settings</span>
+              </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={onLogout}>
                 <LogOut className="mr-2 h-4 w-4" />
-                <span>Sign Out</span>
+                <span>Log out</span>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
