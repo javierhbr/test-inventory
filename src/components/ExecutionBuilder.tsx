@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 
 import {
   Upload,
@@ -373,7 +373,7 @@ export function ExecutionBuilder() {
   const [filterStatus, setFilterStatus] = useState<string | string[]>('all');
   const [filterRuntime, setFilterRuntime] = useState<string | string[]>('all');
   const [filterTeam, setFilterTeam] = useState<string | string[]>('all');
-  const [selectedTests, setSelectedTests] = useState<Set<string>>(new Set());
+  const [selectedTests, setSelectedTests] = useState<Set<string>>(() => new Set());
   const [selectedRuntime, setSelectedRuntime] = useState('');
   const [csvInput, setCsvInput] = useState('');
   const [showCsvDialog, setShowCsvDialog] = useState(false);
@@ -387,7 +387,7 @@ export function ExecutionBuilder() {
   const [cartCurrentPage, setCartCurrentPage] = useState(1);
   const [cartSearchFilter, setCartSearchFilter] = useState<string>('all');
 
-  const filteredTests = tests.filter(test => {
+  const filteredTests = useMemo(() => tests.filter(test => {
     const matchesSearch =
       test.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       test.id.toLowerCase().includes(searchTerm.toLowerCase());
@@ -423,7 +423,7 @@ export function ExecutionBuilder() {
       matchesTeam &&
       notInCart
     );
-  });
+  }), [tests, searchTerm, filterFlujo, filterStatus, filterRuntime, filterTeam, cart]);
 
   // Pagination calculations
   const totalPages = Math.ceil(filteredTests.length / ITEMS_PER_PAGE);
@@ -432,7 +432,7 @@ export function ExecutionBuilder() {
   const paginatedTests = filteredTests.slice(startIndex, endIndex);
 
   // Reset to first page when filters change
-  useMemo(() => {
+  useEffect(() => {
     setCurrentPage(1);
   }, [searchTerm, filterFlujo, filterStatus, filterRuntime, filterTeam]);
 
@@ -483,7 +483,7 @@ export function ExecutionBuilder() {
   const paginatedCart = filteredCart.slice(cartStartIndex, cartEndIndex);
 
   // Reset cart page when filter changes
-  useMemo(() => {
+  useEffect(() => {
     setCartCurrentPage(1);
   }, [cartSearchFilter]);
 
@@ -523,11 +523,11 @@ export function ExecutionBuilder() {
   };
 
   const addToCart = (test: Test) => {
-    setCart([...cart, { test }]);
+    setCart(prev => [...prev, { test }]);
   };
 
   const removeFromCart = (testId: string) => {
-    setCart(cart.filter(item => item.test.id !== testId));
+    setCart(prev => prev.filter(item => item.test.id !== testId));
   };
 
   const removeFromFilteredCart = () => {
@@ -559,11 +559,12 @@ export function ExecutionBuilder() {
       .filter(Boolean);
     const testsToAdd = tests.filter(test => testIds.includes(test.id));
 
-    const newCartItems = testsToAdd
-      .filter(test => !cart.some(item => item.test.id === test.id))
-      .map(test => ({ test }));
-
-    setCart([...cart, ...newCartItems]);
+    setCart(prev => {
+      const newCartItems = testsToAdd
+        .filter(test => !prev.some(item => item.test.id === test.id))
+        .map(test => ({ test }));
+      return [...prev, ...newCartItems];
+    });
     setCsvInput('');
     setShowCsvDialog(false);
   };
@@ -730,13 +731,15 @@ ${item.test.dataRequirements.map(req => `      - ${req}`).join('\n')}${
 
   // Add to cart functionality
   const handleSelectTest = (testId: string, checked: boolean) => {
-    const newSelected = new Set(selectedTests);
-    if (checked) {
-      newSelected.add(testId);
-    } else {
-      newSelected.delete(testId);
-    }
-    setSelectedTests(newSelected);
+    setSelectedTests(prev => {
+      const newSelected = new Set(prev);
+      if (checked) {
+        newSelected.add(testId);
+      } else {
+        newSelected.delete(testId);
+      }
+      return newSelected;
+    });
   };
 
   const handleSelectAll = (checked: boolean) => {
@@ -772,12 +775,13 @@ ${item.test.dataRequirements.map(req => `      - ${req}`).join('\n')}${
 
   const addSelectedToCart = () => {
     const testsToAdd = tests.filter(test => selectedTests.has(test.id));
-    const newCartItems = testsToAdd
-      .filter(test => !cart.some(item => item.test.id === test.id))
-      .map(test => ({ test }));
-
-    setCart([...cart, ...newCartItems]);
-    setSelectedTests(new Set()); // Clear selection after adding
+    setCart(prev => {
+      const newCartItems = testsToAdd
+        .filter(test => !prev.some(item => item.test.id === test.id))
+        .map(test => ({ test }));
+      return [...prev, ...newCartItems];
+    });
+    setSelectedTests(new Set());
   };
 
   const selectedCount = selectedTests.size;

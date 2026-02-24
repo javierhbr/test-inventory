@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 
 import { Plus, Eye, RefreshCw, Download, Pencil, Trash2 } from 'lucide-react';
 
@@ -512,6 +512,20 @@ const mockTestData: LocalTestData[] = [
 
 const ITEMS_PER_PAGE = 10;
 
+const STATUS_BADGE_VARIANTS: Record<string, string> = {
+  Available: 'bg-green-100 text-green-800',
+  'In Use': 'bg-blue-100 text-blue-800',
+  Consumed: 'bg-red-100 text-red-800',
+  Reconditioning: 'bg-yellow-100 text-yellow-800',
+  Inactive: 'bg-gray-100 text-gray-800',
+};
+
+const SCOPE_BADGE_VARIANTS: Record<string, string> = {
+  manual: 'bg-purple-100 text-purple-800',
+  automated: 'bg-blue-100 text-blue-800',
+  platform: 'bg-orange-100 text-orange-800',
+};
+
 export function TestDataInventory() {
   const { hasPermission } = usePermissions();
   const [testData, setTestData] = useState<LocalTestData[]>(mockTestData);
@@ -528,12 +542,12 @@ export function TestDataInventory() {
   );
   const [filterTeam, setFilterTeam] = useState<string | string[]>('all');
   const [selectedDataIds, setSelectedDataIds] = useState<Set<string>>(
-    new Set()
+    () => new Set()
   );
   const [currentPage, setCurrentPage] = useState(1);
   const [selectAllPages, setSelectAllPages] = useState(false);
 
-  const filteredTestData = testData.filter(data => {
+  const filteredTestData = useMemo(() => testData.filter(data => {
     const matchesSearch =
       data.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
       data.customer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -581,7 +595,7 @@ export function TestDataInventory() {
       matchesProyecto &&
       matchesTeam
     );
-  });
+  }), [testData, searchTerm, filterStatus, filterScope, filterAmbiente, filterProyecto, filterTeam]);
 
   // Pagination calculations
   const totalPages = Math.ceil(filteredTestData.length / ITEMS_PER_PAGE);
@@ -590,7 +604,7 @@ export function TestDataInventory() {
   const paginatedTestData = filteredTestData.slice(startIndex, endIndex);
 
   // Reset to first page when filters change
-  useMemo(() => {
+  useEffect(() => {
     setCurrentPage(1);
   }, [
     searchTerm,
@@ -634,13 +648,15 @@ export function TestDataInventory() {
   };
 
   const handleSelectData = (dataId: string, checked: boolean) => {
-    const newSelection = new Set(selectedDataIds);
-    if (checked) {
-      newSelection.add(dataId);
-    } else {
-      newSelection.delete(dataId);
-    }
-    setSelectedDataIds(newSelection);
+    setSelectedDataIds(prev => {
+      const newSelection = new Set(prev);
+      if (checked) {
+        newSelection.add(dataId);
+      } else {
+        newSelection.delete(dataId);
+      }
+      return newSelection;
+    });
   };
 
   // Selection state helpers
@@ -692,19 +708,10 @@ export function TestDataInventory() {
   };
 
   const getStatusBadge = (status: string) => {
-    const variants = {
-      Available: 'bg-green-100 text-green-800',
-      'In Use': 'bg-blue-100 text-blue-800',
-      Consumed: 'bg-red-100 text-red-800',
-      Reconditioning: 'bg-yellow-100 text-yellow-800',
-      Inactive: 'bg-gray-100 text-gray-800',
-    };
-
     return (
       <Badge
         className={
-          variants[status as keyof typeof variants] ||
-          'bg-gray-100 text-gray-800'
+          STATUS_BADGE_VARIANTS[status] || 'bg-gray-100 text-gray-800'
         }
       >
         {status}
@@ -712,17 +719,10 @@ export function TestDataInventory() {
     );
   };
 
-  const getScopeBadge = (scope: any) => {
-    const baseClass = 'text-xs';
-    const variants = {
-      manual: 'bg-purple-100 text-purple-800',
-      automated: 'bg-blue-100 text-blue-800',
-      platform: 'bg-orange-100 text-orange-800',
-    };
-
+  const getScopeBadge = (scope: LocalTestData['scope']) => {
     return (
       <Badge
-        className={`${baseClass} ${variants[scope.visibility as keyof typeof variants] || 'bg-gray-100 text-gray-800'}`}
+        className={`text-xs ${SCOPE_BADGE_VARIANTS[scope.visibility] || 'bg-gray-100 text-gray-800'}`}
       >
         {scope.visibility}
         {scope.platforms &&
@@ -990,7 +990,7 @@ ${data.scope.platforms.map(platform => `        - ${platform}`).join('\n')}`
           {hasPermission('create_test_data') && (
             <CreateTestDataDialog
               onTestDataCreated={newData =>
-                setTestData([...testData, convertToLocalTestData(newData)])
+                setTestData(prev => [...prev, convertToLocalTestData(newData)])
               }
             >
               <div

@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 import { Download, Edit, Eye, Plus, Trash2 } from 'lucide-react';
 
@@ -389,6 +389,13 @@ const mockTests: Test[] = [
 
 const ITEMS_PER_PAGE = 10;
 
+const STATUS_BADGE_VARIANTS: Record<string, string> = {
+  PASSED: 'bg-green-100 text-green-800',
+  FAILED: 'bg-red-100 text-red-800',
+  SKIPPED: 'bg-yellow-100 text-yellow-800',
+  BLOCKED: 'bg-gray-100 text-gray-800',
+};
+
 export function TestsInventory() {
   const { hasPermission } = usePermissions();
   const [tests, setTests] = useState<Test[]>(mockTests);
@@ -399,7 +406,7 @@ export function TestsInventory() {
   const [filterRuntime, setFilterRuntime] = useState<string | string[]>('all');
   const [filterTeam, setFilterTeam] = useState<string | string[]>('all');
   const [selectedTestIds, setSelectedTestIds] = useState<Set<string>>(
-    new Set()
+    () => new Set()
   );
   const [currentPage, setCurrentPage] = useState(1);
   const [selectAllPages, setSelectAllPages] = useState(false);
@@ -407,7 +414,7 @@ export function TestsInventory() {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [testToDelete, setTestToDelete] = useState<Test | null>(null);
 
-  const filteredTests = tests.filter(test => {
+  const filteredTests = useMemo(() => tests.filter(test => {
     const matchesSearch =
       test.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       test.flow.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -458,7 +465,7 @@ export function TestsInventory() {
       matchesRuntime &&
       matchesTeam
     );
-  });
+  }), [tests, searchTerm, filterFlujo, filterStatus, filterRuntime, filterTeam]);
 
   // Pagination calculations
   const totalPages = Math.ceil(filteredTests.length / ITEMS_PER_PAGE);
@@ -467,7 +474,7 @@ export function TestsInventory() {
   const paginatedTests = filteredTests.slice(startIndex, endIndex);
 
   // Reset to first page when filters change
-  useMemo(() => {
+  useEffect(() => {
     setCurrentPage(1);
   }, [searchTerm, filterFlujo, filterStatus, filterRuntime, filterTeam]);
 
@@ -504,13 +511,15 @@ export function TestsInventory() {
   };
 
   const handleSelectTest = (testId: string, checked: boolean) => {
-    const newSelection = new Set(selectedTestIds);
-    if (checked) {
-      newSelection.add(testId);
-    } else {
-      newSelection.delete(testId);
-    }
-    setSelectedTestIds(newSelection);
+    setSelectedTestIds(prev => {
+      const newSelection = new Set(prev);
+      if (checked) {
+        newSelection.add(testId);
+      } else {
+        newSelection.delete(testId);
+      }
+      return newSelection;
+    });
   };
 
   // Selection state helpers
@@ -562,18 +571,10 @@ export function TestsInventory() {
   };
 
   const getStatusBadge = (status: string) => {
-    const variants = {
-      PASSED: 'bg-green-100 text-green-800',
-      FAILED: 'bg-red-100 text-red-800',
-      SKIPPED: 'bg-yellow-100 text-yellow-800',
-      BLOCKED: 'bg-gray-100 text-gray-800',
-    };
-
     return (
       <Badge
         className={
-          variants[status as keyof typeof variants] ||
-          'bg-gray-100 text-gray-800'
+          STATUS_BADGE_VARIANTS[status] || 'bg-gray-100 text-gray-800'
         }
       >
         {status}
@@ -732,7 +733,7 @@ ${test.supportedRuntimes.map(runtime => `      - ${runtime}`).join('\n')}
 
   const confirmDelete = () => {
     if (testToDelete) {
-      setTests(tests.filter(t => t.id !== testToDelete.id));
+      setTests(prev => prev.filter(t => t.id !== testToDelete.id));
       setSelectedTestIds(prev => {
         const newSet = new Set(prev);
         newSet.delete(testToDelete.id);
@@ -760,7 +761,7 @@ ${test.supportedRuntimes.map(runtime => `      - ${runtime}`).join('\n')}
   };
 
   const handleEditTest = (updatedTest: Test) => {
-    setTests(tests.map(t => (t.id === updatedTest.id ? updatedTest : t)));
+    setTests(prev => prev.map(t => (t.id === updatedTest.id ? updatedTest : t)));
     setEditingTest(null);
   };
 
@@ -775,7 +776,7 @@ ${test.supportedRuntimes.map(runtime => `      - ${runtime}`).join('\n')}
         <div className="flex gap-2">
           {hasPermission('create_tests') && (
             <CreateTestDialog
-              onTestCreated={newTest => setTests([...tests, newTest])}
+              onTestCreated={newTest => setTests(prev => [...prev, newTest])}
             >
               <div
                 className={cn(

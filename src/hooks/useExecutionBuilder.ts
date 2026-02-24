@@ -2,10 +2,9 @@
 
 import { useState, useEffect, useCallback } from 'react';
 
+import { Test, CartItem } from '../services/types';
+import { getAllTests } from '../services/testsService';
 import {
-  Test,
-  CartItem,
-  getAllTests,
   filterTestsForExecution,
   addTestToCart,
   removeTestFromCart,
@@ -15,7 +14,7 @@ import {
   copyExecutionYamlToClipboard,
   validateExecutionConfig,
   importTestsFromCsv,
-} from '../services';
+} from '../services/executionService';
 
 interface UseExecutionBuilderReturn {
   // State

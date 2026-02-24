@@ -135,19 +135,19 @@ function AppContent({
   );
 }
 
+const settingsMenuItems = [
+  {
+    id: 'system',
+    label: 'System Configuration',
+  },
+  {
+    id: 'users',
+    label: 'User Management',
+  },
+];
+
 function SettingsComponent() {
   const [activeTab, setActiveTab] = useState('system');
-
-  const settingsMenuItems = [
-    {
-      id: 'system',
-      label: 'System Configuration',
-    },
-    {
-      id: 'users',
-      label: 'User Management',
-    },
-  ];
 
   return (
     <div className="space-y-6">

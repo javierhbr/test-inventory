@@ -2,8 +2,8 @@
 
 import { useState, useEffect, useCallback } from 'react';
 
+import { Test, CreateTestFormData } from '../services/types';
 import {
-  Test,
   getAllTests,
   filterTests,
   createTest,
@@ -11,9 +11,8 @@ import {
   getFilterOptions,
   exportTestsToYaml,
   getTestStatistics,
-  downloadFile,
-  CreateTestFormData,
-} from '../services';
+} from '../services/testsService';
+import { downloadFile } from '../services/utils';
 
 interface UseTestsInventoryReturn {
   // State
