@@ -35,7 +35,7 @@ export function filterTestsForExecution(
     if (
       filters.flujo &&
       filters.flujo !== 'all' &&
-      test.labels.flujo !== filters.flujo
+      test.labels.flow !== filters.flujo
     ) {
       return false;
     }
@@ -256,7 +256,7 @@ ${cart
     goldenDialogId: GD-${item.test.id.slice(-3)}
     dialogGroupIdFile:
       bucket: my-test-dialogs
-      path: golden-dialogs/${item.test.labels.flujo.toLowerCase()}-flow/dialog-${item.test.id.slice(-3)}.yaml
+      path: golden-dialogs/${item.test.labels.flow.toLowerCase()}-flow/dialog-${item.test.id.slice(-3)}.yaml
     dataRequirements:
 ${item.test.dataRequirements.map(req => `      - ${req}`).join('\n')}${
       item.assignedTestData
@@ -336,7 +336,7 @@ export function getExecutionStatistics(cart: CartItem[]): {
     });
 
     // Flujo stats
-    const flujo = item.test.labels.flujo;
+    const flujo = item.test.labels.flow;
     stats.byFlujo[flujo] = (stats.byFlujo[flujo] || 0) + 1;
   });
 
@@ -378,18 +378,18 @@ export function estimateExecutionTime(cart: CartItem[]): {
   // Mock estimation logic - in real app this would be more sophisticated
   const baseTimePerTest = 5; // minutes
   const complexityMultipliers = {
-    Pago: 1.5,
+    Payment: 1.5,
     Login: 1.0,
-    Transferencia: 2.0,
-    Consulta: 1.2,
-    Activación: 1.8,
+    Transfer: 2.0,
+    Inquiry: 1.2,
+    Activation: 1.8,
   };
 
   let totalMinutes = 0;
   const breakdown: Record<string, number> = {};
 
   cart.forEach(item => {
-    const flujo = item.test.labels.flujo;
+    const flujo = item.test.labels.flow;
     const multiplier =
       complexityMultipliers[flujo as keyof typeof complexityMultipliers] || 1.0;
     const testTime = baseTimePerTest * multiplier;

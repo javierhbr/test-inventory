@@ -9,6 +9,8 @@ import {
   User,
 } from 'lucide-react';
 
+import { TestDataRecord } from '../services/types';
+
 import { Badge } from './ui/badge';
 import { Button } from './ui/button';
 import {
@@ -28,40 +30,6 @@ import {
 } from './ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 import { Textarea } from './ui/textarea';
-
-interface TestData {
-  id: string;
-  customer: {
-    customerId: string;
-    name: string;
-    type: string;
-  };
-  account: {
-    accountId: string;
-    referenceId: string;
-    type: string;
-    createdAt: string;
-  };
-  classifications: string[];
-  labels: {
-    project: string;
-    environment: string;
-    dataOwner: string;
-    group?: string;
-    source?: string;
-  };
-  scope: {
-    visibility: 'manual' | 'automated' | 'platform';
-    platforms?: string[];
-  };
-  status: 'Available' | 'In Use' | 'Consumed' | 'Reconditioning' | 'Inactive';
-  lastUsed: {
-    date: string;
-    testId: string;
-    runtime: string;
-  } | null;
-  team: string;
-}
 
 interface UsageHistoryItem {
   id: string;
@@ -127,7 +95,7 @@ const mockStateTransitions: StateTransition[] = [
   },
 ];
 
-export function TestDataDetail({ testData }: { testData: TestData }) {
+export function TestDataDetail({ testData }: { testData: TestDataRecord }) {
   const [activeTab, setActiveTab] = useState('general');
 
   const testDataYaml = `id: ${testData.id}

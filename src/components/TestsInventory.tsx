@@ -1,8 +1,9 @@
-import { useEffect, useMemo, useState } from 'react';
-
 import { Download, Edit, Eye, Plus, Trash2 } from 'lucide-react';
+import { useShallow } from 'zustand/react/shallow';
 
-import { usePermissions } from '../contexts/PermissionsContext';
+import { Test } from '../services/types';
+import { usePermissionsStore } from '../stores/permissionsStore';
+import { useTestsStore, selectFilteredTests } from '../stores/testsStore';
 
 import { CreateTestDialog } from './CreateTestDialog';
 import { FilterConfig, SearchAndFilters } from './SearchAndFilters';
@@ -37,355 +38,6 @@ import {
   TableRow,
 } from './ui/table';
 import { cn } from './ui/utils';
-// Tabs import removed because it's unused in this file
-
-interface Test {
-  id: string;
-  name: string;
-  flow: string;
-  labels: {
-    flow: string;
-    intent: string;
-    experience: string;
-    project: string;
-  };
-  dataRequirements: string[];
-  supportedRuntimes: string[];
-  lastExecution: {
-    date: string;
-    status: 'PASSED' | 'FAILED' | 'SKIPPED' | 'BLOCKED';
-    runtime: string;
-  } | null;
-  lastModified: string;
-  version: string;
-  team: string;
-}
-
-const mockTests: Test[] = [
-  {
-    id: 'TC-00123',
-    name: 'Payment of expired card with authorized user',
-    flow: 'Payment -> Validation -> Confirmation',
-    labels: {
-      flow: 'Payment',
-      intent: 'Negative',
-      experience: 'Mobile',
-      project: 'Release Q3',
-    },
-    dataRequirements: [
-      'Expired account',
-      'Authorized user',
-      'Expired credit card',
-    ],
-    supportedRuntimes: ['OCP Testing Studio', 'Xero'],
-    lastExecution: {
-      date: '2025-08-15T10:30:00Z',
-      status: 'FAILED',
-      runtime: 'OCP Testing Studio',
-    },
-    lastModified: '2025-08-20T09:15:00Z',
-    version: 'v1.2',
-    team: 'QA Team',
-  },
-  {
-    id: 'TC-00145',
-    name: 'Login validation with active business account',
-    flow: 'Login -> Authentication -> Dashboard',
-    labels: {
-      flow: 'Login',
-      intent: 'Positive',
-      experience: 'Web',
-      project: 'Core Banking',
-    },
-    dataRequirements: ['Business account', 'Primary user'],
-    supportedRuntimes: ['OCP Testing Studio', 'Sierra'],
-    lastExecution: {
-      date: '2025-08-18T14:22:00Z',
-      status: 'PASSED',
-      runtime: 'Sierra',
-    },
-    lastModified: '2025-08-19T16:45:00Z',
-    version: 'v2.1',
-    team: 'Core Team',
-  },
-  {
-    id: 'TC-00156',
-    name: 'Transfer funds between savings accounts',
-    flow: 'Transfer -> Validation -> Processing -> Confirmation',
-    labels: {
-      flow: 'Transfer',
-      intent: 'Positive',
-      experience: 'Mobile',
-      project: 'Banking App',
-    },
-    dataRequirements: ['Source account', 'Target account', 'Authorized user'],
-    supportedRuntimes: ['OCP Testing Studio', 'Xero', 'Sierra'],
-    lastExecution: {
-      date: '2025-08-19T09:15:00Z',
-      status: 'PASSED',
-      runtime: 'OCP Testing Studio',
-    },
-    lastModified: '2025-08-20T10:30:00Z',
-    version: 'v1.5',
-    team: 'Mobile Team',
-  },
-  {
-    id: 'TC-00167',
-    name: 'Account balance inquiry for premium customer',
-    flow: 'Inquiry -> Authentication -> Balance Display',
-    labels: {
-      flow: 'Inquiry',
-      intent: 'Positive',
-      experience: 'Web',
-      project: 'Customer Portal',
-    },
-    dataRequirements: ['Premium account', 'Verified customer'],
-    supportedRuntimes: ['Sierra', 'Xero'],
-    lastExecution: {
-      date: '2025-08-17T16:45:00Z',
-      status: 'PASSED',
-      runtime: 'Sierra',
-    },
-    lastModified: '2025-08-18T08:20:00Z',
-    version: 'v2.3',
-    team: 'Web Team',
-  },
-  {
-    id: 'TC-00178',
-    name: 'Card activation with PIN setup',
-    flow: 'Activation -> Verification -> PIN Setup -> Confirmation',
-    labels: {
-      flow: 'Activation',
-      intent: 'Positive',
-      experience: 'Mobile',
-      project: 'Card Services',
-    },
-    dataRequirements: ['New card', 'Customer profile', 'Phone verification'],
-    supportedRuntimes: ['OCP Testing Studio', 'Xero'],
-    lastExecution: {
-      date: '2025-08-16T13:30:00Z',
-      status: 'FAILED',
-      runtime: 'Xero',
-    },
-    lastModified: '2025-08-19T11:15:00Z',
-    version: 'v1.8',
-    team: 'QA Team',
-  },
-  {
-    id: 'TC-00189',
-    name: 'Payment validation with insufficient funds',
-    flow: 'Payment -> Validation -> Error Handling',
-    labels: {
-      flow: 'Payment',
-      intent: 'Negative',
-      experience: 'Web',
-      project: 'Payment Gateway',
-    },
-    dataRequirements: ['Low balance account', 'Payment request'],
-    supportedRuntimes: ['Sierra', 'OCP Testing Studio'],
-    lastExecution: {
-      date: '2025-08-20T07:45:00Z',
-      status: 'PASSED',
-      runtime: 'Sierra',
-    },
-    lastModified: '2025-08-20T12:00:00Z',
-    version: 'v3.1',
-    team: 'Core Team',
-  },
-  {
-    id: 'TC-00190',
-    name: 'Multi-factor authentication login',
-    flow: 'Login -> Primary Auth -> MFA -> Dashboard',
-    labels: {
-      flow: 'Login',
-      intent: 'Positive',
-      experience: 'Web',
-      project: 'Security Enhancement',
-    },
-    dataRequirements: ['MFA enabled account', 'Mobile device', 'Email access'],
-    supportedRuntimes: ['OCP Testing Studio', 'Sierra', 'Xero'],
-    lastExecution: {
-      date: '2025-08-19T15:20:00Z',
-      status: 'PASSED',
-      runtime: 'OCP Testing Studio',
-    },
-    lastModified: '2025-08-20T14:10:00Z',
-    version: 'v2.0',
-    team: 'Core Team',
-  },
-  {
-    id: 'TC-00201',
-    name: 'International wire transfer initiation',
-    flow: 'Transfer -> Compliance Check -> Authorization -> Processing',
-    labels: {
-      flow: 'Transfer',
-      intent: 'Positive',
-      experience: 'Web',
-      project: 'International Banking',
-    },
-    dataRequirements: [
-      'Premium account',
-      'International recipient',
-      'Compliance documents',
-    ],
-    supportedRuntimes: ['Sierra', 'OCP Testing Studio'],
-    lastExecution: {
-      date: '2025-08-18T11:30:00Z',
-      status: 'BLOCKED',
-      runtime: 'Sierra',
-    },
-    lastModified: '2025-08-19T09:45:00Z',
-    version: 'v1.0',
-    team: 'Web Team',
-  },
-  {
-    id: 'TC-00212',
-    name: 'Mobile app biometric login setup',
-    flow: 'Activation -> Biometric Registration -> Verification',
-    labels: {
-      flow: 'Activation',
-      intent: 'Positive',
-      experience: 'Mobile',
-      project: 'Mobile Security',
-    },
-    dataRequirements: ['Mobile app user', 'Biometric capable device'],
-    supportedRuntimes: ['OCP Testing Studio'],
-    lastExecution: {
-      date: '2025-08-17T14:15:00Z',
-      status: 'SKIPPED',
-      runtime: 'OCP Testing Studio',
-    },
-    lastModified: '2025-08-18T16:30:00Z',
-    version: 'v1.3',
-    team: 'Mobile Team',
-  },
-  {
-    id: 'TC-00223',
-    name: 'Account statement generation and download',
-    flow: 'Inquiry -> Statement Generation -> Download',
-    labels: {
-      flow: 'Inquiry',
-      intent: 'Positive',
-      experience: 'Web',
-      project: 'Document Services',
-    },
-    dataRequirements: ['Active account', 'Statement period data'],
-    supportedRuntimes: ['Sierra', 'Xero', 'OCP Testing Studio'],
-    lastExecution: {
-      date: '2025-08-20T10:00:00Z',
-      status: 'PASSED',
-      runtime: 'Xero',
-    },
-    lastModified: '2025-08-20T13:45:00Z',
-    version: 'v2.5',
-    team: 'Web Team',
-  },
-  {
-    id: 'TC-00234',
-    name: 'Credit card payment processing',
-    flow: 'Payment -> Card Validation -> Processing -> Receipt',
-    labels: {
-      flow: 'Payment',
-      intent: 'Positive',
-      experience: 'Mobile',
-      project: 'Card Processing',
-    },
-    dataRequirements: [
-      'Active credit card',
-      'Merchant account',
-      'Payment amount',
-    ],
-    supportedRuntimes: ['OCP Testing Studio', 'Xero'],
-    lastExecution: {
-      date: '2025-08-19T12:45:00Z',
-      status: 'PASSED',
-      runtime: 'Xero',
-    },
-    lastModified: '2025-08-20T15:20:00Z',
-    version: 'v1.7',
-    team: 'QA Team',
-  },
-  {
-    id: 'TC-00245',
-    name: 'Password reset with security questions',
-    flow: 'Login -> Password Reset -> Security Questions -> New Password',
-    labels: {
-      flow: 'Login',
-      intent: 'Positive',
-      experience: 'Web',
-      project: 'Account Recovery',
-    },
-    dataRequirements: [
-      'User account',
-      'Security questions setup',
-      'Email access',
-    ],
-    supportedRuntimes: ['Sierra', 'OCP Testing Studio'],
-    lastExecution: null,
-    lastModified: '2025-08-20T16:00:00Z',
-    version: 'v1.0',
-    team: 'Core Team',
-  },
-  {
-    id: 'TC-00198',
-    name: 'Transfer between own accounts',
-    flow: 'Transfer -> Validation -> Confirmation',
-    labels: {
-      flow: 'Transfer',
-      intent: 'Positive',
-      experience: 'Mobile',
-      project: 'Release Q3',
-    },
-    dataRequirements: ['Active account', 'Primary user'],
-    supportedRuntimes: ['OCP Testing Studio', 'Xero', 'Sierra'],
-    lastExecution: null,
-    lastModified: '2025-08-20T11:30:00Z',
-    version: 'v1.0',
-    team: 'Mobile Team',
-  },
-  {
-    id: 'TC-00256',
-    name: 'Balance inquiry with multiple accounts',
-    flow: 'Inquiry -> Authentication -> Listing',
-    labels: {
-      flow: 'Inquiry',
-      intent: 'Positive',
-      experience: 'Mobile',
-      project: 'Core Banking',
-    },
-    dataRequirements: ['Active account', 'Authorized user', 'Business account'],
-    supportedRuntimes: ['OCP Testing Studio', 'Sierra'],
-    lastExecution: {
-      date: '2025-08-19T15:45:00Z',
-      status: 'PASSED',
-      runtime: 'OCP Testing Studio',
-    },
-    lastModified: '2025-08-20T08:30:00Z',
-    version: 'v1.1',
-    team: 'Core Team',
-  },
-  {
-    id: 'TC-00267',
-    name: 'New credit card activation',
-    flow: 'Activation -> Validation -> Confirmation',
-    labels: {
-      flow: 'Activation',
-      intent: 'Positive',
-      experience: 'Web',
-      project: 'Release Q3',
-    },
-    dataRequirements: ['Expired credit card', 'Primary user', 'Active account'],
-    supportedRuntimes: ['Xero', 'Sierra'],
-    lastExecution: {
-      date: '2025-08-17T11:20:00Z',
-      status: 'BLOCKED',
-      runtime: 'Xero',
-    },
-    lastModified: '2025-08-20T14:15:00Z',
-    version: 'v2.0',
-    team: 'Web Team',
-  },
-];
 
 const ITEMS_PER_PAGE = 10;
 
@@ -397,75 +49,45 @@ const STATUS_BADGE_VARIANTS: Record<string, string> = {
 };
 
 export function TestsInventory() {
-  const { hasPermission } = usePermissions();
-  const [tests, setTests] = useState<Test[]>(mockTests);
-  const [selectedTest, setSelectedTest] = useState<Test | null>(null);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [filterFlujo, setFilterFlujo] = useState<string | string[]>('all');
-  const [filterStatus, setFilterStatus] = useState<string | string[]>('all');
-  const [filterRuntime, setFilterRuntime] = useState<string | string[]>('all');
-  const [filterTeam, setFilterTeam] = useState<string | string[]>('all');
-  const [selectedTestIds, setSelectedTestIds] = useState<Set<string>>(
-    () => new Set()
-  );
-  const [currentPage, setCurrentPage] = useState(1);
-  const [selectAllPages, setSelectAllPages] = useState(false);
-  const [editingTest, setEditingTest] = useState<Test | null>(null);
-  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-  const [testToDelete, setTestToDelete] = useState<Test | null>(null);
+  const hasPermission = usePermissionsStore((s) => s.hasPermission);
 
-  const filteredTests = useMemo(() => tests.filter(test => {
-    const matchesSearch =
-      test.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      test.flow.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      test.id.toLowerCase().includes(searchTerm.toLowerCase());
+  // Store state
+  const tests = useTestsStore((s) => s.tests);
+  const filteredTests = useTestsStore(useShallow(selectFilteredTests));
+  const searchTerm = useTestsStore((s) => s.searchTerm);
+  const filterFlow = useTestsStore((s) => s.filterFlow);
+  const filterStatus = useTestsStore((s) => s.filterStatus);
+  const filterRuntime = useTestsStore((s) => s.filterRuntime);
+  const filterTeam = useTestsStore((s) => s.filterTeam);
+  const selectedTestIds = useTestsStore((s) => s.selectedTestIds);
+  const currentPage = useTestsStore((s) => s.currentPage);
+  const selectAllPages = useTestsStore((s) => s.selectAllPages);
+  const selectedTest = useTestsStore((s) => s.selectedTest);
+  const editingTest = useTestsStore((s) => s.editingTest);
+  const showDeleteDialog = useTestsStore((s) => s.showDeleteDialog);
+  const testToDelete = useTestsStore((s) => s.testToDelete);
 
-    // Updated filter logic to handle both single values and arrays
-    const matchesFlujo =
-      filterFlujo === 'all' ||
-      (Array.isArray(filterFlujo)
-        ? filterFlujo.includes(test.labels.flow)
-        : test.labels.flow === filterFlujo);
-
-    const matchesStatus =
-      filterStatus === 'all' ||
-      (Array.isArray(filterStatus)
-        ? filterStatus.some(
-            status =>
-              (status === 'passed' &&
-                test.lastExecution?.status === 'PASSED') ||
-              (status === 'failed' &&
-                test.lastExecution?.status === 'FAILED') ||
-              (status === 'never' && !test.lastExecution)
-          )
-        : (filterStatus === 'passed' &&
-            test.lastExecution?.status === 'PASSED') ||
-          (filterStatus === 'failed' &&
-            test.lastExecution?.status === 'FAILED') ||
-          (filterStatus === 'never' && !test.lastExecution));
-
-    const matchesRuntime =
-      filterRuntime === 'all' ||
-      (Array.isArray(filterRuntime)
-        ? filterRuntime.some(runtime =>
-            test.supportedRuntimes.includes(runtime)
-          )
-        : test.supportedRuntimes.includes(filterRuntime as string));
-
-    const matchesTeam =
-      filterTeam === 'all' ||
-      (Array.isArray(filterTeam)
-        ? filterTeam.includes(test.team)
-        : test.team === filterTeam);
-
-    return (
-      matchesSearch &&
-      matchesFlujo &&
-      matchesStatus &&
-      matchesRuntime &&
-      matchesTeam
-    );
-  }), [tests, searchTerm, filterFlujo, filterStatus, filterRuntime, filterTeam]);
+  // Store actions
+  const setSearchTerm = useTestsStore((s) => s.setSearchTerm);
+  const setFilterFlow = useTestsStore((s) => s.setFilterFlow);
+  const setFilterStatus = useTestsStore((s) => s.setFilterStatus);
+  const setFilterRuntime = useTestsStore((s) => s.setFilterRuntime);
+  const setFilterTeam = useTestsStore((s) => s.setFilterTeam);
+  const clearFilters = useTestsStore((s) => s.clearFilters);
+  const setSelectedTest = useTestsStore((s) => s.setSelectedTest);
+  const setEditingTest = useTestsStore((s) => s.setEditingTest);
+  const toggleTestSelection = useTestsStore((s) => s.toggleTestSelection);
+  const selectAllOnPage = useTestsStore((s) => s.selectAllOnPage);
+  const selectAllTests = useTestsStore((s) => s.selectAllTests);
+  const clearSelection = useTestsStore((s) => s.clearSelection);
+  const setCurrentPage = useTestsStore((s) => s.setCurrentPage);
+  const setSelectAllPages = useTestsStore((s) => s.setSelectAllPages);
+  const setShowDeleteDialog = useTestsStore((s) => s.setShowDeleteDialog);
+  const setTestToDelete = useTestsStore((s) => s.setTestToDelete);
+  const addTest = useTestsStore((s) => s.addTest);
+  const updateTest = useTestsStore((s) => s.updateTest);
+  const deleteTest = useTestsStore((s) => s.deleteTest);
+  const bulkDelete = useTestsStore((s) => s.bulkDelete);
 
   // Pagination calculations
   const totalPages = Math.ceil(filteredTests.length / ITEMS_PER_PAGE);
@@ -473,53 +95,25 @@ export function TestsInventory() {
   const endIndex = startIndex + ITEMS_PER_PAGE;
   const paginatedTests = filteredTests.slice(startIndex, endIndex);
 
-  // Reset to first page when filters change
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [searchTerm, filterFlujo, filterStatus, filterRuntime, filterTeam]);
-
   // Selection handlers
   const handleSelectAll = (checked: boolean) => {
     if (checked) {
       if (selectAllPages) {
-        // Select all tests across all pages
-        const allIds = new Set(filteredTests.map(test => test.id));
-        setSelectedTestIds(allIds);
+        selectAllTests(filteredTests.map(test => test.id));
       } else {
-        // Select only current page
-        const currentPageIds = new Set(paginatedTests.map(test => test.id));
-        setSelectedTestIds(prevIds => {
-          const newIds = new Set(prevIds);
-          currentPageIds.forEach(id => newIds.add(id));
-          return newIds;
-        });
+        selectAllOnPage(true, paginatedTests.map(test => test.id));
       }
     } else {
       if (selectAllPages) {
-        // Deselect all
-        setSelectedTestIds(new Set());
+        clearSelection();
       } else {
-        // Deselect only current page
-        const currentPageIds = new Set(paginatedTests.map(test => test.id));
-        setSelectedTestIds(prevIds => {
-          const newIds = new Set(prevIds);
-          currentPageIds.forEach(id => newIds.delete(id));
-          return newIds;
-        });
+        selectAllOnPage(false, paginatedTests.map(test => test.id));
       }
     }
   };
 
   const handleSelectTest = (testId: string, checked: boolean) => {
-    setSelectedTestIds(prev => {
-      const newSelection = new Set(prev);
-      if (checked) {
-        newSelection.add(testId);
-      } else {
-        newSelection.delete(testId);
-      }
-      return newSelection;
-    });
+    toggleTestSelection(testId, checked);
   };
 
   // Selection state helpers
@@ -583,7 +177,6 @@ export function TestsInventory() {
   };
 
   const generateTestsYaml = () => {
-    // Export only selected tests, or all filtered tests if none selected
     const testsToExport =
       selectedCount > 0
         ? tests.filter(test => selectedTestIds.has(test.id))
@@ -661,9 +254,9 @@ ${test.supportedRuntimes.map(runtime => `      - ${runtime}`).join('\n')}
       key: 'flow',
       label: 'FLOW',
       placeholder: 'Flow',
-      value: filterFlujo,
-      onChange: setFilterFlujo,
-      multiple: true, // Enable multiple selection
+      value: filterFlow,
+      onChange: setFilterFlow,
+      variant: 'multi',
       options: [
         { value: 'all', label: 'All flows' },
         { value: 'Payment', label: 'Payment' },
@@ -679,7 +272,7 @@ ${test.supportedRuntimes.map(runtime => `      - ${runtime}`).join('\n')}
       placeholder: 'Status',
       value: filterStatus,
       onChange: setFilterStatus,
-      multiple: true, // Enable multiple selection
+      variant: 'multi',
       options: [
         { value: 'all', label: 'All' },
         { value: 'passed', label: 'Passed' },
@@ -693,7 +286,7 @@ ${test.supportedRuntimes.map(runtime => `      - ${runtime}`).join('\n')}
       placeholder: 'Runtime',
       value: filterRuntime,
       onChange: setFilterRuntime,
-      multiple: true, // Enable multiple selection
+      variant: 'multi',
       options: [
         { value: 'all', label: 'All' },
         { value: 'OCP Testing Studio', label: 'OCP Testing Studio' },
@@ -707,7 +300,7 @@ ${test.supportedRuntimes.map(runtime => `      - ${runtime}`).join('\n')}
       placeholder: 'Team',
       value: filterTeam,
       onChange: setFilterTeam,
-      multiple: true, // Enable multiple selection
+      variant: 'multi',
       options: [
         { value: 'all', label: 'All teams' },
         { value: 'QA Team', label: 'QA Team' },
@@ -718,14 +311,6 @@ ${test.supportedRuntimes.map(runtime => `      - ${runtime}`).join('\n')}
     },
   ];
 
-  const handleClearFilters = () => {
-    setSearchTerm('');
-    setFilterFlujo('all');
-    setFilterStatus('all');
-    setFilterRuntime('all');
-    setFilterTeam('all');
-  };
-
   const handleSoftDelete = (test: Test) => {
     setTestToDelete(test);
     setShowDeleteDialog(true);
@@ -733,14 +318,7 @@ ${test.supportedRuntimes.map(runtime => `      - ${runtime}`).join('\n')}
 
   const confirmDelete = () => {
     if (testToDelete) {
-      setTests(prev => prev.filter(t => t.id !== testToDelete.id));
-      setSelectedTestIds(prev => {
-        const newSet = new Set(prev);
-        newSet.delete(testToDelete.id);
-        return newSet;
-      });
-      setTestToDelete(null);
-      setShowDeleteDialog(false);
+      deleteTest(testToDelete.id);
     }
   };
 
@@ -755,14 +333,8 @@ ${test.supportedRuntimes.map(runtime => `      - ${runtime}`).join('\n')}
         `Are you sure you want to delete ${selectedCount} test${selectedCount !== 1 ? 's' : ''}? This action cannot be undone.`
       )
     ) {
-      setTests(prev => prev.filter(test => !selectedTestIds.has(test.id)));
-      setSelectedTestIds(new Set());
+      bulkDelete(selectedTestIds);
     }
-  };
-
-  const handleEditTest = (updatedTest: Test) => {
-    setTests(prev => prev.map(t => (t.id === updatedTest.id ? updatedTest : t)));
-    setEditingTest(null);
   };
 
   return (
@@ -776,8 +348,8 @@ ${test.supportedRuntimes.map(runtime => `      - ${runtime}`).join('\n')}
         <div className="flex gap-2">
           {hasPermission('create_tests') && (
             <CreateTestDialog
-              onTestCreated={newTest => setTests(prev => [...prev, newTest])}
-            >
+              onTestCreated={addTest}
+              >
               <div
                 className={cn(
                   buttonVariants({ variant: 'default', size: 'default' })
@@ -827,7 +399,7 @@ ${test.supportedRuntimes.map(runtime => `      - ${runtime}`).join('\n')}
               <Button
                 size="sm"
                 variant="ghost"
-                onClick={() => setSelectedTestIds(new Set())}
+                onClick={clearSelection}
                 className="text-blue-600 hover:text-blue-800"
               >
                 Clear selection
@@ -843,7 +415,7 @@ ${test.supportedRuntimes.map(runtime => `      - ${runtime}`).join('\n')}
         onSearchChange={setSearchTerm}
         searchPlaceholder="Search tests..."
         filters={filterConfigs}
-        onClearFilters={handleClearFilters}
+        onClearFilters={clearFilters}
         filteredCount={filteredTests.length}
         totalCount={tests.length}
         itemType="tests"
@@ -864,7 +436,6 @@ ${test.supportedRuntimes.map(runtime => `      - ${runtime}`).join('\n')}
                   <Checkbox
                     checked={isAllSelected}
                     ref={el => {
-                      // Cast to HTMLInputElement to access the indeterminate property
                       const input = el as unknown as HTMLInputElement | null;
                       if (input) input.indeterminate = isIndeterminate;
                     }}
@@ -1106,12 +677,10 @@ ${test.supportedRuntimes.map(runtime => `      - ${runtime}`).join('\n')}
                       checked={selectAllPages}
                       onCheckedChange={checked => {
                         setSelectAllPages(checked as boolean);
-                        // If selecting across all pages and no items are selected, select all
                         if (checked && selectedCount === 0) {
-                          const allIds = new Set(
+                          selectAllTests(
                             filteredTests.map(test => test.id)
                           );
-                          setSelectedTestIds(allIds);
                         }
                       }}
                     />
@@ -1130,7 +699,7 @@ ${test.supportedRuntimes.map(runtime => `      - ${runtime}`).join('\n')}
                   <PaginationItem>
                     <PaginationPrevious
                       onClick={() =>
-                        setCurrentPage(prev => Math.max(1, prev - 1))
+                        setCurrentPage(Math.max(1, currentPage - 1))
                       }
                       className={
                         currentPage === 1
@@ -1159,7 +728,7 @@ ${test.supportedRuntimes.map(runtime => `      - ${runtime}`).join('\n')}
                   <PaginationItem>
                     <PaginationNext
                       onClick={() =>
-                        setCurrentPage(prev => Math.min(totalPages, prev + 1))
+                        setCurrentPage(Math.min(totalPages, currentPage + 1))
                       }
                       className={
                         currentPage === totalPages
@@ -1178,7 +747,7 @@ ${test.supportedRuntimes.map(runtime => `      - ${runtime}`).join('\n')}
       {/* Edit Test Dialog */}
       {editingTest && (
         <CreateTestDialog
-          onTestCreated={handleEditTest}
+          onTestCreated={updateTest}
           editTest={editingTest}
           onClose={() => setEditingTest(null)}
         >

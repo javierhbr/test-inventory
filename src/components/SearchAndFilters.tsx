@@ -18,15 +18,26 @@ export interface FilterOption {
   label: string;
 }
 
-export interface FilterConfig {
+interface BaseFilterConfig {
   key: string;
   label: string;
   placeholder: string;
   options: FilterOption[];
-  value: string | string[]; // Support both single and multiple values
-  onChange: (value: string | string[]) => void;
-  multiple?: boolean; // Flag to enable multiple selection
 }
+
+interface SingleSelectFilterConfig extends BaseFilterConfig {
+  variant: 'single';
+  value: string;
+  onChange: (value: string) => void;
+}
+
+interface MultiSelectFilterConfig extends BaseFilterConfig {
+  variant: 'multi';
+  value: string | string[];
+  onChange: (value: string | string[]) => void;
+}
+
+export type FilterConfig = SingleSelectFilterConfig | MultiSelectFilterConfig;
 
 interface SearchAndFiltersProps {
   searchTerm: string;
@@ -58,15 +69,23 @@ export function SearchAndFilters({
   onSelectAll,
   selectAllLabel,
 }: SearchAndFiltersProps) {
-  const handleMultiSelectChange = (
-    filterKey: string,
-    optionValue: string,
-    isChecked: boolean,
-    currentValue: string | string[]
-  ) => {
-    const filter = filters.find(f => f.key === filterKey);
-    if (!filter) return;
+  const isMultiFilter = (
+    filter: FilterConfig
+  ): filter is MultiSelectFilterConfig => filter.variant === 'multi';
 
+  const getMultiSelectedValues = (value: string | string[]): string[] => {
+    if (Array.isArray(value)) {
+      return value;
+    }
+
+    return value === 'all' ? [] : [value];
+  };
+
+  const handleMultiSelectChange = (
+    filter: MultiSelectFilterConfig,
+    optionValue: string,
+    isChecked: boolean
+  ) => {
     // Handle 'all' option specially
     if (optionValue === 'all') {
       if (isChecked) {
@@ -75,22 +94,10 @@ export function SearchAndFilters({
       return;
     }
 
-    let newValue: string[];
-
-    if (Array.isArray(currentValue)) {
-      if (isChecked) {
-        newValue = [...currentValue, optionValue];
-      } else {
-        newValue = currentValue.filter(v => v !== optionValue);
-      }
-    } else {
-      // Convert single value to array
-      if (currentValue === 'all') {
-        newValue = isChecked ? [optionValue] : [];
-      } else {
-        newValue = isChecked ? [currentValue, optionValue] : [currentValue];
-      }
-    }
+    const currentValues = getMultiSelectedValues(filter.value);
+    const newValue = isChecked
+      ? [...new Set([...currentValues, optionValue])]
+      : currentValues.filter(v => v !== optionValue);
 
     // If no values selected, set to 'all'
     if (newValue.length === 0) {
@@ -101,14 +108,12 @@ export function SearchAndFilters({
   };
 
   const removeSelectedValue = (
-    filterKey: string,
+    filter: MultiSelectFilterConfig,
     valueToRemove: string,
-    currentValue: string | string[]
   ) => {
-    const filter = filters.find(f => f.key === filterKey);
-    if (!filter || !Array.isArray(currentValue)) return;
-
-    const newValue = currentValue.filter(v => v !== valueToRemove);
+    const newValue = getMultiSelectedValues(filter.value).filter(
+      v => v !== valueToRemove
+    );
     if (newValue.length === 0) {
       filter.onChange('all');
     } else {
@@ -117,15 +122,17 @@ export function SearchAndFilters({
   };
 
   const getSelectedOptionsLabel = (filter: FilterConfig) => {
-    if (Array.isArray(filter.value)) {
-      if (filter.value.length === 0) return filter.placeholder;
-      if (filter.value.length === 1) {
+    if (isMultiFilter(filter)) {
+      const selectedValues = getMultiSelectedValues(filter.value);
+
+      if (selectedValues.length === 0) return filter.placeholder;
+      if (selectedValues.length === 1) {
         const option = filter.options.find(
-          opt => opt.value === filter.value[0]
+          opt => opt.value === selectedValues[0]
         );
-        return option?.label || filter.value[0];
+        return option?.label || selectedValues[0];
       }
-      return `${filter.value.length} selected`;
+      return `${selectedValues.length} selected`;
     }
 
     if (filter.value === 'all') return filter.placeholder;
@@ -157,15 +164,20 @@ export function SearchAndFilters({
 
         {/* Selected Filters Display */}
         {filters.some(
-          filter => Array.isArray(filter.value) && filter.value.length > 0
+          filter =>
+            isMultiFilter(filter) && getMultiSelectedValues(filter.value).length > 0
         ) && (
           <div className="mb-4">
             <div className="flex flex-wrap gap-2">
               {filters.map(filter => {
-                if (!Array.isArray(filter.value) || filter.value.length === 0)
+                if (!isMultiFilter(filter))
                   return null;
 
-                return filter.value.map(selectedValue => {
+                const selectedValues = getMultiSelectedValues(filter.value);
+                if (selectedValues.length === 0)
+                  return null;
+
+                return selectedValues.map(selectedValue => {
                   const option = filter.options.find(
                     opt => opt.value === selectedValue
                   );
@@ -182,13 +194,7 @@ export function SearchAndFilters({
                       </span>
                       {option.label}
                       <button
-                        onClick={() =>
-                          removeSelectedValue(
-                            filter.key,
-                            selectedValue,
-                            filter.value
-                          )
-                        }
+                        onClick={() => removeSelectedValue(filter, selectedValue)}
                         className="ml-1 rounded-full p-0.5 hover:bg-secondary-foreground/20"
                       >
                         <X className="h-3 w-3" />
@@ -210,28 +216,30 @@ export function SearchAndFilters({
               </label>
               <Select
                 value={
-                  Array.isArray(filter.value)
-                    ? filter.value.length === 0
-                      ? 'all'
-                      : filter.value[0]
+                  isMultiFilter(filter)
+                    ? getMultiSelectedValues(filter.value)[0] || 'all'
                     : filter.value
                 }
-                onValueChange={value => {
-                  if (!filter.multiple) {
-                    filter.onChange(value as string);
-                  }
-                }}
+                onValueChange={value =>
+                  !isMultiFilter(filter)
+                    ? filter.onChange(value as string)
+                    : undefined
+                }
               >
                 <SelectTrigger className="h-10">
                   <SelectValue>{getSelectedOptionsLabel(filter)}</SelectValue>
                 </SelectTrigger>
                 <SelectContent>
-                  {filter.multiple ? (
+                  {isMultiFilter(filter) ? (
                     <>
                       {filter.options.map(option => {
-                        const isSelected = Array.isArray(filter.value)
-                          ? filter.value.includes(option.value)
-                          : filter.value === option.value;
+                        const selectedValues = getMultiSelectedValues(
+                          filter.value
+                        );
+                        const isSelected =
+                          option.value === 'all'
+                            ? filter.value === 'all'
+                            : selectedValues.includes(option.value);
 
                         return (
                           <div
@@ -242,10 +250,9 @@ export function SearchAndFilters({
                               checked={isSelected}
                               onCheckedChange={checked =>
                                 handleMultiSelectChange(
-                                  filter.key,
+                                  filter,
                                   option.value,
-                                  checked as boolean,
-                                  filter.value
+                                  checked === true
                                 )
                               }
                             />

@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 
 import { Pencil, Save, X } from 'lucide-react';
 
+import { TestDataRecord } from '../services/types';
+
 import { Button } from './ui/button';
 import {
   Card,
@@ -29,43 +31,9 @@ import {
 } from './ui/select';
 import { Textarea } from './ui/textarea';
 
-interface TestData {
-  id: string;
-  customer: {
-    customerId: string;
-    name: string;
-    type: string;
-  };
-  account: {
-    accountId: string;
-    referenceId: string;
-    type: string;
-    createdAt: string;
-  };
-  classifications: string[];
-  labels: {
-    project: string;
-    environment: string;
-    dataOwner: string;
-    group?: string;
-    source?: string;
-  };
-  scope: {
-    visibility: 'manual' | 'automated' | 'platform';
-    platforms?: string[];
-  };
-  status: 'Available' | 'In Use' | 'Consumed' | 'Reconditioning' | 'Inactive';
-  lastUsed: {
-    date: string;
-    testId: string;
-    runtime: string;
-  } | null;
-  team: string;
-}
-
 interface EditTestDataDialogProps {
-  testData: TestData;
-  onTestDataUpdated: (updatedData: TestData) => void;
+  testData: TestDataRecord;
+  onTestDataUpdated: (updatedData: TestDataRecord) => void;
   children: React.ReactNode;
 }
 
@@ -96,7 +64,7 @@ export function EditTestDataDialog({
   };
 
   const handleSave = () => {
-    const updatedTestData: TestData = {
+    const updatedTestData: TestDataRecord = {
       ...testData,
       classifications: formData.classifications
         .split(',')

@@ -18,10 +18,10 @@ export interface Test {
   name: string;
   flow: string;
   labels: {
-    flujo: string;
+    flow: string;
     intent: string;
     experience: string;
-    proyecto: string;
+    project: string;
   };
   dataRequirements: string[];
   supportedRuntimes: string[];
@@ -32,27 +32,41 @@ export interface Test {
   } | null;
   lastModified: string;
   version: string;
+  team: string;
 }
 
-export interface TestData {
+export interface TestDataRecord {
   id: string;
-  accountId: string;
-  referenceId: string;
-  customerId: string;
-  classification: string[];
-  status: 'Disponible' | 'En uso' | 'Consumida' | 'Reacondicionamiento';
-  createdAt: string;
-  lastUsed: string | null;
-  team: string;
-  s3Location: {
-    bucket: string;
-    path: string;
+  customer: {
+    customerId: string;
+    name: string;
+    type: string;
   };
-  metadata: {
-    source: string;
+  account: {
+    accountId: string;
+    referenceId: string;
+    type: string;
+    createdAt: string;
+  };
+  classifications: string[];
+  labels: {
+    project: string;
     environment: string;
-    region: string;
+    dataOwner: string;
+    group?: string;
+    source?: string;
   };
+  scope: {
+    visibility: 'manual' | 'automated' | 'platform';
+    platforms?: string[];
+  };
+  status: 'Available' | 'In Use' | 'Consumed' | 'Reconditioning' | 'Inactive';
+  lastUsed: {
+    date: string;
+    testId: string;
+    runtime: string;
+  } | null;
+  team: string;
 }
 
 export interface AssignedTestData {
@@ -73,10 +87,10 @@ export interface CreateTestFormData {
   name: string;
   flow: string;
   labels: {
-    flujo: string;
+    flow: string;
     intent: string;
     experience: string;
-    proyecto: string;
+    project: string;
   };
   dataRequirements: string[];
   supportedRuntimes: string[];
@@ -109,4 +123,17 @@ export interface ExecutionConfig {
 export interface YamlGenerationOptions {
   cart: CartItem[];
   selectedRuntime: string;
+}
+
+export interface Permission {
+  id: string;
+  name: string;
+  description: string;
+}
+
+export interface UserPermissions {
+  userId: string;
+  username: string;
+  roles: string[];
+  permissions: string[];
 }

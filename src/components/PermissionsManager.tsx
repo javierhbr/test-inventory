@@ -2,11 +2,11 @@ import { useState } from 'react';
 
 import { Settings, Shield, User } from 'lucide-react';
 
+import { UserPermissions } from '../services/types';
 import {
   getPermissionsFromRoles,
-  usePermissions,
-  UserPermissions,
-} from '../contexts/PermissionsContext';
+  usePermissionsStore,
+} from '../stores/permissionsStore';
 
 import { Badge } from './ui/badge';
 import { Button } from './ui/button';
@@ -28,7 +28,8 @@ import {
 } from './ui/dialog';
 
 export function PermissionsManager() {
-  const { userPermissions, setUserPermissions } = usePermissions();
+  const userPermissions = usePermissionsStore((s) => s.userPermissions);
+  const setUserPermissions = usePermissionsStore((s) => s.setUserPermissions);
   const [isOpen, setIsOpen] = useState(false);
   const [selectedRoles, setSelectedRoles] = useState<string[]>(
     userPermissions?.roles || ['qa_engineer']

@@ -2,22 +2,27 @@ import { useEffect, useState } from 'react';
 
 import { ExecutionBuilder } from './components/ExecutionBuilder';
 import { Header } from './components/Header';
-import { Login, User } from './components/Login';
+import { Login } from './components/Login';
 import { SystemConfiguration } from './components/SystemConfiguration';
 import { TestDataInventory } from './components/TestDataInventory';
 import { TestsInventory } from './components/TestsInventory';
 import { Button } from './components/ui/button';
 import { cn } from './components/ui/utils';
 import { UserManagement } from './components/UserManagement';
-import { PermissionsProvider } from './contexts/PermissionsContext';
 import { useNavigationHistory } from './hooks/useNavigationHistory';
 import { AppConfig, configService } from './services/configService';
+import { useAuthStore } from './stores/authStore';
+import { usePermissionsStore } from './stores/permissionsStore';
 
 function App() {
-  const [user, setUser] = useState<User | null>(null);
+  const user = useAuthStore((s) => s.user);
+  const login = useAuthStore((s) => s.login);
   const [appConfig, setAppConfig] = useState<AppConfig | null>(null);
   const [loading, setLoading] = useState(true);
   const [configError, setConfigError] = useState<string | null>(null);
+  const initializeDefaultPermissions = usePermissionsStore(
+    (s) => s.initializeDefaultPermissions
+  );
 
   // Load configurations on mount
   useEffect(() => {
@@ -39,9 +44,10 @@ function App() {
     loadConfigs();
   }, []);
 
-  const handleLogin = (loggedInUser: User) => {
-    setUser(loggedInUser);
-  };
+  // Initialize permissions on mount
+  useEffect(() => {
+    initializeDefaultPermissions();
+  }, [initializeDefaultPermissions]);
 
   if (loading) {
     return (
@@ -75,25 +81,15 @@ function App() {
   }
 
   if (!user) {
-    return <Login onLogin={handleLogin} />;
+    return <Login onLogin={login} />;
   }
 
-  return (
-    <PermissionsProvider>
-      <AppContent user={user} setUser={setUser} appConfig={appConfig} />
-    </PermissionsProvider>
-  );
+  return <AppContent appConfig={appConfig} />;
 }
 
-function AppContent({
-  user,
-  setUser,
-  appConfig,
-}: {
-  user: User;
-  setUser: (user: User | null) => void;
-  appConfig: AppConfig | null;
-}) {
+function AppContent({ appConfig }: { appConfig: AppConfig | null }) {
+  const user = useAuthStore((s) => s.user);
+  const logout = useAuthStore((s) => s.logout);
   const {
     currentTab: activeTab,
     pushToHistory,
@@ -103,10 +99,6 @@ function AppContent({
     canGoForward,
   } = useNavigationHistory(appConfig?.application.defaultTab || 'tests');
 
-  const handleLogout = () => {
-    setUser(null);
-  };
-
   const handleTabChange = (tab: string) => {
     pushToHistory(tab);
   };
@@ -114,8 +106,8 @@ function AppContent({
   return (
     <div className="flex h-screen flex-col bg-gray-50">
       <Header
-        user={user}
-        onLogout={handleLogout}
+        user={user!}
+        onLogout={logout}
         onBack={goBack}
         onForward={goForward}
         canGoBack={canGoBack}

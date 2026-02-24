@@ -11,7 +11,7 @@ import {
   User,
 } from 'lucide-react';
 
-import { User as UserType } from './Login';
+import { User as UserType } from '../services/types';
 import { PermissionsManager } from './PermissionsManager';
 import { Avatar, AvatarFallback } from './ui/avatar';
 import { Button } from './ui/button';

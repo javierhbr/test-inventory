@@ -1,8 +1,12 @@
-import { useState, useEffect, useMemo } from 'react';
-
 import { Plus, Eye, RefreshCw, Download, Pencil, Trash2 } from 'lucide-react';
+import { useShallow } from 'zustand/react/shallow';
 
-import { usePermissions } from '../contexts/PermissionsContext';
+import { TestDataRecord } from '../services/types';
+import { usePermissionsStore } from '../stores/permissionsStore';
+import {
+  useTestDataStore,
+  selectFilteredTestData,
+} from '../stores/testDataStore';
 
 import { CreateTestDataDialog } from './CreateTestDataDialog';
 import { EditTestDataDialog } from './EditTestDataDialog';
@@ -39,477 +43,6 @@ import {
 } from './ui/table';
 import { cn } from './ui/utils';
 
-interface LocalTestData {
-  id: string;
-  customer: {
-    customerId: string;
-    name: string;
-    type: string;
-  };
-  account: {
-    accountId: string;
-    referenceId: string;
-    type: string;
-    createdAt: string;
-  };
-  classifications: string[];
-  labels: {
-    project: string;
-    environment: string;
-    dataOwner: string;
-    group?: string;
-    source?: string;
-  };
-  scope: {
-    visibility: 'manual' | 'automated' | 'platform';
-    platforms?: string[];
-  };
-  status: 'Available' | 'In Use' | 'Consumed' | 'Reconditioning' | 'Inactive';
-  lastUsed: {
-    date: string;
-    testId: string;
-    runtime: string;
-  } | null;
-  team: string;
-}
-
-const mockTestData: LocalTestData[] = [
-  {
-    id: 'TD-20031',
-    customer: {
-      customerId: 'CUST-12345',
-      name: 'Company ABC',
-      type: 'Company',
-    },
-    account: {
-      accountId: 'ACC-98211',
-      referenceId: 'REF-ACC-98211',
-      type: 'Credit Card',
-      createdAt: '2025-08-20T10:00:00Z',
-    },
-    classifications: [
-      'Expired account',
-      'Expired credit card',
-      'Authorized user',
-    ],
-    labels: {
-      project: 'Core Migration',
-      environment: 'QA',
-      dataOwner: 'AutomationBot',
-      group: 'SME',
-      source: 'Core API',
-    },
-    scope: {
-      visibility: 'platform',
-      platforms: ['OCP Testing Studio'],
-    },
-    status: 'Consumed',
-    lastUsed: {
-      date: '2025-08-15T10:30:00Z',
-      testId: 'TC-00123',
-      runtime: 'OCP Testing Studio',
-    },
-    team: 'QA-Team',
-  },
-  {
-    id: 'TD-20041',
-    customer: {
-      customerId: 'CUST-54321',
-      name: 'Test User',
-      type: 'Primary user',
-    },
-    account: {
-      accountId: 'ACC-99551',
-      referenceId: 'REF-ACC-99551',
-      type: 'Checking Account',
-      createdAt: '2025-08-18T14:30:00Z',
-    },
-    classifications: ['Business account', 'Primary user', 'Active account'],
-    labels: {
-      project: 'Release Q3',
-      environment: 'QA',
-      dataOwner: 'QA-Team',
-      group: 'VIP',
-      source: 'Bulk load',
-    },
-    scope: {
-      visibility: 'automated',
-    },
-    status: 'Available',
-    lastUsed: null,
-    team: 'QA-Team',
-  },
-  {
-    id: 'TD-20052',
-    customer: {
-      customerId: 'CUST-67890',
-      name: 'Retail User',
-      type: 'Authorized user',
-    },
-    account: {
-      accountId: 'ACC-87652',
-      referenceId: 'REF-ACC-87652',
-      type: 'Savings Account',
-      createdAt: '2025-08-19T09:15:00Z',
-    },
-    classifications: ['Active account', 'Authorized user'],
-    labels: {
-      project: 'Core Banking',
-      environment: 'Preprod',
-      dataOwner: 'DataTeam',
-      group: 'Retail',
-      source: 'Generated',
-    },
-    scope: {
-      visibility: 'manual',
-    },
-    status: 'In Use',
-    lastUsed: {
-      date: '2025-08-20T11:00:00Z',
-      testId: 'TC-00145',
-      runtime: 'Manual Testing',
-    },
-    team: 'DataTeam',
-  },
-  {
-    id: 'TD-20032',
-    customer: {
-      customerId: 'CUST-54321',
-      name: 'Individual User John',
-      type: 'Individual',
-    },
-    account: {
-      accountId: 'ACC-78945',
-      referenceId: 'REF-ACC-78945',
-      type: 'Savings Account',
-      createdAt: '2025-08-18T09:30:00Z',
-    },
-    classifications: ['Premium account', 'Verified customer', 'High balance'],
-    labels: {
-      project: 'Customer Portal',
-      environment: 'Production',
-      dataOwner: 'DataTeam',
-      group: 'Premium',
-      source: 'CRM System',
-    },
-    scope: {
-      visibility: 'automated',
-      platforms: ['Sierra', 'Xero'],
-    },
-    status: 'Available',
-    lastUsed: null,
-    team: 'QA Team',
-  },
-  {
-    id: 'TD-20033',
-    customer: {
-      customerId: 'CUST-67890',
-      name: 'Business Corp Ltd',
-      type: 'Company',
-    },
-    account: {
-      accountId: 'ACC-11223',
-      referenceId: 'REF-ACC-11223',
-      type: 'Business Account',
-      createdAt: '2025-08-19T14:15:00Z',
-    },
-    classifications: ['Business account', 'Primary user', 'Multi-user access'],
-    labels: {
-      project: 'Core Banking',
-      environment: 'QA',
-      dataOwner: 'AutomationBot',
-      group: 'Business',
-      source: 'Core API',
-    },
-    scope: {
-      visibility: 'platform',
-      platforms: ['OCP Testing Studio', 'Sierra'],
-    },
-    status: 'Reconditioning',
-    lastUsed: {
-      date: '2025-08-18T14:22:00Z',
-      testId: 'TC-00145',
-      runtime: 'Sierra',
-    },
-    team: 'Core Team',
-  },
-  {
-    id: 'TD-20034',
-    customer: {
-      customerId: 'CUST-13579',
-      name: 'Mobile User Sarah',
-      type: 'Individual',
-    },
-    account: {
-      accountId: 'ACC-44556',
-      referenceId: 'REF-ACC-44556',
-      type: 'Checking Account',
-      createdAt: '2025-08-17T11:45:00Z',
-    },
-    classifications: ['Mobile app user', 'Biometric enabled', 'Active user'],
-    labels: {
-      project: 'Mobile Security',
-      environment: 'Staging',
-      dataOwner: 'MobileTeam',
-      group: 'Standard',
-      source: 'Mobile API',
-    },
-    scope: {
-      visibility: 'automated',
-      platforms: ['OCP Testing Studio'],
-    },
-    status: 'In Use',
-    lastUsed: {
-      date: '2025-08-17T14:15:00Z',
-      testId: 'TC-00212',
-      runtime: 'OCP Testing Studio',
-    },
-    team: 'Mobile Team',
-  },
-  {
-    id: 'TD-20035',
-    customer: {
-      customerId: 'CUST-24680',
-      name: 'International Corp',
-      type: 'Company',
-    },
-    account: {
-      accountId: 'ACC-77889',
-      referenceId: 'REF-ACC-77889',
-      type: 'International Account',
-      createdAt: '2025-08-16T08:30:00Z',
-    },
-    classifications: [
-      'International account',
-      'Compliance verified',
-      'High value',
-    ],
-    labels: {
-      project: 'International Banking',
-      environment: 'Production',
-      dataOwner: 'ComplianceTeam',
-      group: 'International',
-      source: 'SWIFT Network',
-    },
-    scope: {
-      visibility: 'manual',
-      platforms: ['Sierra'],
-    },
-    status: 'Available',
-    lastUsed: null,
-    team: 'Web Team',
-  },
-  {
-    id: 'TD-20036',
-    customer: {
-      customerId: 'CUST-97531',
-      name: 'Tech Startup Inc',
-      type: 'Company',
-    },
-    account: {
-      accountId: 'ACC-33667',
-      referenceId: 'REF-ACC-33667',
-      type: 'Business Credit',
-      createdAt: '2025-08-20T13:20:00Z',
-    },
-    classifications: ['New card', 'Customer profile', 'Phone verified'],
-    labels: {
-      project: 'Card Services',
-      environment: 'QA',
-      dataOwner: 'CardTeam',
-      group: 'SME',
-      source: 'Card Processing',
-    },
-    scope: {
-      visibility: 'platform',
-      platforms: ['OCP Testing Studio', 'Xero'],
-    },
-    status: 'Consumed',
-    lastUsed: {
-      date: '2025-08-16T13:30:00Z',
-      testId: 'TC-00178',
-      runtime: 'Xero',
-    },
-    team: 'QA Team',
-  },
-  {
-    id: 'TD-20037',
-    customer: {
-      customerId: 'CUST-86420',
-      name: 'Low Balance User',
-      type: 'Individual',
-    },
-    account: {
-      accountId: 'ACC-55778',
-      referenceId: 'REF-ACC-55778',
-      type: 'Basic Account',
-      createdAt: '2025-08-15T16:10:00Z',
-    },
-    classifications: [
-      'Low balance account',
-      'Payment request',
-      'Insufficient funds',
-    ],
-    labels: {
-      project: 'Payment Gateway',
-      environment: 'QA',
-      dataOwner: 'PaymentTeam',
-      group: 'Basic',
-      source: 'Payment API',
-    },
-    scope: {
-      visibility: 'automated',
-      platforms: ['Sierra', 'OCP Testing Studio'],
-    },
-    status: 'Available',
-    lastUsed: {
-      date: '2025-08-20T07:45:00Z',
-      testId: 'TC-00189',
-      runtime: 'Sierra',
-    },
-    team: 'Core Team',
-  },
-  {
-    id: 'TD-20038',
-    customer: {
-      customerId: 'CUST-19283',
-      name: 'MFA Enabled User',
-      type: 'Individual',
-    },
-    account: {
-      accountId: 'ACC-99001',
-      referenceId: 'REF-ACC-99001',
-      type: 'Secure Account',
-      createdAt: '2025-08-19T12:00:00Z',
-    },
-    classifications: ['MFA enabled account', 'Mobile device', 'Email access'],
-    labels: {
-      project: 'Security Enhancement',
-      environment: 'Production',
-      dataOwner: 'SecurityTeam',
-      group: 'Secure',
-      source: 'Auth Service',
-    },
-    scope: {
-      visibility: 'platform',
-      platforms: ['OCP Testing Studio', 'Sierra', 'Xero'],
-    },
-    status: 'In Use',
-    lastUsed: {
-      date: '2025-08-19T15:20:00Z',
-      testId: 'TC-00190',
-      runtime: 'OCP Testing Studio',
-    },
-    team: 'Core Team',
-  },
-  {
-    id: 'TD-20039',
-    customer: {
-      customerId: 'CUST-74185',
-      name: 'Document Services Client',
-      type: 'Individual',
-    },
-    account: {
-      accountId: 'ACC-22334',
-      referenceId: 'REF-ACC-22334',
-      type: 'Standard Account',
-      createdAt: '2025-08-18T07:45:00Z',
-    },
-    classifications: [
-      'Active account',
-      'Statement period data',
-      'Document access',
-    ],
-    labels: {
-      project: 'Document Services',
-      environment: 'Production',
-      dataOwner: 'DocumentTeam',
-      group: 'Standard',
-      source: 'Document API',
-    },
-    scope: {
-      visibility: 'automated',
-      platforms: ['Sierra', 'Xero', 'OCP Testing Studio'],
-    },
-    status: 'Available',
-    lastUsed: {
-      date: '2025-08-20T10:00:00Z',
-      testId: 'TC-00223',
-      runtime: 'Xero',
-    },
-    team: 'Web Team',
-  },
-  {
-    id: 'TD-20040',
-    customer: {
-      customerId: 'CUST-96307',
-      name: 'Merchant Account Holder',
-      type: 'Company',
-    },
-    account: {
-      accountId: 'ACC-66778',
-      referenceId: 'REF-ACC-66778',
-      type: 'Merchant Account',
-      createdAt: '2025-08-17T15:30:00Z',
-    },
-    classifications: [
-      'Active credit card',
-      'Merchant account',
-      'Payment processing',
-    ],
-    labels: {
-      project: 'Card Processing',
-      environment: 'QA',
-      dataOwner: 'MerchantTeam',
-      group: 'Merchant',
-      source: 'Payment Gateway',
-    },
-    scope: {
-      visibility: 'platform',
-      platforms: ['OCP Testing Studio', 'Xero'],
-    },
-    status: 'Available',
-    lastUsed: {
-      date: '2025-08-19T12:45:00Z',
-      testId: 'TC-00234',
-      runtime: 'Xero',
-    },
-    team: 'QA Team',
-  },
-  {
-    id: 'TD-20042',
-    customer: {
-      customerId: 'CUST-52841',
-      name: 'Recovery Test User',
-      type: 'Individual',
-    },
-    account: {
-      accountId: 'ACC-88990',
-      referenceId: 'REF-ACC-88990',
-      type: 'Test Account',
-      createdAt: '2025-08-20T14:00:00Z',
-    },
-    classifications: [
-      'User account',
-      'Security questions setup',
-      'Email access',
-    ],
-    labels: {
-      project: 'Account Recovery',
-      environment: 'Staging',
-      dataOwner: 'TestTeam',
-      group: 'Test',
-      source: 'Test Data Generator',
-    },
-    scope: {
-      visibility: 'manual',
-    },
-    status: 'Inactive',
-    lastUsed: null,
-    team: 'Core Team',
-  },
-];
-
 const ITEMS_PER_PAGE = 10;
 
 const STATUS_BADGE_VARIANTS: Record<string, string> = {
@@ -527,75 +60,44 @@ const SCOPE_BADGE_VARIANTS: Record<string, string> = {
 };
 
 export function TestDataInventory() {
-  const { hasPermission } = usePermissions();
-  const [testData, setTestData] = useState<LocalTestData[]>(mockTestData);
-  const [selectedTestData, setSelectedTestData] =
-    useState<LocalTestData | null>(null);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [filterStatus, setFilterStatus] = useState<string | string[]>('all');
-  const [filterScope, setFilterScope] = useState<string | string[]>('all');
-  const [filterAmbiente, setFilterAmbiente] = useState<string | string[]>(
-    'all'
+  const hasPermission = usePermissionsStore((s) => s.hasPermission);
+
+  // Store state
+  const testData = useTestDataStore((s) => s.testData);
+  const filteredTestData = useTestDataStore(
+    useShallow(selectFilteredTestData)
   );
-  const [filterProyecto, setFilterProyecto] = useState<string | string[]>(
-    'all'
-  );
-  const [filterTeam, setFilterTeam] = useState<string | string[]>('all');
-  const [selectedDataIds, setSelectedDataIds] = useState<Set<string>>(
-    () => new Set()
-  );
-  const [currentPage, setCurrentPage] = useState(1);
-  const [selectAllPages, setSelectAllPages] = useState(false);
+  const searchTerm = useTestDataStore((s) => s.searchTerm);
+  const filterStatus = useTestDataStore((s) => s.filterStatus);
+  const filterScope = useTestDataStore((s) => s.filterScope);
+  const filterAmbiente = useTestDataStore((s) => s.filterAmbiente);
+  const filterProyecto = useTestDataStore((s) => s.filterProyecto);
+  const filterTeam = useTestDataStore((s) => s.filterTeam);
+  const selectedDataIds = useTestDataStore((s) => s.selectedDataIds);
+  const currentPage = useTestDataStore((s) => s.currentPage);
+  const selectAllPages = useTestDataStore((s) => s.selectAllPages);
+  const selectedTestData = useTestDataStore((s) => s.selectedTestData);
 
-  const filteredTestData = useMemo(() => testData.filter(data => {
-    const matchesSearch =
-      data.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      data.customer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      data.customer.customerId
-        .toLowerCase()
-        .includes(searchTerm.toLowerCase()) ||
-      data.account.referenceId.toLowerCase().includes(searchTerm.toLowerCase());
-
-    // Updated filter logic to handle both single values and arrays
-    const matchesStatus =
-      filterStatus === 'all' ||
-      (Array.isArray(filterStatus)
-        ? filterStatus.includes(data.status)
-        : data.status === filterStatus);
-
-    const matchesScope =
-      filterScope === 'all' ||
-      (Array.isArray(filterScope)
-        ? filterScope.includes(data.scope.visibility)
-        : data.scope.visibility === filterScope);
-
-    const matchesAmbiente =
-      filterAmbiente === 'all' ||
-      (Array.isArray(filterAmbiente)
-        ? filterAmbiente.includes(data.labels.environment)
-        : data.labels.environment === filterAmbiente);
-
-    const matchesProyecto =
-      filterProyecto === 'all' ||
-      (Array.isArray(filterProyecto)
-        ? filterProyecto.includes(data.labels.project)
-        : data.labels.project === filterProyecto);
-
-    const matchesTeam =
-      filterTeam === 'all' ||
-      (Array.isArray(filterTeam)
-        ? filterTeam.includes(data.team)
-        : data.team === filterTeam);
-
-    return (
-      matchesSearch &&
-      matchesStatus &&
-      matchesScope &&
-      matchesAmbiente &&
-      matchesProyecto &&
-      matchesTeam
-    );
-  }), [testData, searchTerm, filterStatus, filterScope, filterAmbiente, filterProyecto, filterTeam]);
+  // Store actions
+  const setSearchTerm = useTestDataStore((s) => s.setSearchTerm);
+  const setFilterStatus = useTestDataStore((s) => s.setFilterStatus);
+  const setFilterScope = useTestDataStore((s) => s.setFilterScope);
+  const setFilterAmbiente = useTestDataStore((s) => s.setFilterAmbiente);
+  const setFilterProyecto = useTestDataStore((s) => s.setFilterProyecto);
+  const setFilterTeam = useTestDataStore((s) => s.setFilterTeam);
+  const clearFilters = useTestDataStore((s) => s.clearFilters);
+  const setSelectedTestData = useTestDataStore((s) => s.setSelectedTestData);
+  const toggleDataSelection = useTestDataStore((s) => s.toggleDataSelection);
+  const selectAllOnPage = useTestDataStore((s) => s.selectAllOnPage);
+  const selectAllData = useTestDataStore((s) => s.selectAllData);
+  const clearSelection = useTestDataStore((s) => s.clearSelection);
+  const setCurrentPage = useTestDataStore((s) => s.setCurrentPage);
+  const setSelectAllPages = useTestDataStore((s) => s.setSelectAllPages);
+  const addTestData = useTestDataStore((s) => s.addTestData);
+  const updateTestData = useTestDataStore((s) => s.updateTestData);
+  const deleteTestData = useTestDataStore((s) => s.deleteTestData);
+  const bulkDelete = useTestDataStore((s) => s.bulkDelete);
+  const reconditionTestData = useTestDataStore((s) => s.reconditionTestData);
 
   // Pagination calculations
   const totalPages = Math.ceil(filteredTestData.length / ITEMS_PER_PAGE);
@@ -603,60 +105,25 @@ export function TestDataInventory() {
   const endIndex = startIndex + ITEMS_PER_PAGE;
   const paginatedTestData = filteredTestData.slice(startIndex, endIndex);
 
-  // Reset to first page when filters change
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [
-    searchTerm,
-    filterStatus,
-    filterScope,
-    filterAmbiente,
-    filterProyecto,
-    filterTeam,
-  ]);
-
   // Selection handlers
   const handleSelectAll = (checked: boolean) => {
     if (checked) {
       if (selectAllPages) {
-        // Select all test data across all pages
-        const allIds = new Set(filteredTestData.map(data => data.id));
-        setSelectedDataIds(allIds);
+        selectAllData(filteredTestData.map(data => data.id));
       } else {
-        // Select only current page
-        const currentPageIds = new Set(paginatedTestData.map(data => data.id));
-        setSelectedDataIds(prevIds => {
-          const newIds = new Set(prevIds);
-          currentPageIds.forEach(id => newIds.add(id));
-          return newIds;
-        });
+        selectAllOnPage(true, paginatedTestData.map(data => data.id));
       }
     } else {
       if (selectAllPages) {
-        // Deselect all
-        setSelectedDataIds(new Set());
+        clearSelection();
       } else {
-        // Deselect only current page
-        const currentPageIds = new Set(paginatedTestData.map(data => data.id));
-        setSelectedDataIds(prevIds => {
-          const newIds = new Set(prevIds);
-          currentPageIds.forEach(id => newIds.delete(id));
-          return newIds;
-        });
+        selectAllOnPage(false, paginatedTestData.map(data => data.id));
       }
     }
   };
 
   const handleSelectData = (dataId: string, checked: boolean) => {
-    setSelectedDataIds(prev => {
-      const newSelection = new Set(prev);
-      if (checked) {
-        newSelection.add(dataId);
-      } else {
-        newSelection.delete(dataId);
-      }
-      return newSelection;
-    });
+    toggleDataSelection(dataId, checked);
   };
 
   // Selection state helpers
@@ -719,7 +186,7 @@ export function TestDataInventory() {
     );
   };
 
-  const getScopeBadge = (scope: LocalTestData['scope']) => {
+  const getScopeBadge = (scope: TestDataRecord['scope']) => {
     return (
       <Badge
         className={`text-xs ${SCOPE_BADGE_VARIANTS[scope.visibility] || 'bg-gray-100 text-gray-800'}`}
@@ -733,40 +200,7 @@ export function TestDataInventory() {
   };
 
   const handleRecondition = (testDataId: string) => {
-    setTestData(prev =>
-      prev.map(data =>
-        data.id === testDataId
-          ? { ...data, status: 'Reconditioning' as const }
-          : data
-      )
-    );
-  };
-
-  const handleTestDataUpdate = (updatedData: LocalTestData) => {
-    setTestData(prev =>
-      prev.map(data => (data.id === updatedData.id ? updatedData : data))
-    );
-  };
-
-  const convertToLocalTestData = (createData: any): LocalTestData => {
-    // Handle data from CreateTestDataDialog which has a different structure
-    return {
-      id: createData.id,
-      customer: createData.customer,
-      account: createData.account,
-      classifications: createData.classifications,
-      labels: {
-        project: createData.labels?.proyecto || 'Default Project',
-        environment: createData.labels?.ambiente || 'Unknown',
-        dataOwner: createData.labels?.dataOwner || 'Unknown',
-        group: createData.labels?.grupo,
-        source: createData.labels?.fuente,
-      },
-      scope: createData.scope,
-      status: createData.status,
-      lastUsed: createData.lastUsed,
-      team: createData.team || 'Default Team',
-    };
+    reconditionTestData(testDataId);
   };
 
   const handleDeleteTestData = (testDataId: string) => {
@@ -775,13 +209,7 @@ export function TestDataInventory() {
         'Are you sure you want to delete this test data? This action cannot be undone.'
       )
     ) {
-      setTestData(prev => prev.filter(data => data.id !== testDataId));
-      // Remove from selection if it was selected
-      setSelectedDataIds(prev => {
-        const newSelection = new Set(prev);
-        newSelection.delete(testDataId);
-        return newSelection;
-      });
+      deleteTestData(testDataId);
     }
   };
 
@@ -796,13 +224,11 @@ export function TestDataInventory() {
         `Are you sure you want to delete ${selectedCount} test data record${selectedCount !== 1 ? 's' : ''}? This action cannot be undone.`
       )
     ) {
-      setTestData(prev => prev.filter(data => !selectedDataIds.has(data.id)));
-      setSelectedDataIds(new Set());
+      bulkDelete(selectedDataIds);
     }
   };
 
   const generateTestDataYaml = () => {
-    // Export only selected test data, or all filtered test data if none selected
     const dataToExport =
       selectedCount > 0
         ? testData.filter(data => selectedDataIds.has(data.id))
@@ -900,7 +326,7 @@ ${data.scope.platforms.map(platform => `        - ${platform}`).join('\n')}`
       placeholder: 'Status',
       value: filterStatus,
       onChange: setFilterStatus,
-      multiple: true, // Enable multiple selection
+      variant: 'multi',
       options: [
         { value: 'all', label: 'All statuses' },
         { value: 'Available', label: 'Available' },
@@ -916,7 +342,7 @@ ${data.scope.platforms.map(platform => `        - ${platform}`).join('\n')}`
       placeholder: 'Scope',
       value: filterScope,
       onChange: setFilterScope,
-      multiple: true, // Enable multiple selection
+      variant: 'multi',
       options: [
         { value: 'all', label: 'All' },
         { value: 'manual', label: 'Manual' },
@@ -930,7 +356,7 @@ ${data.scope.platforms.map(platform => `        - ${platform}`).join('\n')}`
       placeholder: 'Environment',
       value: filterAmbiente,
       onChange: setFilterAmbiente,
-      multiple: true, // Enable multiple selection
+      variant: 'multi',
       options: [
         { value: 'all', label: 'All' },
         { value: 'QA', label: 'QA' },
@@ -944,7 +370,7 @@ ${data.scope.platforms.map(platform => `        - ${platform}`).join('\n')}`
       placeholder: 'Project',
       value: filterProyecto,
       onChange: setFilterProyecto,
-      multiple: true, // Enable multiple selection
+      variant: 'multi',
       options: [
         { value: 'all', label: 'All' },
         { value: 'Core Migration', label: 'Core Migration' },
@@ -958,7 +384,7 @@ ${data.scope.platforms.map(platform => `        - ${platform}`).join('\n')}`
       placeholder: 'Team',
       value: filterTeam,
       onChange: setFilterTeam,
-      multiple: true, // Enable multiple selection
+      variant: 'multi',
       options: [
         { value: 'all', label: 'All' },
         { value: 'QA-Team', label: 'QA-Team' },
@@ -966,15 +392,6 @@ ${data.scope.platforms.map(platform => `        - ${platform}`).join('\n')}`
       ],
     },
   ];
-
-  const handleClearFilters = () => {
-    setSearchTerm('');
-    setFilterStatus('all');
-    setFilterScope('all');
-    setFilterAmbiente('all');
-    setFilterProyecto('all');
-    setFilterTeam('all');
-  };
 
   return (
     <div className="space-y-6">
@@ -989,9 +406,7 @@ ${data.scope.platforms.map(platform => `        - ${platform}`).join('\n')}`
         <div className="flex gap-2">
           {hasPermission('create_test_data') && (
             <CreateTestDataDialog
-              onTestDataCreated={newData =>
-                setTestData(prev => [...prev, convertToLocalTestData(newData)])
-              }
+              onTestDataCreated={addTestData}
             >
               <div
                 className={cn(
@@ -1043,7 +458,7 @@ ${data.scope.platforms.map(platform => `        - ${platform}`).join('\n')}`
               <Button
                 size="sm"
                 variant="ghost"
-                onClick={() => setSelectedDataIds(new Set())}
+                onClick={clearSelection}
                 className="text-blue-600 hover:text-blue-800"
               >
                 Clear selection
@@ -1059,7 +474,7 @@ ${data.scope.platforms.map(platform => `        - ${platform}`).join('\n')}`
         onSearchChange={setSearchTerm}
         searchPlaceholder="Search test data..."
         filters={filterConfigs}
-        onClearFilters={handleClearFilters}
+        onClearFilters={clearFilters}
         filteredCount={filteredTestData.length}
         totalCount={testData.length}
         itemType="test data records"
@@ -1286,7 +701,7 @@ ${data.scope.platforms.map(platform => `        - ${platform}`).join('\n')}`
                       {hasPermission('edit_test_data') && (
                         <EditTestDataDialog
                           testData={data}
-                          onTestDataUpdated={handleTestDataUpdate}
+                          onTestDataUpdated={updateTestData}
                         >
                           <div
                             className={cn(
@@ -1333,12 +748,10 @@ ${data.scope.platforms.map(platform => `        - ${platform}`).join('\n')}`
                       checked={selectAllPages}
                       onCheckedChange={checked => {
                         setSelectAllPages(checked as boolean);
-                        // If selecting across all pages and no items are selected, select all
                         if (checked && selectedCount === 0) {
-                          const allIds = new Set(
+                          selectAllData(
                             filteredTestData.map(data => data.id)
                           );
-                          setSelectedDataIds(allIds);
                         }
                       }}
                     />
@@ -1357,7 +770,7 @@ ${data.scope.platforms.map(platform => `        - ${platform}`).join('\n')}`
                   <PaginationItem>
                     <PaginationPrevious
                       onClick={() =>
-                        setCurrentPage(prev => Math.max(1, prev - 1))
+                        setCurrentPage(Math.max(1, currentPage - 1))
                       }
                       className={
                         currentPage === 1
@@ -1386,7 +799,7 @@ ${data.scope.platforms.map(platform => `        - ${platform}`).join('\n')}`
                   <PaginationItem>
                     <PaginationNext
                       onClick={() =>
-                        setCurrentPage(prev => Math.min(totalPages, prev + 1))
+                        setCurrentPage(Math.min(totalPages, currentPage + 1))
                       }
                       className={
                         currentPage === totalPages

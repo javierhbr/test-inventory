@@ -1,26 +1,88 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
+const TAB_TO_ROUTE_SEGMENT = {
+  tests: 'tests',
+  testdata: 'test-data',
+  execution: 'execution',
+  settings: 'settings',
+} as const;
+
+type TabKey = keyof typeof TAB_TO_ROUTE_SEGMENT;
+
+const ROUTE_SEGMENT_TO_TAB: Record<string, TabKey> = Object.entries(
+  TAB_TO_ROUTE_SEGMENT
+).reduce(
+  (acc, [tab, segment]) => {
+    acc[segment] = tab as TabKey;
+    return acc;
+  },
+  {} as Record<string, TabKey>
+);
+
+const normalizeBasePath = () => {
+  const base = import.meta.env.BASE_URL || '/';
+  const withLeadingSlash = base.startsWith('/') ? base : `/${base}`;
+  if (withLeadingSlash === '/') {
+    return '';
+  }
+  return withLeadingSlash.endsWith('/')
+    ? withLeadingSlash.slice(0, -1)
+    : withLeadingSlash;
+};
+
+const isTabKey = (value: string): value is TabKey => {
+  return value in TAB_TO_ROUTE_SEGMENT;
+};
+
+const getTabFromPathname = (pathname: string): TabKey | null => {
+  const basePath = normalizeBasePath();
+  let relativePath = pathname;
+
+  if (basePath && relativePath.startsWith(basePath)) {
+    relativePath = relativePath.slice(basePath.length);
+  }
+
+  const [firstSegment] = relativePath.replace(/^\//, '').split('/');
+  return ROUTE_SEGMENT_TO_TAB[firstSegment] ?? null;
+};
+
+const buildTabPath = (tab: TabKey) => {
+  const basePath = normalizeBasePath();
+  return `${basePath}/${TAB_TO_ROUTE_SEGMENT[tab]}`;
+};
+
 export function useNavigationHistory(initialTab: string) {
-  const [currentTab, setCurrentTab] = useState(initialTab);
+  const safeInitialTab: TabKey = isTabKey(initialTab) ? initialTab : 'tests';
+  const [currentTab, setCurrentTab] = useState<TabKey>(safeInitialTab);
   const ignoreNextPush = useRef(false);
   const ignorePopState = useRef(false);
 
-  // Initialize URL with current tab
+  // Initialize URL with route path and migrate legacy ?tab= URLs.
   useEffect(() => {
     const currentUrl = new URL(window.location.href);
-    if (!currentUrl.searchParams.has('tab')) {
-      const newUrl = new URL(window.location.href);
-      newUrl.searchParams.set('tab', initialTab);
-      // Use pushState so the original entry (for example the login screen)
-      // remains in the history stack and the back button can return to it.
-      window.history.pushState({ tab: initialTab }, '', newUrl.toString());
-    } else {
-      const urlTab = currentUrl.searchParams.get('tab');
-      if (urlTab && urlTab !== initialTab) {
-        setCurrentTab(urlTab);
-      }
+    const legacyTab = currentUrl.searchParams.get('tab');
+
+    if (legacyTab && isTabKey(legacyTab)) {
+      const legacyPath = buildTabPath(legacyTab);
+      window.history.replaceState({ tab: legacyTab }, '', legacyPath);
+      setCurrentTab(legacyTab);
+      return;
     }
-  }, [initialTab]);
+
+    const tabFromPath = getTabFromPathname(window.location.pathname);
+    if (tabFromPath) {
+      setCurrentTab(tabFromPath);
+      return;
+    }
+
+    // Use pushState so the previous entry (e.g. login) is preserved.
+    window.history.pushState(
+      { tab: safeInitialTab },
+      '',
+      buildTabPath(safeInitialTab)
+    );
+    setCurrentTab(safeInitialTab);
+  }, [safeInitialTab]);
 
   // Handle browser back/forward events
   useEffect(() => {
@@ -31,12 +93,11 @@ export function useNavigationHistory(initialTab: string) {
       }
 
       const state = event.state;
-      if (state && state.tab) {
+      if (state && state.tab && isTabKey(state.tab)) {
         setCurrentTab(state.tab);
       } else {
-        // Fallback: read from URL
-        const url = new URL(window.location.href);
-        const tab = url.searchParams.get('tab');
+        // Fallback: read from current route.
+        const tab = getTabFromPathname(window.location.pathname);
         if (tab) {
           setCurrentTab(tab);
         }
@@ -54,17 +115,14 @@ export function useNavigationHistory(initialTab: string) {
         return;
       }
 
-      if (newTab === currentTab) {
+      if (!isTabKey(newTab) || newTab === currentTab) {
         return;
       }
-
-      const newUrl = new URL(window.location.href);
-      newUrl.searchParams.set('tab', newTab);
 
       window.history.pushState(
         { tab: newTab, timestamp: Date.now() },
         '',
-        newUrl.toString()
+        buildTabPath(newTab)
       );
 
       setCurrentTab(newTab);

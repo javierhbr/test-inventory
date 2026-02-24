@@ -9,6 +9,8 @@ import {
   Settings,
 } from 'lucide-react';
 
+import { Test } from '../services/types';
+
 import { Badge } from './ui/badge';
 import { Button } from './ui/button';
 import {
@@ -28,28 +30,6 @@ import {
 } from './ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 import { Textarea } from './ui/textarea';
-
-interface Test {
-  id: string;
-  name: string;
-  flow: string;
-  labels: {
-    flow: string;
-    intent: string;
-    experience: string;
-    project: string;
-  };
-  dataRequirements: string[];
-  supportedRuntimes: string[];
-  lastExecution: {
-    date: string;
-    status: 'PASSED' | 'FAILED' | 'SKIPPED' | 'BLOCKED';
-    runtime: string;
-  } | null;
-  lastModified: string;
-  version: string;
-  team: string;
-}
 
 interface TestRun {
   runId: string;

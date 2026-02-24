@@ -1,7 +1,28 @@
 // Test Data service - handles all test data-related business logic
 
-import { TestData, CreateTestDataFormData, FilterOptions } from './types';
+import { CreateTestDataFormData, FilterOptions } from './types';
 import { generateId, filterItems, validateRequiredFields } from './utils';
+
+interface TestData {
+  id: string;
+  accountId: string;
+  referenceId: string;
+  customerId: string;
+  classification: string[];
+  status: 'Disponible' | 'En uso' | 'Consumida' | 'Reacondicionamiento';
+  createdAt: string;
+  lastUsed: string | null;
+  team: string;
+  s3Location: {
+    bucket: string;
+    path: string;
+  };
+  metadata: {
+    source: string;
+    environment: string;
+    region: string;
+  };
+}
 
 // Mock test data
 const mockTestData: TestData[] = [

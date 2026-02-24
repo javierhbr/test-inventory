@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 
 import { AlertCircle, Loader2 } from 'lucide-react';
 
+import { TestDataRecord } from '../services/types';
+
 import { Badge } from './ui/badge';
 import { Button } from './ui/button';
 import {
@@ -30,38 +32,9 @@ import {
   SelectValue,
 } from './ui/select';
 
-interface CreateTestData {
-  id: string;
-  customer: {
-    customerId: string;
-    name: string;
-    type: string;
-  };
-  account: {
-    accountId: string;
-    referenceId: string;
-    type: string;
-    createdAt: string;
-  };
-  classifications: string[];
-  labels: {
-    project: string;
-    environment: string;
-    dataOwner: string;
-    group?: string;
-    source?: string;
-  };
-  scope: {
-    visibility: 'manual' | 'automated' | 'platform';
-    platforms?: string[];
-  };
-  status: 'Available' | 'In Use' | 'Consumed' | 'Reconditioning' | 'Inactive';
-  lastUsed: any;
-}
-
 interface CreateTestDataDialogProps {
   children: React.ReactNode;
-  onTestDataCreated: (testData: CreateTestData) => void;
+  onTestDataCreated: (testData: TestDataRecord) => void;
 }
 
 const availableClassifications = [
@@ -214,7 +187,7 @@ export function CreateTestDataDialog({
       // Simulate API call to create account/customer
       const apiResult = await simulateApiCall();
 
-      const newTestData: CreateTestData = {
+      const newTestData: TestDataRecord = {
         id: generateTestDataId(),
         customer: {
           customerId: apiResult.customerId,
@@ -241,6 +214,7 @@ export function CreateTestDataDialog({
         },
         status: 'Available',
         lastUsed: null,
+        team: dataOwner || 'Default Team',
       };
 
       onTestDataCreated(newTestData);

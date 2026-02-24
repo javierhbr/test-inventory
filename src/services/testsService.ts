@@ -10,10 +10,10 @@ const mockTests: Test[] = [
     name: 'Pago de tarjeta vencida con usuario autorizado',
     flow: 'Pago -> Validación -> Confirmación',
     labels: {
-      flujo: 'Pago',
+      flow: 'Pago',
       intent: 'Negativo',
       experience: 'Mobile',
-      proyecto: 'Release Q3',
+      project: 'Release Q3',
     },
     dataRequirements: [
       'Cuenta vencida',
@@ -28,16 +28,17 @@ const mockTests: Test[] = [
     },
     lastModified: '2025-08-20T09:15:00Z',
     version: 'v1.2',
+    team: 'QA Team',
   },
   {
     id: 'TC-00145',
     name: 'Validación login con cuenta empresa activa',
     flow: 'Login -> Autenticación -> Dashboard',
     labels: {
-      flujo: 'Login',
+      flow: 'Login',
       intent: 'Positivo',
       experience: 'Web',
-      proyecto: 'Core Banking',
+      project: 'Core Banking',
     },
     dataRequirements: ['Cuenta empresa', 'Usuario principal'],
     supportedRuntimes: ['OCP Testing Studio', 'Sierra'],
@@ -48,32 +49,34 @@ const mockTests: Test[] = [
     },
     lastModified: '2025-08-19T16:45:00Z',
     version: 'v2.1',
+    team: 'Core Team',
   },
   {
     id: 'TC-00198',
     name: 'Transferencia entre cuentas propias',
     flow: 'Transferencia -> Validación -> Confirmación',
     labels: {
-      flujo: 'Transferencia',
+      flow: 'Transferencia',
       intent: 'Positivo',
       experience: 'Mobile',
-      proyecto: 'Release Q3',
+      project: 'Release Q3',
     },
     dataRequirements: ['Cuenta activa', 'Usuario principal'],
     supportedRuntimes: ['OCP Testing Studio', 'Xero', 'Sierra'],
     lastExecution: null,
     lastModified: '2025-08-20T11:30:00Z',
     version: 'v1.0',
+    team: 'Mobile Team',
   },
   {
     id: 'TC-00234',
     name: 'Consulta de saldo con múltiples cuentas',
     flow: 'Consulta -> Autenticación -> Listado',
     labels: {
-      flujo: 'Consulta',
+      flow: 'Consulta',
       intent: 'Positivo',
       experience: 'Mobile',
-      proyecto: 'Core Banking',
+      project: 'Core Banking',
     },
     dataRequirements: ['Cuenta activa', 'Usuario autorizado', 'Cuenta empresa'],
     supportedRuntimes: ['OCP Testing Studio', 'Sierra'],
@@ -84,16 +87,17 @@ const mockTests: Test[] = [
     },
     lastModified: '2025-08-20T08:30:00Z',
     version: 'v1.1',
+    team: 'Web Team',
   },
   {
     id: 'TC-00267',
     name: 'Activación de tarjeta de crédito nueva',
     flow: 'Activación -> Validación -> Confirmación',
     labels: {
-      flujo: 'Activación',
+      flow: 'Activación',
       intent: 'Positivo',
       experience: 'Web',
-      proyecto: 'Release Q3',
+      project: 'Release Q3',
     },
     dataRequirements: [
       'Tarjeta de crédito expirada',
@@ -108,6 +112,7 @@ const mockTests: Test[] = [
     },
     lastModified: '2025-08-20T14:15:00Z',
     version: 'v2.0',
+    team: 'QA Team',
   },
 ];
 
@@ -144,7 +149,7 @@ export function filterTests(tests: Test[], filters: FilterOptions): Test[] {
     if (
       filters.flujo &&
       filters.flujo !== 'all' &&
-      test.labels.flujo !== filters.flujo
+      test.labels.flow !== filters.flujo
     ) {
       return false;
     }
@@ -208,6 +213,7 @@ export async function createTest(testData: CreateTestFormData): Promise<Test> {
         lastExecution: null,
         lastModified: new Date().toISOString(),
         version: 'v1.0',
+        team: 'QA Team',
       };
 
       mockTests.push(newTest);
@@ -268,7 +274,7 @@ export function getFilterOptions(): {
   statuses: string[];
   runtimes: string[];
 } {
-  const flujos = [...new Set(mockTests.map(t => t.labels.flujo))];
+  const flujos = [...new Set(mockTests.map(t => t.labels.flow))];
   const statuses = ['passed', 'failed', 'never'];
   const runtimes = [...new Set(mockTests.flatMap(t => t.supportedRuntimes))];
 
@@ -286,10 +292,10 @@ id: ${test.id}
 name: ${test.name}
 flow: ${test.flow}
 labels:
-  flujo: ${test.labels.flujo}
+  flujo: ${test.labels.flow}
   intent: ${test.labels.intent}
   experience: ${test.labels.experience}
-  proyecto: ${test.labels.proyecto}
+  proyecto: ${test.labels.project}
 dataRequirements:
 ${test.dataRequirements.map(req => `  - ${req}`).join('\n')}
 supportedRuntimes:
@@ -334,7 +340,7 @@ export function getTestStatistics(tests: Test[]): {
     }
 
     // Flujo stats
-    const flujo = test.labels.flujo;
+    const flujo = test.labels.flow;
     stats.byFlujo[flujo] = (stats.byFlujo[flujo] || 0) + 1;
 
     // Runtime stats
