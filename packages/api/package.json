@@ -1,0 +1,27 @@
+{
+  "name": "@test-inventory/api",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "tsx watch src/local.ts",
+    "build": "node esbuild.config.mjs",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "lint": "eslint . --ext ts --report-unused-disable-directives --max-warnings 0",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@middy/core": "^5.5.0",
+    "@middy/http-error-handler": "^5.5.0",
+    "@middy/http-json-body-parser": "^5.5.0",
+    "@middy/http-cors": "^5.5.0"
+  },
+  "devDependencies": {
+    "@types/aws-lambda": "^8.10.145",
+    "@types/node": "^24.3.0",
+    "esbuild": "^0.24.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.2.2",
+    "vitest": "^2.1.0"
+  }
+}

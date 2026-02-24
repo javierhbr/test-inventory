@@ -5,24 +5,18 @@ on:
     branches: ['main']
   pull_request:
     branches: ['main']
-
-  # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
-# Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
 permissions:
   contents: read
   pages: write
   id-token: write
 
-# Allow only one concurrent deployment, skipping runs queued between the run in-progress and latest queued.
-# However, do NOT cancel in-progress runs as we want to allow these production deployments to complete.
 concurrency:
   group: 'pages'
   cancel-in-progress: false
 
 jobs:
-  # Build job
   build:
     runs-on: ubuntu-latest
     steps:
@@ -38,14 +32,14 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Type check
-        run: npm run typecheck
+      - name: Lint UI
+        run: npm run lint -w packages/ui
 
-      - name: Lint
-        run: npm run lint
+      - name: Build UI
+        run: npm run build -w packages/ui
 
-      - name: Build
-        run: npm run build
+      - name: Build API
+        run: npm run build -w packages/api
 
       - name: Setup Pages
         uses: actions/configure-pages@v4
@@ -53,9 +47,8 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: './dist'
+          path: './packages/ui/dist'
 
-  # Deployment job
   deploy:
     environment:
       name: github-pages

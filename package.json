@@ -1,71 +1,33 @@
 {
-  "name": "sistema-inventario-testing",
+  "name": "test-inventory",
   "version": "1.0.0",
-  "description": "Sistema de Inventario de Testing - TypeScript React Application",
   "private": true,
+  "workspaces": [
+    "packages/*"
+  ],
   "scripts": {
-    "dev": "vite",
-    "build": "tsc && vite build",
-    "preview": "vite preview",
-    "predeploy": "npm run build",
-    "deploy": "gh-pages -d dist",
-    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
-    "lint:fix": "eslint . --ext ts,tsx --fix",
-    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,css,md}\"",
-    "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,css,md}\"",
-    "typecheck": "tsc --noEmit",
+    "dev:ui": "npm run dev -w packages/ui",
+    "dev:api": "npm run dev -w packages/api",
+    "build:ui": "npm run build -w packages/ui",
+    "build:api": "npm run build -w packages/api",
+    "build": "npm run build -w packages/ui && npm run build -w packages/api",
+    "lint": "npm run lint -w packages/ui",
+    "format": "prettier --write \"packages/**/*.{ts,tsx,js,jsx,json,css,md}\"",
+    "format:check": "prettier --check \"packages/**/*.{ts,tsx,js,jsx,json,css,md}\"",
     "prepare": "husky install"
   },
-  "dependencies": {
-    "@base-ui-components/react": "^1.0.0-beta.2",
-    "class-variance-authority": "^0.7.0",
-    "clsx": "^2.0.0",
-    "cmdk": "^1.1.1",
-    "embla-carousel-react": "^8.0.0-rc22",
-    "input-otp": "^1.4.2",
-    "lucide-react": "^0.263.1",
-    "react": "^18.2.0",
-    "react-day-picker": "^9.9.0",
-    "react-dom": "^18.2.0",
-    "react-hook-form": "^7.62.0",
-    "react-resizable-panels": "^3.0.5",
-    "recharts": "^2.8.0",
-    "sonner": "^1.0.3",
-    "tailwind-merge": "^1.14.0",
-    "tailwindcss-animate": "^1.0.7",
-    "vaul": "^0.7.0",
-    "zustand": "^5.0.11"
-  },
   "devDependencies": {
-    "@types/node": "^24.3.0",
-    "@types/react": "^18.2.37",
-    "@types/react-dom": "^18.2.15",
-    "@typescript-eslint/eslint-plugin": "^6.21.0",
-    "@typescript-eslint/parser": "^6.21.0",
-    "@vitejs/plugin-react": "^4.1.0",
-    "autoprefixer": "^10.4.16",
-    "eslint": "^8.53.0",
-    "eslint-config-prettier": "^9.0.0",
-    "eslint-import-resolver-typescript": "^3.10.1",
-    "eslint-plugin-import": "^2.32.0",
-    "eslint-plugin-jsx-a11y": "^6.8.0",
-    "eslint-plugin-react": "^7.33.2",
-    "eslint-plugin-react-hooks": "^4.6.0",
-    "eslint-plugin-react-refresh": "^0.4.4",
-    "eslint-plugin-unused-imports": "^4.2.0",
-    "gh-pages": "^6.3.0",
     "husky": "^8.0.3",
     "lint-staged": "^15.0.2",
-    "postcss": "^8.4.31",
     "prettier": "^3.0.3",
-    "prettier-plugin-tailwindcss": "^0.5.7",
-    "tailwindcss": "^3.3.5",
-    "typescript": "^5.2.2",
-    "vite": "^4.5.0"
+    "prettier-plugin-tailwindcss": "^0.5.7"
   },
   "lint-staged": {
-    "*.{ts,tsx}": [
+    "packages/ui/**/*.{ts,tsx}": [
       "eslint --fix",
+      "prettier --write"
+    ],
+    "packages/api/**/*.ts": [
       "prettier --write"
     ],
     "*.{js,jsx,json,css,md}": [
@@ -73,7 +35,7 @@
     ]
   },
   "engines": {
-    "node": ">=16.0.0",
+    "node": ">=18.0.0",
     "npm": ">=8.0.0"
   }
 }

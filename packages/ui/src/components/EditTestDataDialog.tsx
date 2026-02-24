@@ -33,7 +33,7 @@ import { Textarea } from './ui/textarea';
 
 interface EditTestDataDialogProps {
   testData: TestDataRecord;
-  onTestDataUpdated: (updatedData: TestDataRecord) => void;
+  onTestDataUpdated: (updatedData: TestDataRecord) => Promise<void> | void;
   children: React.ReactNode;
 }
 
@@ -63,7 +63,7 @@ export function EditTestDataDialog({
     }));
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     const updatedTestData: TestDataRecord = {
       ...testData,
       classifications: formData.classifications
@@ -95,8 +95,14 @@ export function EditTestDataDialog({
       team: formData.team,
     };
 
-    onTestDataUpdated(updatedTestData);
-    setIsOpen(false);
+    try {
+      await onTestDataUpdated(updatedTestData);
+      setIsOpen(false);
+    } catch (error) {
+      alert(
+        `Error updating test data: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
+    }
   };
 
   const handleReset = () => {

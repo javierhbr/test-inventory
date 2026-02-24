@@ -1,6 +1,8 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 import { Code, Cog, Package, Shield, TestTube, User } from 'lucide-react';
+
+import { authApi } from '../services/apiClient';
 
 import { Badge } from './ui/badge';
 import { Button } from './ui/button';
@@ -15,34 +17,19 @@ import { Label } from './ui/label';
 // Using native select element instead of UI primitives due to runtime issues with external primitives
 import { Separator } from './ui/separator';
 
-// Import types and functions from services
-export type UserProfile =
-  | 'dev'
-  | 'automation'
-  | 'product'
-  | 'admin'
-  | 'qa_engineer';
+import type {
+  User as AuthenticatedUser,
+  UserProfile as AuthenticatedUserProfile,
+} from '../services/types';
 
-export interface User {
-  id: string;
-  name: string;
-  profile: UserProfile;
-}
+export type UserProfile = AuthenticatedUserProfile;
+export type User = AuthenticatedUser;
 
 interface LoginProps {
   onLogin: (user: User) => void;
 }
 
-// Mock data directly in component for now to fix the import issue
-const mockUsers: User[] = [
-  { id: 'dev-001', name: 'John Doe', profile: 'dev' },
-  { id: 'automation-001', name: 'Mary Garcia', profile: 'automation' },
-  { id: 'product-001', name: 'Charles Lopez', profile: 'product' },
-  { id: 'admin-001', name: 'Ana Martinez', profile: 'admin' },
-  { id: 'qa-001', name: 'Laura Ruiz', profile: 'qa_engineer' },
-];
-
-const availableProfiles: UserProfile[] = [
+const DEFAULT_AVAILABLE_PROFILES: UserProfile[] = [
   'dev',
   'automation',
   'product',
@@ -129,50 +116,6 @@ const profileConfig = {
   },
 };
 
-// Mock authentication function
-const authenticateUser = (profile: UserProfile): Promise<User> => {
-  return new Promise(resolve => {
-    setTimeout(() => {
-      const user = mockUsers.find(u => u.profile === profile);
-      if (user) {
-        resolve(user);
-      } else {
-        // Resolve with a default error-like user is not appropriate; throw instead
-        throw new Error('User not found');
-      }
-    }, 1000);
-  });
-};
-
-// Mock OAuth authentication function
-const authenticateOAuth = (provider: string): Promise<User> => {
-  return new Promise(resolve => {
-    setTimeout(() => {
-      // Simulate OAuth flow - in real implementation, this would handle OAuth callback
-      let userProfile: UserProfile = 'automation'; // Default profile
-      let userName = `User from ${provider}`;
-
-      // Assign different profiles based on provider
-      switch (provider) {
-        case 'enterprise':
-          userProfile = 'admin'; // Enterprise SSO users get admin access
-          userName = 'Corporate User';
-          break;
-        default:
-          userProfile = 'automation';
-          break;
-      }
-
-      const oauthUser: User = {
-        id: `oauth-${Date.now()}`,
-        name: userName,
-        profile: userProfile,
-      };
-      resolve(oauthUser);
-    }, 2000); // Longer delay to simulate OAuth flow
-  });
-};
-
 // OAuth providers configuration
 const oauthProviders = [
   {
@@ -185,10 +128,36 @@ const oauthProviders = [
 ];
 
 export function Login({ onLogin }: LoginProps) {
+  const [availableProfiles, setAvailableProfiles] = useState<UserProfile[]>(
+    DEFAULT_AVAILABLE_PROFILES
+  );
   const [selectedProfile, setSelectedProfile] = useState<UserProfile | ''>('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [oauthLoading, setOauthLoading] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const loadProfiles = async () => {
+      try {
+        const profiles = await authApi.getProfiles();
+        if (!cancelled && profiles.length > 0) {
+          setAvailableProfiles(profiles);
+        }
+      } catch {
+        if (!cancelled) {
+          setAvailableProfiles(DEFAULT_AVAILABLE_PROFILES);
+        }
+      }
+    };
+
+    void loadProfiles();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -202,7 +171,7 @@ export function Login({ onLogin }: LoginProps) {
     setError('');
 
     try {
-      const user = await authenticateUser(selectedProfile as UserProfile);
+      const user = await authApi.login(selectedProfile as UserProfile);
       onLogin(user);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Authentication error');
@@ -217,7 +186,7 @@ export function Login({ onLogin }: LoginProps) {
     setError('');
 
     try {
-      const user = await authenticateUser(profile);
+      const user = await authApi.login(profile);
       onLogin(user);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Authentication error');
@@ -231,7 +200,7 @@ export function Login({ onLogin }: LoginProps) {
     setError('');
 
     try {
-      const user = await authenticateOAuth(provider);
+      const user = await authApi.oauthLogin(provider);
       onLogin(user);
     } catch (err) {
       setError(

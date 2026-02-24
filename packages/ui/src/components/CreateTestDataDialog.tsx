@@ -34,7 +34,7 @@ import {
 
 interface CreateTestDataDialogProps {
   children: React.ReactNode;
-  onTestDataCreated: (testData: TestDataRecord) => void;
+  onTestDataCreated: (testData: TestDataRecord) => Promise<void> | void;
 }
 
 const availableClassifications = [
@@ -217,7 +217,7 @@ export function CreateTestDataDialog({
         team: dataOwner || 'Default Team',
       };
 
-      onTestDataCreated(newTestData);
+      await onTestDataCreated(newTestData);
       setOpen(false);
       resetForm();
     } catch (error) {

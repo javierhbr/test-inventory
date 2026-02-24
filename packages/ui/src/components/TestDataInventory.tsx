@@ -1,6 +1,9 @@
+import { useEffect, useState } from 'react';
+
 import { Plus, Eye, RefreshCw, Download, Pencil, Trash2 } from 'lucide-react';
 import { useShallow } from 'zustand/react/shallow';
 
+import { testDataApi } from '../services/apiClient';
 import { TestDataRecord } from '../services/types';
 import { usePermissionsStore } from '../stores/permissionsStore';
 import {
@@ -85,6 +88,7 @@ export function TestDataInventory() {
   const setFilterTeam = useTestDataStore(s => s.setFilterTeam);
   const clearFilters = useTestDataStore(s => s.clearFilters);
   const setSelectedTestData = useTestDataStore(s => s.setSelectedTestData);
+  const setTestData = useTestDataStore(s => s.setTestData);
   const toggleDataSelection = useTestDataStore(s => s.toggleDataSelection);
   const selectAllOnPage = useTestDataStore(s => s.selectAllOnPage);
   const selectAllData = useTestDataStore(s => s.selectAllData);
@@ -95,7 +99,27 @@ export function TestDataInventory() {
   const updateTestData = useTestDataStore(s => s.updateTestData);
   const deleteTestData = useTestDataStore(s => s.deleteTestData);
   const bulkDelete = useTestDataStore(s => s.bulkDelete);
-  const reconditionTestData = useTestDataStore(s => s.reconditionTestData);
+  const [isLoadingData, setIsLoadingData] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
+
+  const loadTestData = async () => {
+    try {
+      setIsLoadingData(true);
+      setLoadError(null);
+      const records = await testDataApi.list();
+      setTestData(records);
+    } catch (error) {
+      setLoadError(
+        error instanceof Error ? error.message : 'Failed to load test data'
+      );
+    } finally {
+      setIsLoadingData(false);
+    }
+  };
+
+  useEffect(() => {
+    void loadTestData();
+  }, []);
 
   // Pagination calculations
   const totalPages = Math.ceil(filteredTestData.length / ITEMS_PER_PAGE);
@@ -201,21 +225,45 @@ export function TestDataInventory() {
     );
   };
 
-  const handleRecondition = (testDataId: string) => {
-    reconditionTestData(testDataId);
+  const handleCreateTestData = async (newTestData: TestDataRecord) => {
+    const createdTestData = await testDataApi.create(newTestData);
+    addTestData(createdTestData);
   };
 
-  const handleDeleteTestData = (testDataId: string) => {
+  const handleUpdateTestData = async (updatedData: TestDataRecord) => {
+    const updatedTestData = await testDataApi.update(updatedData);
+    updateTestData(updatedTestData);
+  };
+
+  const handleRecondition = async (testDataId: string) => {
+    try {
+      const updatedTestData = await testDataApi.recondition(testDataId);
+      updateTestData(updatedTestData);
+    } catch (error) {
+      alert(
+        `Error reconditioning test data: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
+    }
+  };
+
+  const handleDeleteTestData = async (testDataId: string) => {
     if (
       window.confirm(
         'Are you sure you want to delete this test data? This action cannot be undone.'
       )
     ) {
-      deleteTestData(testDataId);
+      try {
+        await testDataApi.delete(testDataId);
+        deleteTestData(testDataId);
+      } catch (error) {
+        alert(
+          `Error deleting test data: ${error instanceof Error ? error.message : 'Unknown error'}`
+        );
+      }
     }
   };
 
-  const handleBulkDelete = () => {
+  const handleBulkDelete = async () => {
     if (selectedCount === 0) {
       alert('Please select at least one test data record to delete');
       return;
@@ -226,7 +274,14 @@ export function TestDataInventory() {
         `Are you sure you want to delete ${selectedCount} test data record${selectedCount !== 1 ? 's' : ''}? This action cannot be undone.`
       )
     ) {
-      bulkDelete(selectedDataIds);
+      try {
+        await testDataApi.bulkDelete(Array.from(selectedDataIds));
+        bulkDelete(selectedDataIds);
+      } catch (error) {
+        alert(
+          `Error deleting selected test data: ${error instanceof Error ? error.message : 'Unknown error'}`
+        );
+      }
     }
   };
 
@@ -395,6 +450,14 @@ ${data.scope.platforms.map(platform => `        - ${platform}`).join('\n')}`
     },
   ];
 
+  if (isLoadingData) {
+    return (
+      <div className="flex min-h-[360px] items-center justify-center rounded-lg border bg-white">
+        <div className="text-sm text-gray-600">Loading test data...</div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       {/* Header with Actions */}
@@ -407,7 +470,7 @@ ${data.scope.platforms.map(platform => `        - ${platform}`).join('\n')}`
         </div>
         <div className="flex gap-2">
           {hasPermission('create_test_data') && (
-            <CreateTestDataDialog onTestDataCreated={addTestData}>
+            <CreateTestDataDialog onTestDataCreated={handleCreateTestData}>
               <div
                 className={cn(
                   buttonVariants({ variant: 'default', size: 'default' })
@@ -432,13 +495,36 @@ ${data.scope.platforms.map(platform => `        - ${platform}`).join('\n')}`
             </Button>
           )}
           {hasPermission('delete_test_data') && selectedCount > 0 && (
-            <Button size="sm" variant="destructive" onClick={handleBulkDelete}>
+            <Button
+              size="sm"
+              variant="destructive"
+              onClick={() => void handleBulkDelete()}
+            >
               <Trash2 className="mr-2 h-4 w-4" />
               Delete Selected ({selectedCount})
             </Button>
           )}
         </div>
       </div>
+
+      {loadError && (
+        <Card className="border-red-200 bg-red-50">
+          <CardContent className="py-3">
+            <div className="flex items-center justify-between gap-4">
+              <p className="text-sm text-red-700">
+                Failed to load API data: {loadError}
+              </p>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => void loadTestData()}
+              >
+                Retry
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Selection Summary */}
       {selectedCount > 0 && (
@@ -678,7 +764,9 @@ ${data.scope.platforms.map(platform => `        - ${platform}`).join('\n')}`
                                     <Button
                                       size="sm"
                                       variant="outline"
-                                      onClick={() => handleRecondition(data.id)}
+                                      onClick={() =>
+                                        void handleRecondition(data.id)
+                                      }
                                       className="hover:bg-yellow-50"
                                     >
                                       <RefreshCw className="mr-2 h-4 w-4" />
@@ -701,7 +789,7 @@ ${data.scope.platforms.map(platform => `        - ${platform}`).join('\n')}`
                       {hasPermission('edit_test_data') && (
                         <EditTestDataDialog
                           testData={data}
-                          onTestDataUpdated={updateTestData}
+                          onTestDataUpdated={handleUpdateTestData}
                         >
                           <div
                             className={cn(
@@ -717,7 +805,7 @@ ${data.scope.platforms.map(platform => `        - ${platform}`).join('\n')}`
                         <Button
                           size="sm"
                           variant="outline"
-                          onClick={() => handleDeleteTestData(data.id)}
+                          onClick={() => void handleDeleteTestData(data.id)}
                           className="text-red-600 hover:bg-red-50 hover:text-red-700"
                         >
                           <Trash2 className="h-4 w-4" />

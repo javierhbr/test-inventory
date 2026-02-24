@@ -151,3 +151,9 @@ dist-ssr
 .Trashes
 ehthumbs.db
 Thumbs.db
+
+# Monorepo
+packages/*/node_modules
+packages/*/dist
+.cdk.out
+cdk.out
