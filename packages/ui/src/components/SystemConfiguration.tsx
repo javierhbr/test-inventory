@@ -13,7 +13,9 @@ import { Label } from './ui/label';
 export function SystemConfiguration() {
   const [systemConfig, setSystemConfig] = useState<SystemConfig | null>(null);
   const [editingSection, setEditingSection] = useState<string | null>(null);
-  const [editData, setEditData] = useState<any>(null);
+  const [editData, setEditData] = useState<Record<string, unknown> | null>(
+    null
+  );
   const [hasChanges, setHasChanges] = useState(false);
 
   useEffect(() => {

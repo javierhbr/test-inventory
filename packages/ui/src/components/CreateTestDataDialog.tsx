@@ -68,22 +68,14 @@ const SEMANTIC_RULES: SemanticRule[] = [
       const t = parsed.transactions as { status: string; count: number };
       return `transactions:${t.status}:${t.count}`;
     },
-    suggestions: [
-      'transactions:pending:',
-      'transactions:completed:',
-    ],
+    suggestions: ['transactions:pending:', 'transactions:completed:'],
   },
   {
     key: 'card',
     regex: /^card:(active|expired|inactive|new)$/i,
     parse: match => ({ card: match[1].toLowerCase() }),
     format: parsed => `card:${parsed.card}`,
-    suggestions: [
-      'card:active',
-      'card:expired',
-      'card:inactive',
-      'card:new',
-    ],
+    suggestions: ['card:active', 'card:expired', 'card:inactive', 'card:new'],
   },
   {
     key: 'balance',
@@ -107,6 +99,7 @@ const SEMANTIC_RULES: SemanticRule[] = [
 ];
 
 const ALL_SEMANTIC_SUGGESTIONS = SEMANTIC_RULES.flatMap(r => r.suggestions);
+const PRIMARY_TAG_CATEGORIES = SEMANTIC_RULES.map(r => `${r.key}:`);
 
 function tryParseSemanticTag(
   input: string
@@ -123,9 +116,17 @@ function tryParseSemanticTag(
 }
 
 function getSemanticSuggestions(input: string): string[] {
-  if (!input.trim()) return [];
+  if (!input.trim()) return PRIMARY_TAG_CATEGORIES;
   const lower = input.toLowerCase();
-  return ALL_SEMANTIC_SUGGESTIONS.filter(s => s.startsWith(lower));
+  // If typing a category prefix (e.g. "acc"), show matching categories
+  const matchingCategories = PRIMARY_TAG_CATEGORIES.filter(c =>
+    c.startsWith(lower)
+  );
+  // If typing within a category (e.g. "account:"), show leaf values
+  const matchingLeaves = ALL_SEMANTIC_SUGGESTIONS.filter(s =>
+    s.startsWith(lower)
+  );
+  return matchingLeaves.length > 0 ? matchingLeaves : matchingCategories;
 }
 
 const availableClassifications = [
@@ -240,13 +241,11 @@ export function CreateTestDataDialog({
           c.toLowerCase().includes(inputTrimmed.toLowerCase()) &&
           !selectedClassifications.includes(c)
       )
-    : availableClassifications.filter(
-        c => !selectedClassifications.includes(c)
-      );
+    : [];
 
-  const filteredSuggestions = isSemanticMode
-    ? semanticSuggestions
-    : plainSuggestions;
+  // Always show semantic tags first, then plain suggestions as fallback
+  const filteredSuggestions =
+    semanticSuggestions.length > 0 ? semanticSuggestions : plainSuggestions;
 
   const addClassification = (classification: string) => {
     const trimmed = classification.trim();
@@ -571,8 +570,11 @@ export function CreateTestDataDialog({
                 <CardHeader>
                   <CardTitle>Classifications *</CardTitle>
                   <CardDescription>
-                    Type to search, use semantic tags
-                    (e.g. <code className="rounded bg-gray-100 px-1 text-xs">account:primary</code>), or add custom values
+                    Type to search, use semantic tags (e.g.{' '}
+                    <code className="rounded bg-gray-100 px-1 text-xs">
+                      account:primary
+                    </code>
+                    ), or add custom values
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-3">
@@ -689,7 +691,9 @@ export function CreateTestDataDialog({
                               {isSemantic ? (
                                 <span className="inline-block h-2 w-2 rounded-full bg-indigo-400" />
                               ) : (
-                                <Check className={`h-3.5 w-3.5 ${isHighlighted ? 'text-blue-500' : 'text-transparent'}`} />
+                                <Check
+                                  className={`h-3.5 w-3.5 ${isHighlighted ? 'text-blue-500' : 'text-transparent'}`}
+                                />
                               )}
                               <span
                                 className={
@@ -746,9 +750,7 @@ export function CreateTestDataDialog({
                       <code className="rounded bg-gray-100 px-1">
                         balance:high
                       </code>{' '}
-                      <code className="rounded bg-gray-100 px-1">
-                        user:mfa
-                      </code>
+                      <code className="rounded bg-gray-100 px-1">user:mfa</code>
                     </p>
                   </div>
                 </CardContent>
@@ -842,7 +844,11 @@ export function CreateTestDataDialog({
                     <Label htmlFor="visibility">Visibility</Label>
                     <Select
                       value={visibility}
-                      onValueChange={value => setVisibility(value as any)}
+                      onValueChange={value =>
+                        setVisibility(
+                          value as 'manual' | 'automated' | 'platform'
+                        )
+                      }
                     >
                       <SelectTrigger>
                         <SelectValue />

@@ -187,7 +187,10 @@ usageHistory: []`;
     );
   };
 
-  const getScopeBadge = (scope: any) => {
+  const getScopeBadge = (scope: {
+    visibility: string;
+    platforms?: string[];
+  }) => {
     const variants = {
       manual: 'bg-purple-100 text-purple-800',
       automated: 'bg-blue-100 text-blue-800',

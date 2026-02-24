@@ -94,8 +94,7 @@ function SidebarProvider({
         document.cookie = cookie;
       } catch (e) {
         // If cookies are disabled or encoding fails, silently ignore to avoid breaking UI.
-        // eslint-disable-next-line no-console
-        console.warn('Failed to persist sidebar state cookie:', e);
+        console.error('Failed to persist sidebar state cookie:', e);
       }
     },
     [setOpenProp, open]
@@ -408,7 +407,7 @@ function SidebarGroup({ className, ...props }: React.ComponentProps<'div'>) {
 
 function SidebarGroupLabel({
   className,
-  asChild = false,
+  asChild: _asChild = false,
   ...props
 }: React.ComponentProps<'div'> & { asChild?: boolean }) {
   const Comp = 'div';
@@ -429,7 +428,7 @@ function SidebarGroupLabel({
 
 function SidebarGroupAction({
   className,
-  asChild = false,
+  asChild: _asChild = false,
   ...props
 }: React.ComponentProps<'button'> & { asChild?: boolean }) {
   const Comp = 'button';
@@ -509,7 +508,7 @@ const sidebarMenuButtonVariants = cva(
 );
 
 function SidebarMenuButton({
-  asChild = false,
+  asChild: _asChild = false,
   isActive = false,
   variant = 'default',
   size = 'default',
@@ -555,7 +554,7 @@ function SidebarMenuButton({
 
 function SidebarMenuAction({
   className,
-  asChild = false,
+  asChild: _asChild = false,
   showOnHover = false,
   ...props
 }: React.ComponentProps<'button'> & {
@@ -675,7 +674,7 @@ function SidebarMenuSubItem({
 }
 
 function SidebarMenuSubButton({
-  asChild = false,
+  asChild: _asChild = false,
   size = 'md',
   isActive = false,
   className,
@@ -730,5 +729,6 @@ export {
   SidebarRail,
   SidebarSeparator,
   SidebarTrigger,
+  // eslint-disable-next-line react-refresh/only-export-components
   useSidebar,
 };

@@ -16,8 +16,8 @@ function PopoverTrigger({
 
 function PopoverContent({
   className,
-  align = 'center',
-  sideOffset = 4,
+  align: _align = 'center',
+  sideOffset: _sideOffset = 4,
   ...props
 }: React.HTMLAttributes<HTMLDivElement> & {
   align?: string;

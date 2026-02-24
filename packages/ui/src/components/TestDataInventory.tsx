@@ -119,6 +119,7 @@ export function TestDataInventory() {
 
   useEffect(() => {
     void loadTestData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Pagination calculations
@@ -463,7 +464,9 @@ ${data.scope.platforms.map(platform => `        - ${platform}`).join('\n')}`
       {/* Header with Actions */}
       <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight text-gray-900">Test Data Inventory</h2>
+          <h2 className="text-3xl font-bold tracking-tight text-gray-900">
+            Test Data Inventory
+          </h2>
           <p className="mt-1 text-gray-500">
             Manage your test data and banking entities efficiently
           </p>
@@ -582,7 +585,9 @@ ${data.scope.platforms.map(platform => `        - ${platform}`).join('\n')}`
                     <Checkbox
                       checked={isAllSelected}
                       ref={el => {
-                        if (el) (el as any).indeterminate = isIndeterminate;
+                        if (el)
+                          (el as HTMLInputElement).indeterminate =
+                            isIndeterminate;
                       }}
                       onCheckedChange={handleSelectAll}
                     />

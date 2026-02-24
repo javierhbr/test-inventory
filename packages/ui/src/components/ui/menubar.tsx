@@ -19,7 +19,7 @@ function Menubar({ className, ...props }: React.ComponentProps<'div'>) {
   );
 }
 
-function MenubarMenu({ ...props }: any) {
+function MenubarMenu({ ...props }: React.ComponentProps<typeof BaseMenu.Root>) {
   return (
     <BaseMenu.Root data-slot="menubar-menu" {...props}>
       {props.children}
@@ -27,15 +27,21 @@ function MenubarMenu({ ...props }: any) {
   );
 }
 
-function MenubarGroup({ ...props }: any) {
+function MenubarGroup({
+  ...props
+}: React.ComponentProps<typeof BaseMenu.Group>) {
   return <BaseMenu.Group data-slot="menubar-group" {...props} />;
 }
 
-function MenubarPortal({ ...props }: any) {
+function MenubarPortal({
+  ...props
+}: React.ComponentProps<typeof BaseMenu.Portal>) {
   return <BaseMenu.Portal data-slot="menubar-portal" {...props} />;
 }
 
-function MenubarRadioGroup({ ...props }: any) {
+function MenubarRadioGroup({
+  ...props
+}: React.ComponentProps<typeof BaseMenu.RadioGroup>) {
   return <BaseMenu.RadioGroup data-slot="menubar-radio-group" {...props} />;
 }
 
@@ -61,7 +67,11 @@ function MenubarContent({
   alignOffset = -4,
   sideOffset = 8,
   ...props
-}: any) {
+}: React.ComponentProps<typeof BaseMenu.Popup> & {
+  align?: string;
+  alignOffset?: number;
+  sideOffset?: number;
+}) {
   return (
     <MenubarPortal>
       <BaseMenu.Popup

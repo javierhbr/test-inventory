@@ -6,11 +6,11 @@ import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Checkbox } from './ui/checkbox';
 import { Input } from './ui/input';
 import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from './ui/select';
 
 export interface FilterOption {
@@ -301,7 +301,7 @@ export function SearchAndFilters({
                 checked={isAllSelected}
                 ref={el => {
                   if (el && 'indeterminate' in el) {
-                    (el as any).indeterminate = isIndeterminate;
+                    (el as HTMLInputElement).indeterminate = isIndeterminate;
                   }
                 }}
                 onCheckedChange={onSelectAll}

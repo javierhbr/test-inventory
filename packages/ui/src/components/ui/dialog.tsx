@@ -20,7 +20,7 @@ function DialogTrigger({
       (typeof children.type === 'object' &&
         children.type &&
         'displayName' in children.type &&
-        (children.type as any).displayName === 'Button');
+        (children.type as { displayName?: string }).displayName === 'Button');
 
     return (
       <Dialog.Trigger

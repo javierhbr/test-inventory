@@ -112,6 +112,7 @@ export function TestsInventory() {
 
   useEffect(() => {
     void loadTests();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Pagination calculations
@@ -519,7 +520,9 @@ ${test.supportedRuntimes.map(runtime => `      - ${runtime}`).join('\n')}
                     <Checkbox
                       checked={isAllSelected}
                       ref={el => {
-                        if (el) (el as any).indeterminate = isIndeterminate;
+                        if (el)
+                          (el as HTMLInputElement).indeterminate =
+                            isIndeterminate;
                       }}
                       onCheckedChange={handleSelectAll}
                     />

@@ -29,7 +29,7 @@ function DropdownMenuTrigger({
       (typeof children.type === 'object' &&
         children.type &&
         'displayName' in children.type &&
-        (children.type as any).displayName === 'Button');
+        (children.type as { displayName?: string }).displayName === 'Button');
 
     return (
       <BaseMenu.Trigger
@@ -69,7 +69,7 @@ function DropdownMenuContent({
             'max-h-(--radix-dropdown-menu-content-available-height) origin-(--radix-dropdown-menu-content-transform-origin) bg-popover text-popover-foreground data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 z-50 min-w-[8rem] overflow-y-auto overflow-x-hidden rounded-md border p-1 shadow-md',
             className
           )}
-          {...(props as any)}
+          {...(props as Record<string, unknown>)}
         />
       </BaseMenu.Positioner>
     </BaseMenu.Portal>
@@ -259,7 +259,7 @@ function DropdownMenuSubContent({
             'origin-(--radix-dropdown-menu-content-transform-origin) bg-popover text-popover-foreground data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 z-50 min-w-[8rem] overflow-hidden rounded-md border p-1 shadow-lg',
             className
           )}
-          {...(props as any)}
+          {...(props as Record<string, unknown>)}
         />
       </BaseMenu.Positioner>
     </BaseMenu.Portal>

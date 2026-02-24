@@ -249,7 +249,9 @@ TC-00198`}
                       <Checkbox
                         checked={isAllSelected}
                         ref={el => {
-                          if (el) (el as any).indeterminate = isIndeterminate;
+                          if (el)
+                            (el as HTMLInputElement).indeterminate =
+                              isIndeterminate;
                         }}
                         onCheckedChange={handleSelectAll}
                       />
