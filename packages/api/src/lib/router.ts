@@ -1,12 +1,19 @@
 import { availableProfiles, mockUsers } from '../data/mockUsers';
-import { mockTestData } from '../data/mockTestData';
 import {
   ApiActionRequest,
   ApiActionResponse,
-  TestDataRecord,
   User,
   UserProfile,
 } from '../types/domain';
+import {
+  bulkDeleteTestData,
+  createTestData,
+  deleteTestData,
+  getTestData,
+  listTestData,
+  reconditionTestData,
+  updateTestData,
+} from './testDataCrud';
 
 interface ActionResult {
   statusCode: number;
@@ -14,7 +21,6 @@ interface ActionResult {
 }
 
 const usersStore: User[] = structuredClone(mockUsers);
-const testDataStore: TestDataRecord[] = structuredClone(mockTestData);
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null;
@@ -167,7 +173,10 @@ function handleAuthAction(action: string, payload: unknown): ActionResult {
 
 function handleTestDataAction(action: string, payload: unknown): ActionResult {
   if (action === 'list') {
-    return success(clone(testDataStore));
+    const result = listTestData();
+    return result.ok
+      ? success(result.data, result.statusCode)
+      : failure(result.statusCode, result.message, result.code);
   }
 
   if (action === 'get') {
@@ -182,12 +191,10 @@ function handleTestDataAction(action: string, payload: unknown): ActionResult {
       return failure(400, 'Get payload requires field "id"');
     }
 
-    const record = testDataStore.find(item => item.id === id);
-    if (!record) {
-      return failure(404, `Test data "${id}" was not found`, 'NOT_FOUND');
-    }
-
-    return success(clone(record));
+    const result = getTestData(id);
+    return result.ok
+      ? success(result.data, result.statusCode)
+      : failure(result.statusCode, result.message, result.code);
   }
 
   if (action === 'create') {
@@ -197,23 +204,10 @@ function handleTestDataAction(action: string, payload: unknown): ActionResult {
       return failure(400, 'Create payload must be an object');
     }
 
-    const candidate = payloadRecord as unknown as TestDataRecord;
-    if (!candidate.id || !candidate.customer || !candidate.account) {
-      return failure(400, 'Create payload must be a valid test data record');
-    }
-
-    const exists = testDataStore.some(item => item.id === candidate.id);
-    if (exists) {
-      return failure(
-        409,
-        `Test data "${candidate.id}" already exists`,
-        'CONFLICT'
-      );
-    }
-
-    const created = clone(candidate);
-    testDataStore.push(created);
-    return success(clone(created), 201);
+    const result = createTestData(payloadRecord);
+    return result.ok
+      ? success(result.data, result.statusCode)
+      : failure(result.statusCode, result.message, result.code);
   }
 
   if (action === 'update') {
@@ -223,22 +217,15 @@ function handleTestDataAction(action: string, payload: unknown): ActionResult {
       return failure(400, 'Update payload must be an object');
     }
 
-    const candidate = payloadRecord as unknown as TestDataRecord;
-    if (!candidate.id) {
+    const id = getStringField(payloadRecord, 'id');
+    if (!id) {
       return failure(400, 'Update payload requires field "id"');
     }
 
-    const index = testDataStore.findIndex(item => item.id === candidate.id);
-    if (index === -1) {
-      return failure(
-        404,
-        `Test data "${candidate.id}" was not found`,
-        'NOT_FOUND'
-      );
-    }
-
-    testDataStore[index] = clone(candidate);
-    return success(clone(testDataStore[index]));
+    const result = updateTestData(id, payloadRecord);
+    return result.ok
+      ? success(result.data, result.statusCode)
+      : failure(result.statusCode, result.message, result.code);
   }
 
   if (action === 'delete') {
@@ -253,13 +240,10 @@ function handleTestDataAction(action: string, payload: unknown): ActionResult {
       return failure(400, 'Delete payload requires field "id"');
     }
 
-    const index = testDataStore.findIndex(item => item.id === id);
-    if (index === -1) {
-      return failure(404, `Test data "${id}" was not found`, 'NOT_FOUND');
-    }
-
-    testDataStore.splice(index, 1);
-    return success({ id });
+    const result = deleteTestData(id);
+    return result.ok
+      ? success(result.data, result.statusCode)
+      : failure(result.statusCode, result.message, result.code);
   }
 
   if (action === 'bulkDelete') {
@@ -269,24 +253,10 @@ function handleTestDataAction(action: string, payload: unknown): ActionResult {
       return failure(400, 'Bulk delete payload must be an object');
     }
 
-    const ids = payloadRecord.ids;
-    if (!Array.isArray(ids) || ids.some(id => typeof id !== 'string')) {
-      return failure(
-        400,
-        'Bulk delete payload requires field "ids" as string[]'
-      );
-    }
-
-    const idSet = new Set(ids as string[]);
-    const before = testDataStore.length;
-
-    for (let i = testDataStore.length - 1; i >= 0; i -= 1) {
-      if (idSet.has(testDataStore[i].id)) {
-        testDataStore.splice(i, 1);
-      }
-    }
-
-    return success({ deletedCount: before - testDataStore.length });
+    const result = bulkDeleteTestData(payloadRecord.ids);
+    return result.ok
+      ? success(result.data, result.statusCode)
+      : failure(result.statusCode, result.message, result.code);
   }
 
   if (action === 'recondition') {
@@ -301,17 +271,10 @@ function handleTestDataAction(action: string, payload: unknown): ActionResult {
       return failure(400, 'Recondition payload requires field "id"');
     }
 
-    const index = testDataStore.findIndex(item => item.id === id);
-    if (index === -1) {
-      return failure(404, `Test data "${id}" was not found`, 'NOT_FOUND');
-    }
-
-    testDataStore[index] = {
-      ...testDataStore[index],
-      status: 'Reconditioning',
-    };
-
-    return success(clone(testDataStore[index]));
+    const result = reconditionTestData(id);
+    return result.ok
+      ? success(result.data, result.statusCode)
+      : failure(result.statusCode, result.message, result.code);
   }
 
   return failure(404, `Unknown testData action "${action}"`, 'NOT_FOUND');

@@ -1,6 +1,7 @@
 import { createServer } from 'node:http';
 
 import { handleApiAction } from './lib/router';
+import { handleTestDataHttpRoute } from './lib/testDataRoutes';
 
 const port = Number(process.env.PORT || 3001);
 
@@ -17,7 +18,7 @@ function writeJson(
     'content-type': 'application/json',
     'access-control-allow-origin': '*',
     'access-control-allow-headers': 'content-type,authorization',
-    'access-control-allow-methods': 'GET,POST,OPTIONS',
+    'access-control-allow-methods': 'GET,POST,PUT,PATCH,DELETE,OPTIONS',
   });
   res.end(JSON.stringify(payload));
 }
@@ -56,6 +57,36 @@ createServer(async (req, res) => {
       mode: 'local',
     });
     return;
+  }
+
+  if (path.startsWith('/api/test-data')) {
+    let body: unknown = {};
+
+    if (
+      method === 'POST' ||
+      method === 'PUT' ||
+      method === 'PATCH' ||
+      method === 'DELETE'
+    ) {
+      try {
+        body = await parseJsonBody(req);
+      } catch {
+        writeJson(res, 400, {
+          success: false,
+          error: {
+            code: 'BAD_REQUEST',
+            message: 'Request body must be valid JSON',
+          },
+        });
+        return;
+      }
+    }
+
+    const routeResult = handleTestDataHttpRoute(method, path, body);
+    if (routeResult) {
+      writeJson(res, routeResult.statusCode, routeResult.body);
+      return;
+    }
   }
 
   if (method !== 'POST' || path !== '/api') {

@@ -1,5 +1,6 @@
 import { createHandler } from '../lib/middleware';
 import { handleApiAction } from '../lib/router';
+import { handleTestDataHttpRoute } from '../lib/testDataRoutes';
 
 import type {
   APIGatewayProxyEventV2,
@@ -22,6 +23,47 @@ export const handler = createHandler(
           status: 'ok',
           timestamp: new Date().toISOString(),
         }),
+      };
+    }
+
+    let parsedBody: unknown = event.body ?? {};
+
+    if (
+      method === 'POST' ||
+      method === 'PUT' ||
+      method === 'PATCH' ||
+      method === 'DELETE'
+    ) {
+      const rawBody = event.body;
+      parsedBody = rawBody ?? {};
+
+      if (typeof rawBody === 'string' && rawBody.length > 0) {
+        try {
+          parsedBody = JSON.parse(rawBody);
+        } catch {
+          return {
+            statusCode: 400,
+            body: JSON.stringify({
+              success: false,
+              error: {
+                code: 'BAD_REQUEST',
+                message: 'Request body must be valid JSON',
+              },
+            }),
+          };
+        }
+      }
+    }
+
+    const testDataRouteResult = handleTestDataHttpRoute(
+      method,
+      path,
+      parsedBody
+    );
+    if (testDataRouteResult) {
+      return {
+        statusCode: testDataRouteResult.statusCode,
+        body: JSON.stringify(testDataRouteResult.body),
       };
     }
 
@@ -49,26 +91,6 @@ export const handler = createHandler(
           },
         }),
       };
-    }
-
-    const rawBody = event.body;
-    let parsedBody: unknown = rawBody ?? {};
-
-    if (typeof rawBody === 'string' && rawBody.length > 0) {
-      try {
-        parsedBody = JSON.parse(rawBody);
-      } catch {
-        return {
-          statusCode: 400,
-          body: JSON.stringify({
-            success: false,
-            error: {
-              code: 'BAD_REQUEST',
-              message: 'Request body must be valid JSON',
-            },
-          }),
-        };
-      }
     }
 
     const result = handleApiAction(parsedBody);

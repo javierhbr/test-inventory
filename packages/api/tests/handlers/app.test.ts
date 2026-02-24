@@ -61,11 +61,8 @@ describe('app handler', () => {
     expect(envelope.data?.id).toBe('admin-001');
   });
 
-  it('testData.list returns mock test data from API', async () => {
-    const event = createEvent('POST', '/api', {
-      resource: 'testData',
-      action: 'list',
-    });
+  it('GET /api/test-data returns mock test data from API', async () => {
+    const event = createEvent('GET', '/api/test-data');
 
     const result = await handler(event as any, {} as any, () => {});
     const envelope = JSON.parse((result as any).body) as ApiEnvelope<
@@ -79,38 +76,34 @@ describe('app handler', () => {
     expect(envelope.data?.[0].id).toBe('TD-20031');
   });
 
-  it('supports create and delete through the single /api endpoint', async () => {
+  it('supports create and delete through /api/test-data CRUD routes', async () => {
     const id = `TD-TEST-${Date.now()}`;
 
-    const createEventPayload = createEvent('POST', '/api', {
-      resource: 'testData',
-      action: 'create',
-      payload: {
-        id,
-        customer: {
-          customerId: 'CUST-TEST',
-          name: 'Test User',
-          type: 'Individual',
-        },
-        account: {
-          accountId: 'ACC-TEST',
-          referenceId: 'REF-ACC-TEST',
-          type: 'Checking Account',
-          createdAt: new Date().toISOString(),
-        },
-        classifications: ['Active account'],
-        labels: {
-          project: 'Core Migration',
-          environment: 'QA',
-          dataOwner: 'QA Team',
-        },
-        scope: {
-          visibility: 'manual',
-        },
-        status: 'Available',
-        lastUsed: null,
-        team: 'QA Team',
+    const createEventPayload = createEvent('POST', '/api/test-data', {
+      id,
+      customer: {
+        customerId: 'CUST-TEST',
+        name: 'Test User',
+        type: 'Individual',
       },
+      account: {
+        accountId: 'ACC-TEST',
+        referenceId: 'REF-ACC-TEST',
+        type: 'Checking Account',
+        createdAt: new Date().toISOString(),
+      },
+      classifications: ['Active account'],
+      labels: {
+        project: 'Core Migration',
+        environment: 'QA',
+        dataOwner: 'QA Team',
+      },
+      scope: {
+        visibility: 'manual',
+      },
+      status: 'Available',
+      lastUsed: null,
+      team: 'QA Team',
     });
 
     const createResult = await handler(
@@ -121,11 +114,11 @@ describe('app handler', () => {
 
     expect((createResult as any).statusCode).toBe(201);
 
-    const deleteEventPayload = createEvent('POST', '/api', {
-      resource: 'testData',
-      action: 'delete',
-      payload: { id },
-    });
+    const deleteEventPayload = createEvent(
+      'DELETE',
+      `/api/test-data/${encodeURIComponent(id)}`,
+      {}
+    );
 
     const deleteResult = await handler(
       deleteEventPayload as any,
