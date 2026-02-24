@@ -1,4 +1,4 @@
-import { Search, Filter, X } from 'lucide-react';
+import { Filter, Search, X } from 'lucide-react';
 
 import { Badge } from './ui/badge';
 import { Button } from './ui/button';
@@ -6,11 +6,11 @@ import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Checkbox } from './ui/checkbox';
 import { Input } from './ui/input';
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
 } from './ui/select';
 
 export interface FilterOption {
@@ -141,10 +141,10 @@ export function SearchAndFilters({
   };
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2 text-lg">
-          <Filter className="h-5 w-5" />
+    <Card className="border-gray-200 shadow-sm">
+      <CardHeader className="pb-4">
+        <CardTitle className="flex items-center gap-2 text-lg font-semibold text-gray-800">
+          <Filter className="h-5 w-5 text-gray-500" />
           Filters and Search
         </CardTitle>
       </CardHeader>
@@ -152,12 +152,12 @@ export function SearchAndFilters({
         {/* Search Input - Now at the top */}
         <div className="mb-6">
           <div className="relative">
-            <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+            <Search className="absolute left-3 top-3.5 h-4 w-4 text-gray-400" />
             <Input
               placeholder={searchPlaceholder}
               value={searchTerm}
               onChange={e => onSearchChange(e.target.value)}
-              className="pl-10"
+              className="h-11 border-gray-200 bg-gray-50/50 pl-10 transition-colors hover:bg-white focus:bg-white"
             />
           </div>
         </div>
@@ -211,8 +211,8 @@ export function SearchAndFilters({
         {/* Filters Grid */}
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-6">
           {filters.map(filter => (
-            <div key={filter.key} className="space-y-1">
-              <label className="text-xs uppercase tracking-wide text-gray-500">
+            <div key={filter.key} className="space-y-1.5">
+              <label className="text-xs font-semibold uppercase tracking-wider text-gray-500">
                 {filter.label}
               </label>
               <Select
@@ -276,8 +276,8 @@ export function SearchAndFilters({
             </div>
           ))}
 
-          <div className="space-y-1">
-            <label className="text-xs uppercase tracking-wide text-gray-500">
+          <div className="space-y-1.5">
+            <label className="text-xs font-semibold uppercase tracking-wider text-gray-500">
               ACTIONS
             </label>
             <Button

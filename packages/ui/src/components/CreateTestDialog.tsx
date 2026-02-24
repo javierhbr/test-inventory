@@ -36,7 +36,7 @@ import { Textarea } from './ui/textarea';
 
 interface CreateTestDialogProps {
   children: React.ReactNode;
-  onTestCreated: (test: Test) => void;
+  onTestCreated: (test: Test) => Promise<void> | void;
   editTest?: Test;
   onClose?: () => void;
 }
@@ -186,7 +186,7 @@ export function CreateTestDialog({
     return `TC-${Date.now().toString().slice(-5)}`;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (
@@ -232,10 +232,16 @@ export function CreateTestDialog({
       team,
     };
 
-    onTestCreated(newTest);
-    setOpen(false);
-    resetForm();
-    if (onClose) onClose();
+    try {
+      await onTestCreated(newTest);
+      setOpen(false);
+      resetForm();
+      if (onClose) onClose();
+    } catch (error) {
+      alert(
+        `Error saving test: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
+    }
   };
 
   return (

@@ -1,4 +1,4 @@
-import { TestDataRecord, User, UserProfile } from './types';
+import { Test, TestDataRecord, User, UserProfile } from './types';
 
 interface ApiSuccessResponse<T> {
   success: true;
@@ -20,6 +20,7 @@ const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || '').replace(
   ''
 );
 const API_ENDPOINT = `${API_BASE_URL}/api`;
+const TEST_CATALOG_ENDPOINT = `${API_BASE_URL}/api/test-catalog`;
 const TEST_DATA_ENDPOINT = `${API_BASE_URL}/api/test-data`;
 
 async function invokeApi<T>(
@@ -114,4 +115,30 @@ export const testDataApi = {
         body: JSON.stringify({}),
       }
     ),
+};
+
+export const testCatalogApi = {
+  list: (): Promise<Test[]> => invokeRestApi(TEST_CATALOG_ENDPOINT),
+  get: (id: string): Promise<Test> =>
+    invokeRestApi(`${TEST_CATALOG_ENDPOINT}/${encodeURIComponent(id)}`),
+  create: (record: Test): Promise<Test> =>
+    invokeRestApi(TEST_CATALOG_ENDPOINT, {
+      method: 'POST',
+      body: JSON.stringify(record),
+    }),
+  update: (record: Test): Promise<Test> =>
+    invokeRestApi(`${TEST_CATALOG_ENDPOINT}/${encodeURIComponent(record.id)}`, {
+      method: 'PUT',
+      body: JSON.stringify(record),
+    }),
+  delete: (id: string): Promise<{ id: string }> =>
+    invokeRestApi(`${TEST_CATALOG_ENDPOINT}/${encodeURIComponent(id)}`, {
+      method: 'DELETE',
+      body: JSON.stringify({}),
+    }),
+  bulkDelete: (ids: string[]): Promise<{ deletedCount: number }> =>
+    invokeRestApi(TEST_CATALOG_ENDPOINT, {
+      method: 'DELETE',
+      body: JSON.stringify({ ids }),
+    }),
 };

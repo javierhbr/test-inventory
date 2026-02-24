@@ -235,16 +235,26 @@ TC-00198`}
         </div>
       </div>
 
-      <Card className="flex-1">
+      <Card className="flex-1 overflow-hidden border-gray-200 shadow-sm">
         <CardHeader>
           <CardTitle>Available Tests ({filteredTests.length})</CardTitle>
         </CardHeader>
         <CardContent className="p-0">
           <div className="max-h-[400px] overflow-y-auto">
             <Table>
-              <TableHeader>
+              <TableHeader className="bg-gray-50/50">
                 <TableRow>
-                  <TableHead className="w-12"></TableHead>
+                  <TableHead className="w-12 align-middle">
+                    <div className="flex items-center justify-center">
+                      <Checkbox
+                        checked={isAllSelected}
+                        ref={el => {
+                          if (el) (el as any).indeterminate = isIndeterminate;
+                        }}
+                        onCheckedChange={handleSelectAll}
+                      />
+                    </div>
+                  </TableHead>
                   <TableHead>Test</TableHead>
                   <TableHead>Labels</TableHead>
                   <TableHead>Action</TableHead>
@@ -253,13 +263,15 @@ TC-00198`}
               <TableBody>
                 {paginatedTests.map((test: Test) => (
                   <TableRow key={test.id}>
-                    <TableCell>
-                      <Checkbox
-                        checked={selectedTests.has(test.id)}
-                        onCheckedChange={checked =>
-                          handleSelectTest(test.id, checked === true)
-                        }
-                      />
+                    <TableCell className="align-middle">
+                      <div className="flex items-center justify-center">
+                        <Checkbox
+                          checked={selectedTests.has(test.id)}
+                          onCheckedChange={checked =>
+                            handleSelectTest(test.id, checked === true)
+                          }
+                        />
+                      </div>
                     </TableCell>
                     <TableCell>
                       <div>

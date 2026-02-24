@@ -1,6 +1,5 @@
 import { create } from 'zustand';
 
-import { mockTests } from '../data/mockTests';
 import { Test } from '../services/types';
 
 interface TestsState {
@@ -21,6 +20,7 @@ interface TestsState {
 
 interface TestsActions {
   // Data mutations
+  setTests: (tests: Test[]) => void;
   addTest: (test: Test) => void;
   updateTest: (updatedTest: Test) => void;
   deleteTest: (testId: string) => void;
@@ -51,7 +51,7 @@ type TestsStore = TestsState & TestsActions;
 
 export const useTestsStore = create<TestsStore>()(set => ({
   // Initial state
-  tests: mockTests,
+  tests: [],
   searchTerm: '',
   filterFlow: 'all',
   filterStatus: 'all',
@@ -66,6 +66,8 @@ export const useTestsStore = create<TestsStore>()(set => ({
   testToDelete: null,
 
   // Data mutations
+  setTests: tests => set({ tests }),
+
   addTest: test => set(state => ({ tests: [...state.tests, test] })),
 
   updateTest: updatedTest =>

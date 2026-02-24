@@ -11,18 +11,34 @@ import { cn } from './components/ui/utils';
 import { UserManagement } from './components/UserManagement';
 import { useNavigationHistory } from './hooks/useNavigationHistory';
 import { AppConfig, configService } from './services/configService';
+import { User } from './services/types';
 import { useAuthStore } from './stores/authStore';
-import { usePermissionsStore } from './stores/permissionsStore';
+import {
+  getPermissionsFromRoles,
+  usePermissionsStore,
+} from './stores/permissionsStore';
 
 function App() {
   const user = useAuthStore(s => s.user);
   const login = useAuthStore(s => s.login);
+  const setUserPermissions = usePermissionsStore(s => s.setUserPermissions);
   const [appConfig, setAppConfig] = useState<AppConfig | null>(null);
   const [loading, setLoading] = useState(true);
   const [configError, setConfigError] = useState<string | null>(null);
   const initializeDefaultPermissions = usePermissionsStore(
     s => s.initializeDefaultPermissions
   );
+
+  const handleLogin = (loggedInUser: User) => {
+    login(loggedInUser);
+    const roles = [loggedInUser.profile];
+    setUserPermissions({
+      userId: loggedInUser.id,
+      username: loggedInUser.name,
+      roles,
+      permissions: getPermissionsFromRoles(roles),
+    });
+  };
 
   // Load configurations on mount
   useEffect(() => {
@@ -81,7 +97,7 @@ function App() {
   }
 
   if (!user) {
-    return <Login onLogin={login} />;
+    return <Login onLogin={handleLogin} />;
   }
 
   return <AppContent appConfig={appConfig} />;

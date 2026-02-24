@@ -1,6 +1,9 @@
+import { useEffect, useState } from 'react';
+
 import { Download, Edit, Eye, Plus, Trash2 } from 'lucide-react';
 import { useShallow } from 'zustand/react/shallow';
 
+import { testCatalogApi } from '../services/apiClient';
 import { Test } from '../services/types';
 import { usePermissionsStore } from '../stores/permissionsStore';
 import { useTestsStore, selectFilteredTests } from '../stores/testsStore';
@@ -84,10 +87,32 @@ export function TestsInventory() {
   const setSelectAllPages = useTestsStore(s => s.setSelectAllPages);
   const setShowDeleteDialog = useTestsStore(s => s.setShowDeleteDialog);
   const setTestToDelete = useTestsStore(s => s.setTestToDelete);
+  const setTests = useTestsStore(s => s.setTests);
   const addTest = useTestsStore(s => s.addTest);
   const updateTest = useTestsStore(s => s.updateTest);
   const deleteTest = useTestsStore(s => s.deleteTest);
   const bulkDelete = useTestsStore(s => s.bulkDelete);
+  const [isLoadingTests, setIsLoadingTests] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
+
+  const loadTests = async () => {
+    try {
+      setIsLoadingTests(true);
+      setLoadError(null);
+      const records = await testCatalogApi.list();
+      setTests(records);
+    } catch (error) {
+      setLoadError(
+        error instanceof Error ? error.message : 'Failed to load tests'
+      );
+    } finally {
+      setIsLoadingTests(false);
+    }
+  };
+
+  useEffect(() => {
+    void loadTests();
+  }, []);
 
   // Pagination calculations
   const totalPages = Math.ceil(filteredTests.length / ITEMS_PER_PAGE);
@@ -315,18 +340,43 @@ ${test.supportedRuntimes.map(runtime => `      - ${runtime}`).join('\n')}
     },
   ];
 
+  if (isLoadingTests) {
+    return (
+      <div className="flex min-h-[360px] items-center justify-center rounded-lg border bg-white">
+        <div className="text-sm text-gray-600">Loading tests...</div>
+      </div>
+    );
+  }
+
   const handleSoftDelete = (test: Test) => {
     setTestToDelete(test);
     setShowDeleteDialog(true);
   };
 
-  const confirmDelete = () => {
+  const handleCreateTest = async (newTest: Test) => {
+    const created = await testCatalogApi.create(newTest);
+    addTest(created);
+  };
+
+  const handleUpdateTest = async (updated: Test) => {
+    const result = await testCatalogApi.update(updated);
+    updateTest(result);
+  };
+
+  const confirmDelete = async () => {
     if (testToDelete) {
-      deleteTest(testToDelete.id);
+      try {
+        await testCatalogApi.delete(testToDelete.id);
+        deleteTest(testToDelete.id);
+      } catch (error) {
+        alert(
+          `Error deleting test: ${error instanceof Error ? error.message : 'Unknown error'}`
+        );
+      }
     }
   };
 
-  const handleBulkDelete = () => {
+  const handleBulkDelete = async () => {
     if (selectedCount === 0) {
       alert('Please select at least one test to delete');
       return;
@@ -337,7 +387,14 @@ ${test.supportedRuntimes.map(runtime => `      - ${runtime}`).join('\n')}
         `Are you sure you want to delete ${selectedCount} test${selectedCount !== 1 ? 's' : ''}? This action cannot be undone.`
       )
     ) {
-      bulkDelete(selectedTestIds);
+      try {
+        await testCatalogApi.bulkDelete(Array.from(selectedTestIds));
+        bulkDelete(selectedTestIds);
+      } catch (error) {
+        alert(
+          `Error deleting selected tests: ${error instanceof Error ? error.message : 'Unknown error'}`
+        );
+      }
     }
   };
 
@@ -351,7 +408,7 @@ ${test.supportedRuntimes.map(runtime => `      - ${runtime}`).join('\n')}
         </div>
         <div className="flex gap-2">
           {hasPermission('create_tests') && (
-            <CreateTestDialog onTestCreated={addTest}>
+            <CreateTestDialog onTestCreated={handleCreateTest}>
               <div
                 className={cn(
                   buttonVariants({ variant: 'default', size: 'default' })
@@ -376,13 +433,36 @@ ${test.supportedRuntimes.map(runtime => `      - ${runtime}`).join('\n')}
             </Button>
           )}
           {hasPermission('delete_tests') && selectedCount > 0 && (
-            <Button size="sm" variant="destructive" onClick={handleBulkDelete}>
+            <Button
+              size="sm"
+              variant="destructive"
+              onClick={() => void handleBulkDelete()}
+            >
               <Trash2 className="mr-2 h-4 w-4" />
               Delete Selected ({selectedCount})
             </Button>
           )}
         </div>
       </div>
+
+      {loadError && (
+        <Card className="border-red-200 bg-red-50">
+          <CardContent className="py-3">
+            <div className="flex items-center justify-between gap-4">
+              <p className="text-sm text-red-700">
+                Failed to load API data: {loadError}
+              </p>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => void loadTests()}
+              >
+                Retry
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Selection Summary */}
       {selectedCount > 0 && (
@@ -429,20 +509,21 @@ ${test.supportedRuntimes.map(runtime => `      - ${runtime}`).join('\n')}
       />
 
       {/* Tests Table */}
-      <Card>
+      <Card className="overflow-hidden border-gray-200 shadow-sm">
         <CardContent className="p-0">
           <Table>
-            <TableHeader>
+            <TableHeader className="bg-gray-50/50">
               <TableRow>
-                <TableHead className="w-12">
-                  <Checkbox
-                    checked={isAllSelected}
-                    ref={el => {
-                      const input = el as unknown as HTMLInputElement | null;
-                      if (input) input.indeterminate = isIndeterminate;
-                    }}
-                    onCheckedChange={handleSelectAll}
-                  />
+                <TableHead className="w-12 align-middle">
+                  <div className="flex items-center justify-center">
+                    <Checkbox
+                      checked={isAllSelected}
+                      ref={el => {
+                        if (el) (el as any).indeterminate = isIndeterminate;
+                      }}
+                      onCheckedChange={handleSelectAll}
+                    />
+                  </div>
                 </TableHead>
                 <TableHead>ID</TableHead>
                 <TableHead>Name</TableHead>
@@ -458,13 +539,15 @@ ${test.supportedRuntimes.map(runtime => `      - ${runtime}`).join('\n')}
             <TableBody>
               {paginatedTests.map(test => (
                 <TableRow key={test.id}>
-                  <TableCell>
-                    <Checkbox
-                      checked={selectedTestIds.has(test.id)}
-                      onCheckedChange={checked =>
-                        handleSelectTest(test.id, checked as boolean)
-                      }
-                    />
+                  <TableCell className="align-middle">
+                    <div className="flex items-center justify-center">
+                      <Checkbox
+                        checked={selectedTestIds.has(test.id)}
+                        onCheckedChange={checked =>
+                          handleSelectTest(test.id, checked as boolean)
+                        }
+                      />
+                    </div>
                   </TableCell>
                   <TableCell className="font-mono text-sm">
                     <div>
@@ -747,7 +830,7 @@ ${test.supportedRuntimes.map(runtime => `      - ${runtime}`).join('\n')}
       {/* Edit Test Dialog */}
       {editingTest && (
         <CreateTestDialog
-          onTestCreated={updateTest}
+          onTestCreated={handleUpdateTest}
           editTest={editingTest}
           onClose={() => setEditingTest(null)}
         >
@@ -790,7 +873,7 @@ ${test.supportedRuntimes.map(runtime => `      - ${runtime}`).join('\n')}
                   Cancel
                 </Button>
                 <Button
-                  onClick={confirmDelete}
+                  onClick={() => void confirmDelete()}
                   className="flex-1 bg-red-600 text-white hover:bg-red-700"
                 >
                   <Trash2 className="mr-2 h-4 w-4" />

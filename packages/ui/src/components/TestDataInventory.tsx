@@ -1,19 +1,19 @@
 import { useEffect, useState } from 'react';
 
-import { Plus, Eye, RefreshCw, Download, Pencil, Trash2 } from 'lucide-react';
+import { Download, Eye, Pencil, Plus, RefreshCw, Trash2 } from 'lucide-react';
 import { useShallow } from 'zustand/react/shallow';
 
 import { testDataApi } from '../services/apiClient';
 import { TestDataRecord } from '../services/types';
 import { usePermissionsStore } from '../stores/permissionsStore';
 import {
-  useTestDataStore,
   selectFilteredTestData,
+  useTestDataStore,
 } from '../stores/testDataStore';
 
 import { CreateTestDataDialog } from './CreateTestDataDialog';
 import { EditTestDataDialog } from './EditTestDataDialog';
-import { SearchAndFilters, FilterConfig } from './SearchAndFilters';
+import { FilterConfig, SearchAndFilters } from './SearchAndFilters';
 import { TestDataDetail } from './TestDataDetail';
 import { Badge } from './ui/badge';
 import { Button, buttonVariants } from './ui/button';
@@ -461,14 +461,14 @@ ${data.scope.platforms.map(platform => `        - ${platform}`).join('\n')}`
   return (
     <div className="space-y-6">
       {/* Header with Actions */}
-      <div className="flex items-center justify-between">
+      <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
-          <h2 className="text-2xl font-bold">Test Data Inventory</h2>
-          <p className="text-gray-600">
-            Test data and banking entities management
+          <h2 className="text-3xl font-bold tracking-tight text-gray-900">Test Data Inventory</h2>
+          <p className="mt-1 text-gray-500">
+            Manage your test data and banking entities efficiently
           </p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex items-center gap-3">
           {hasPermission('create_test_data') && (
             <CreateTestDataDialog onTestDataCreated={handleCreateTestData}>
               <div
@@ -572,19 +572,21 @@ ${data.scope.platforms.map(platform => `        - ${platform}`).join('\n')}`
       />
 
       {/* Test Data Table */}
-      <Card>
+      <Card className="overflow-hidden border-gray-200 shadow-sm">
         <CardContent className="p-0">
           <Table>
-            <TableHeader>
+            <TableHeader className="bg-gray-50/50">
               <TableRow>
-                <TableHead className="w-12">
-                  <Checkbox
-                    checked={isAllSelected}
-                    ref={el => {
-                      if (el) (el as any).indeterminate = isIndeterminate;
-                    }}
-                    onCheckedChange={handleSelectAll}
-                  />
+                <TableHead className="w-12 align-middle">
+                  <div className="flex items-center justify-center">
+                    <Checkbox
+                      checked={isAllSelected}
+                      ref={el => {
+                        if (el) (el as any).indeterminate = isIndeterminate;
+                      }}
+                      onCheckedChange={handleSelectAll}
+                    />
+                  </div>
                 </TableHead>
                 <TableHead>ID</TableHead>
                 <TableHead>Customer</TableHead>
@@ -602,13 +604,15 @@ ${data.scope.platforms.map(platform => `        - ${platform}`).join('\n')}`
             <TableBody>
               {paginatedTestData.map(data => (
                 <TableRow key={data.id}>
-                  <TableCell>
-                    <Checkbox
-                      checked={selectedDataIds.has(data.id)}
-                      onCheckedChange={checked =>
-                        handleSelectData(data.id, checked as boolean)
-                      }
-                    />
+                  <TableCell className="align-middle">
+                    <div className="flex items-center justify-center">
+                      <Checkbox
+                        checked={selectedDataIds.has(data.id)}
+                        onCheckedChange={checked =>
+                          handleSelectData(data.id, checked as boolean)
+                        }
+                      />
+                    </div>
                   </TableCell>
                   <TableCell className="font-mono text-sm">
                     <div>
@@ -800,6 +804,19 @@ ${data.scope.platforms.map(platform => `        - ${platform}`).join('\n')}`
                           </div>
                         </EditTestDataDialog>
                       )}
+
+                      {data.status === 'Consumed' &&
+                        hasPermission('edit_test_data') && (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => void handleRecondition(data.id)}
+                            className="text-yellow-600 hover:bg-yellow-50 hover:text-yellow-700"
+                            title="Recondition"
+                          >
+                            <RefreshCw className="h-4 w-4" />
+                          </Button>
+                        )}
 
                       {hasPermission('delete_test_data') && (
                         <Button

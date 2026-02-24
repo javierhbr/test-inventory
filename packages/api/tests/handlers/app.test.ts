@@ -76,6 +76,21 @@ describe('app handler', () => {
     expect(envelope.data?.[0].id).toBe('TD-20031');
   });
 
+  it('GET /api/test-catalog returns mock tests from API', async () => {
+    const event = createEvent('GET', '/api/test-catalog');
+
+    const result = await handler(event as any, {} as any, () => {});
+    const envelope = JSON.parse((result as any).body) as ApiEnvelope<
+      Array<{ id: string }>
+    >;
+
+    expect((result as any).statusCode).toBe(200);
+    expect(envelope.success).toBe(true);
+    expect(Array.isArray(envelope.data)).toBe(true);
+    expect((envelope.data || []).length).toBeGreaterThan(0);
+    expect(envelope.data?.[0].id).toBe('TC-00123');
+  });
+
   it('supports create and delete through /api/test-data CRUD routes', async () => {
     const id = `TD-TEST-${Date.now()}`;
 
@@ -117,6 +132,57 @@ describe('app handler', () => {
     const deleteEventPayload = createEvent(
       'DELETE',
       `/api/test-data/${encodeURIComponent(id)}`,
+      {}
+    );
+
+    const deleteResult = await handler(
+      deleteEventPayload as any,
+      {} as any,
+      () => {}
+    );
+    const deleteEnvelope = JSON.parse(
+      (deleteResult as any).body
+    ) as ApiEnvelope<{
+      id: string;
+    }>;
+
+    expect((deleteResult as any).statusCode).toBe(200);
+    expect(deleteEnvelope.success).toBe(true);
+    expect(deleteEnvelope.data?.id).toBe(id);
+  });
+
+  it('supports create and delete through /api/test-catalog CRUD routes', async () => {
+    const id = `TC-TEST-${Date.now()}`;
+
+    const createEventPayload = createEvent('POST', '/api/test-catalog', {
+      id,
+      name: 'Test catalog case',
+      flow: 'Payment -> Validation -> Confirmation',
+      labels: {
+        flow: 'Payment',
+        intent: 'Positive',
+        experience: 'Web',
+        project: 'Core Banking',
+      },
+      dataRequirements: ['Active account'],
+      supportedRuntimes: ['OCP Testing Studio'],
+      lastExecution: null,
+      lastModified: new Date().toISOString(),
+      version: 'v1.0',
+      team: 'QA Team',
+    });
+
+    const createResult = await handler(
+      createEventPayload as any,
+      {} as any,
+      () => {}
+    );
+
+    expect((createResult as any).statusCode).toBe(201);
+
+    const deleteEventPayload = createEvent(
+      'DELETE',
+      `/api/test-catalog/${encodeURIComponent(id)}`,
       {}
     );
 

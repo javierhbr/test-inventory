@@ -11,6 +11,28 @@ export interface User {
   profile: UserProfile;
 }
 
+export interface Test {
+  id: string;
+  name: string;
+  flow: string;
+  labels: {
+    flow: string;
+    intent: string;
+    experience: string;
+    project: string;
+  };
+  dataRequirements: string[];
+  supportedRuntimes: string[];
+  lastExecution: {
+    date: string;
+    status: 'PASSED' | 'FAILED' | 'SKIPPED' | 'BLOCKED';
+    runtime: string;
+  } | null;
+  lastModified: string;
+  version: string;
+  team: string;
+}
+
 export interface TestDataRecord {
   id: string;
   customer: {

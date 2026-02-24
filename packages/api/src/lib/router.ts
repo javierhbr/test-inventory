@@ -174,9 +174,7 @@ function handleAuthAction(action: string, payload: unknown): ActionResult {
 function handleTestDataAction(action: string, payload: unknown): ActionResult {
   if (action === 'list') {
     const result = listTestData();
-    return result.ok
-      ? success(result.data, result.statusCode)
-      : failure(result.statusCode, result.message, result.code);
+    return success(result.data, result.statusCode);
   }
 
   if (action === 'get') {
