@@ -46,8 +46,7 @@ interface TestDataActions {
 
 type TestDataStore = TestDataState & TestDataActions;
 
-export const useTestDataStore = create<TestDataStore>()(set => ({
-  // Initial state
+const initialState: TestDataState = {
   testData: [],
   searchTerm: '',
   filterStatus: 'all',
@@ -59,6 +58,10 @@ export const useTestDataStore = create<TestDataStore>()(set => ({
   selectedDataIds: new Set<string>(),
   currentPage: 1,
   selectAllPages: false,
+};
+
+export const useTestDataStore = create<TestDataStore>()(set => ({
+  ...initialState,
 
   // Data mutations
   setTestData: data => set({ testData: data }),

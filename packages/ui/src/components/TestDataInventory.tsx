@@ -5,7 +5,7 @@ import { useShallow } from 'zustand/react/shallow';
 
 import { testDataApi } from '../services/apiClient';
 import { TestDataRecord } from '../services/types';
-import { usePermissionsStore } from '../stores/permissionsStore';
+import { useHasPermission } from '../stores/permissionsStore';
 import {
   selectFilteredTestData,
   useTestDataStore,
@@ -63,7 +63,7 @@ const SCOPE_BADGE_VARIANTS: Record<string, string> = {
 };
 
 export function TestDataInventory() {
-  const hasPermission = usePermissionsStore(s => s.hasPermission);
+  const hasPermission = useHasPermission();
 
   // Store state
   const testData = useTestDataStore(s => s.testData);

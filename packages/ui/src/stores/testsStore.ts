@@ -49,8 +49,7 @@ interface TestsActions {
 
 type TestsStore = TestsState & TestsActions;
 
-export const useTestsStore = create<TestsStore>()(set => ({
-  // Initial state
+const initialState: TestsState = {
   tests: [],
   searchTerm: '',
   filterFlow: 'all',
@@ -64,6 +63,10 @@ export const useTestsStore = create<TestsStore>()(set => ({
   selectAllPages: false,
   showDeleteDialog: false,
   testToDelete: null,
+};
+
+export const useTestsStore = create<TestsStore>()(set => ({
+  ...initialState,
 
   // Data mutations
   setTests: tests => set({ tests }),

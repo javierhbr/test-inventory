@@ -105,7 +105,12 @@ function App() {
 
 function AppContent({ appConfig }: { appConfig: AppConfig | null }) {
   const user = useAuthStore(s => s.user);
-  const logout = useAuthStore(s => s.logout);
+  const storeLogout = useAuthStore(s => s.logout);
+
+  const logout = () => {
+    sessionStorage.removeItem('permissions-storage');
+    storeLogout();
+  };
   const {
     currentTab: activeTab,
     pushToHistory,

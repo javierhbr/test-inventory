@@ -67,8 +67,7 @@ interface ExecutionActions {
 
 type ExecutionStore = ExecutionState & ExecutionActions;
 
-export const useExecutionStore = create<ExecutionStore>()((set, get) => ({
-  // Initial state
+const initialState: ExecutionState = {
   tests: mockTests,
   cart: [],
   searchTerm: '',
@@ -87,6 +86,10 @@ export const useExecutionStore = create<ExecutionStore>()((set, get) => ({
   currentPage: 1,
   cartCurrentPage: 1,
   cartSearchFilter: 'all',
+};
+
+export const useExecutionStore = create<ExecutionStore>()((set, get) => ({
+  ...initialState,
 
   // Cart actions
   addToCart: test => set(state => ({ cart: [...state.cart, { test }] })),

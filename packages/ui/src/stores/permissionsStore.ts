@@ -92,51 +92,28 @@ interface PermissionsState {
 }
 
 interface PermissionsActions {
-  hasPermission: (permissionId: string) => boolean;
   setUserPermissions: (permissions: UserPermissions) => void;
   initializeDefaultPermissions: () => void;
 }
 
 type PermissionsStore = PermissionsState & PermissionsActions;
 
+const initialState: PermissionsState = {
+  userPermissions: null,
+  availablePermissions: AVAILABLE_PERMISSIONS,
+};
+
 export const usePermissionsStore = create<PermissionsStore>()(
   persist(
     (set, get) => ({
-      userPermissions: null,
-      availablePermissions: AVAILABLE_PERMISSIONS,
-
-      hasPermission: permissionId => {
-        const { userPermissions } = get();
-        if (!userPermissions) return false;
-        return userPermissions.permissions.includes(permissionId);
-      },
+      ...initialState,
 
       setUserPermissions: permissions => set({ userPermissions: permissions }),
 
       initializeDefaultPermissions: () => {
         const { userPermissions } = get();
-        // If already hydrated from persist middleware, skip
         if (userPermissions) return;
 
-        // Fallback: check legacy sessionStorage key
-        const stored = sessionStorage.getItem('userPermissions');
-        if (stored) {
-          try {
-            const user = JSON.parse(stored);
-            // Handle migration from old single role to new multiple roles
-            if (user.role && !user.roles) {
-              user.roles = [user.role];
-              delete user.role;
-              user.permissions = getPermissionsFromRoles(user.roles);
-            }
-            set({ userPermissions: user });
-            return;
-          } catch {
-            // Fall through to default
-          }
-        }
-
-        // Set default demo user
         set({
           userPermissions: {
             userId: 'demo-user',
@@ -156,5 +133,19 @@ export const usePermissionsStore = create<PermissionsStore>()(
     }
   )
 );
+
+// Derived selector: check if user has a specific permission
+export const selectHasPermission =
+  (permissionId: string) => (state: PermissionsStore) => {
+    if (!state.userPermissions) return false;
+    return state.userPermissions.permissions.includes(permissionId);
+  };
+
+// Convenience hook: returns a checker function derived from store state
+export function useHasPermission() {
+  const permissions = usePermissionsStore(s => s.userPermissions?.permissions);
+  return (permissionId: string) =>
+    permissions ? permissions.includes(permissionId) : false;
+}
 
 export { DEFAULT_ROLE_PERMISSIONS, AVAILABLE_PERMISSIONS };

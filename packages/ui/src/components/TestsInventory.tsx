@@ -5,7 +5,7 @@ import { useShallow } from 'zustand/react/shallow';
 
 import { testCatalogApi } from '../services/apiClient';
 import { Test } from '../services/types';
-import { usePermissionsStore } from '../stores/permissionsStore';
+import { useHasPermission } from '../stores/permissionsStore';
 import { useTestsStore, selectFilteredTests } from '../stores/testsStore';
 
 import { CreateTestDialog } from './CreateTestDialog';
@@ -52,7 +52,7 @@ const STATUS_BADGE_VARIANTS: Record<string, string> = {
 };
 
 export function TestsInventory() {
-  const hasPermission = usePermissionsStore(s => s.hasPermission);
+  const hasPermission = useHasPermission();
 
   // Store state
   const tests = useTestsStore(s => s.tests);

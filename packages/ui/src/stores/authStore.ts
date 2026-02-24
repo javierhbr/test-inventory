@@ -14,16 +14,17 @@ interface AuthActions {
 
 type AuthStore = AuthState & AuthActions;
 
+const initialState: AuthState = {
+  user: null,
+};
+
 export const useAuthStore = create<AuthStore>()(
   persist(
     set => ({
-      user: null,
+      ...initialState,
 
       login: user => set({ user }),
-      logout: () => {
-        sessionStorage.removeItem('permissions-storage');
-        set({ user: null });
-      },
+      logout: () => set({ user: null }),
     }),
     {
       name: 'auth-storage',
