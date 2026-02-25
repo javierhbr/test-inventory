@@ -118,11 +118,15 @@ export type ApiActionResponse<T> = ApiSuccessResponse<T> | ApiErrorResponse;
 
 export interface SemanticRuleConfig {
   id: string;
-  lob: Lob;
-  category: 'Flavor' | 'Recon';
   key: string;
   regexString: string;
   suggestions: string[];
+}
+
+export interface DslListConfig {
+  lob: Lob;
+  type: 'flavor' | 'recon';
+  items: SemanticRuleConfig[];
 }
 
 export interface TdmRecipeConfig {
@@ -133,7 +137,5 @@ export interface TdmRecipeConfig {
   tags: string[];
 }
 
-export type GroupedDsls = Record<
-  string, // e.g., 'TestDataFlavorsBANK', 'TestDataReconCARD', 'TDMRecipesBANK'
-  Array<SemanticRuleConfig | TdmRecipeConfig>
->;
+export type GroupedDsls = Record<string, DslListConfig>;
+export type GroupedRecipes = Record<string, TdmRecipeConfig[]>;

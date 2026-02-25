@@ -57,7 +57,7 @@ function SelectContent({
 }: React.ComponentProps<typeof SelectPrimitive.Popup> & { position?: string }) {
   return (
     <SelectPrimitive.Portal>
-      <SelectPrimitive.Positioner>
+      <SelectPrimitive.Positioner className="z-50">
         <SelectPrimitive.Popup
           data-slot="select-content"
           className={cn(

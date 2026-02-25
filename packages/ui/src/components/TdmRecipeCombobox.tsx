@@ -2,7 +2,11 @@ import React, { useRef, useState } from 'react';
 
 import { BookOpen, Check, ChevronsUpDown, X } from 'lucide-react';
 
-import { configService, TdmRecipeConfig } from '../services/configService';
+import {
+  configService,
+  flattenRecipesFromGrouped,
+  TdmRecipeConfig,
+} from '../services/configService';
 import { useLobStore } from '../stores/lobStore';
 
 import { Button } from './ui/button';
@@ -30,7 +34,7 @@ export function TdmRecipeCombobox({ onSelect }: TdmRecipeComboboxProps) {
 
   React.useEffect(() => {
     configService.loadSystemConfig().then(config => {
-      setRecipes(config.dsls.recipes);
+      setRecipes(flattenRecipesFromGrouped(config.dsls.recipes));
     });
   }, []);
 

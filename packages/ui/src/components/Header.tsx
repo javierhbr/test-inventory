@@ -100,7 +100,7 @@ export function Header({
   ];
 
   return (
-    <div className="sticky top-0 z-50 border-b border-gray-200 bg-white/80 px-6 py-4 shadow-sm backdrop-blur-md">
+    <div className="sticky top-0 z-40 border-b border-gray-200 bg-white/80 px-6 py-4 shadow-sm backdrop-blur-md">
       <div className="mx-auto w-[90%] space-y-4">
         {/* Title Section - Top Row */}
         <div className="flex items-center justify-between">

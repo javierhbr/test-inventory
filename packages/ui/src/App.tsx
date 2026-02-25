@@ -173,7 +173,7 @@ function SettingsComponent() {
   return (
     <div className="space-y-6">
       {/* Premium Segmented Control Menu */}
-      <div className="mb-8 flex justify-center">
+      <div className="mb-8 flex justify-end">
         <nav className="flex items-center gap-1.5 rounded-2xl border border-gray-200/80 bg-gray-100/50 p-1.5 shadow-inner backdrop-blur-sm">
           {settingsMenuItems.map(item => {
             const isActive = activeTab === item.id;

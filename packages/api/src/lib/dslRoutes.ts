@@ -1,5 +1,4 @@
-import { mockSemanticRules, mockTdmRecipes } from '../data/mockDsls';
-import { GroupedDsls } from '../types/domain';
+import { mockDslGroups, mockRecipeGroups } from '../data/mockDsls';
 
 interface DslRouteResult {
   statusCode: number;
@@ -25,32 +24,13 @@ export function handleDslHttpRoute(
 
   if (path === '/api/dsls') {
     if (method === 'GET') {
-      const grouped: GroupedDsls = {};
-
-      // Group Semantic Rules
-      mockSemanticRules.forEach(rule => {
-        const prefix =
-          rule.category === 'Flavor' ? 'TestDataFlavors' : 'TestDataRecon';
-        const key = `${prefix}${rule.lob}`;
-        if (!grouped[key]) grouped[key] = [];
-        grouped[key].push(rule);
-      });
-
-      // Group TDM Recipes
-      mockTdmRecipes.forEach(recipe => {
-        const key = `TDMRecipes${recipe.lob}`;
-        if (!grouped[key]) grouped[key] = [];
-        grouped[key].push(recipe);
-      });
-
       return {
         statusCode: 200,
         body: {
           success: true,
           data: {
-            semanticRules: mockSemanticRules,
-            recipes: mockTdmRecipes,
-            grouped,
+            grouped: mockDslGroups,
+            recipes: mockRecipeGroups,
           },
         },
       };

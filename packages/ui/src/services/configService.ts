@@ -2,6 +2,8 @@ import { UserProfile } from '../components/Login';
 
 import { Lob } from './types';
 
+import type { SemanticRule, DslList } from './types';
+
 // Configuration interfaces
 export interface TabConfig {
   id: string;
@@ -42,18 +44,20 @@ export interface RolePermissions {
   permissions: string[];
 }
 
-export type GroupedDsls = Record<
-  string, // e.g., 'TestDataFlavorsBANK', 'TestDataReconCARD', 'TDMRecipesBANK'
-  Array<SemanticRuleConfig | TdmRecipeConfig>
->;
+export type GroupedDsls = Record<string, DslListConfig>;
+export type GroupedRecipes = Record<string, TdmRecipeConfig[]>;
 
 export interface SemanticRuleConfig {
-  id: string; // Used for UI identification
-  lob: Lob;
-  category: 'Flavor' | 'Recon';
+  id: string;
   key: string;
   regexString: string;
   suggestions: string[];
+}
+
+export interface DslListConfig {
+  lob: Lob;
+  type: 'flavor' | 'recon';
+  items: SemanticRuleConfig[];
 }
 
 export interface TdmRecipeConfig {
@@ -89,9 +93,8 @@ export interface SystemConfig {
   dsls: {
     title: string;
     description: string;
-    semanticRules: SemanticRuleConfig[];
-    recipes: TdmRecipeConfig[];
     grouped: GroupedDsls;
+    recipes: GroupedRecipes;
   };
 }
 
@@ -287,9 +290,8 @@ const SYSTEM_CONFIG: SystemConfig = {
     title: 'DSLs Management',
     description:
       'Manage Domain Specific Languages used across the system for semantic tagging.',
-    semanticRules: [],
-    recipes: [],
     grouped: {},
+    recipes: {},
   },
 };
 
@@ -439,6 +441,52 @@ const USER_CONFIG: UserConfig = {
   },
 };
 
+// --- Hydration: convert API config into runtime DslList/SemanticRule ---
+
+function hydrateRule(config: SemanticRuleConfig): SemanticRule {
+  const regex = new RegExp(config.regexString, 'i');
+  return {
+    key: config.key,
+    regex,
+    parse: (match: RegExpMatchArray) => ({
+      [config.key]: match[1]?.toLowerCase() ?? '',
+    }),
+    format: (parsed: Record<string, string>) =>
+      `${config.key}:${parsed[config.key]}`,
+    suggestions: config.suggestions,
+  };
+}
+
+export function hydrateDslList(config: DslListConfig): DslList {
+  return {
+    lob: config.lob,
+    type: config.type,
+    items: config.items.map(hydrateRule),
+  };
+}
+
+export function hydrateGroupedDsls(
+  grouped: GroupedDsls
+): Record<string, DslList> {
+  const result: Record<string, DslList> = {};
+  for (const [key, config] of Object.entries(grouped)) {
+    result[key] = hydrateDslList(config);
+  }
+  return result;
+}
+
+export function flattenRulesFromGrouped(grouped: GroupedDsls): SemanticRule[] {
+  return Object.values(grouped).flatMap(config =>
+    config.items.map(hydrateRule)
+  );
+}
+
+export function flattenRecipesFromGrouped(
+  recipes: GroupedRecipes
+): TdmRecipeConfig[] {
+  return Object.values(recipes).flat();
+}
+
 class ConfigService {
   private appConfig: AppConfig | null = null;
   private systemConfig: SystemConfig | null = null;
@@ -464,9 +512,8 @@ class ConfigService {
               ...SYSTEM_CONFIG,
               dsls: {
                 ...SYSTEM_CONFIG.dsls,
-                semanticRules: resJson.data.semanticRules || [],
-                recipes: resJson.data.recipes || [],
                 grouped: resJson.data.grouped || {},
+                recipes: resJson.data.recipes || {},
               },
             };
             return this.systemConfig;

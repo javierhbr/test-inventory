@@ -2,27 +2,27 @@ import React, { useRef, useState } from 'react';
 
 import { Check, Pencil, X } from 'lucide-react';
 
-import { configService, SemanticRuleConfig } from '../services/configService';
+import {
+  configService,
+  flattenRulesFromGrouped,
+} from '../services/configService';
 
 import { Badge } from './ui/badge';
 import { Input } from './ui/input';
+
+import type { SemanticRule } from '../services/types';
 
 // --- Semantic tag parser ---
 
 function tryParseSemanticTag(
   input: string,
-  semanticRules: SemanticRuleConfig[]
-): { tag: string; parsed: Record<string, unknown> } | null {
+  semanticRules: SemanticRule[]
+): { tag: string; parsed: Record<string, string> } | null {
   const trimmed = input.trim();
   for (const rule of semanticRules) {
-    try {
-      const regex = new RegExp(rule.regexString, 'i');
-      const match = trimmed.match(regex);
-      if (match) {
-        return { tag: trimmed.toLowerCase(), parsed: {} };
-      }
-    } catch {
-      // ignore invalid regexes
+    const match = trimmed.match(rule.regex);
+    if (match) {
+      return { tag: trimmed.toLowerCase(), parsed: rule.parse(match) };
     }
   }
   return null;
@@ -30,7 +30,7 @@ function tryParseSemanticTag(
 
 function getSemanticSuggestions(
   input: string,
-  semanticRules: SemanticRuleConfig[]
+  semanticRules: SemanticRule[]
 ): string[] {
   const allSuggestions = semanticRules.flatMap(r => r.suggestions);
   const primaryCategories = semanticRules.map(r => `${r.key}:`);
@@ -108,13 +108,11 @@ export function ClassificationPicker({
   const [highlightedIndex, setHighlightedIndex] = useState(-1);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const [semanticRules, setSemanticRules] = React.useState<
-    SemanticRuleConfig[]
-  >([]);
+  const [semanticRules, setSemanticRules] = React.useState<SemanticRule[]>([]);
 
   React.useEffect(() => {
     configService.loadSystemConfig().then(config => {
-      setSemanticRules(config.dsls.semanticRules);
+      setSemanticRules(flattenRulesFromGrouped(config.dsls.grouped));
     });
   }, []);
 

@@ -153,3 +153,19 @@ export interface UserPermissions {
   roles: string[];
   permissions: string[];
 }
+
+// --- Hydrated DSL types (client-side only) ---
+
+export interface SemanticRule {
+  key: string;
+  regex: RegExp;
+  parse: (match: RegExpMatchArray) => Record<string, string>;
+  format: (parsed: Record<string, string>) => string;
+  suggestions: string[];
+}
+
+export interface DslList {
+  lob: Lob;
+  type: 'flavor' | 'recon';
+  items: SemanticRule[];
+}

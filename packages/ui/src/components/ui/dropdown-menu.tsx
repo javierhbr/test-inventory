@@ -60,7 +60,7 @@ function DropdownMenuContent({
   // The package uses Menu.Popup as the content container for menus.
   return (
     <BaseMenu.Portal>
-      <BaseMenu.Positioner>
+      <BaseMenu.Positioner className="z-50">
         <BaseMenu.Popup
           data-slot="dropdown-menu-content"
           // The Popup implementation accepts positioning via the Menu positioner context.
@@ -252,7 +252,7 @@ function DropdownMenuSubContent({
   // Submenu content needs Portal and Positioner as well
   return (
     <BaseMenu.Portal>
-      <BaseMenu.Positioner>
+      <BaseMenu.Positioner className="z-50">
         <BaseMenu.Popup
           data-slot="dropdown-menu-sub-content"
           className={cn(
