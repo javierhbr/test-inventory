@@ -5,11 +5,13 @@ import { useShallow } from 'zustand/react/shallow';
 
 import { testCatalogApi } from '../services/apiClient';
 import { Test } from '../services/types';
+import { useLobStore } from '../stores/lobStore';
 import { useHasPermission } from '../stores/permissionsStore';
-import { useTestsStore, selectFilteredTests } from '../stores/testsStore';
+import { selectFilteredTests, useTestsStore } from '../stores/testsStore';
 
 import { CreateTestDialog } from './CreateTestDialog';
 import { FilterConfig, SearchAndFilters } from './SearchAndFilters';
+import { PaginationControls, getPageNumbers, useTableSelection } from './table';
 import { TestDetail } from './TestDetail';
 import { Badge } from './ui/badge';
 import { Button, buttonVariants } from './ui/button';
@@ -23,15 +25,6 @@ import {
   DialogTitle,
   DialogTrigger,
 } from './ui/dialog';
-import {
-  Pagination,
-  PaginationContent,
-  PaginationEllipsis,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from './ui/pagination';
 import {
   Table,
   TableBody,
@@ -57,6 +50,11 @@ export function TestsInventory() {
   // Store state
   const tests = useTestsStore(s => s.tests);
   const filteredTests = useTestsStore(useShallow(selectFilteredTests));
+  const activeLob = useLobStore(s => s.activeLob);
+  const lobFilteredTests =
+    activeLob === 'all'
+      ? filteredTests
+      : filteredTests.filter(t => t.lob === activeLob);
   const searchTerm = useTestsStore(s => s.searchTerm);
   const filterFlow = useTestsStore(s => s.filterFlow);
   const filterStatus = useTestsStore(s => s.filterStatus);
@@ -116,16 +114,16 @@ export function TestsInventory() {
   }, []);
 
   // Pagination calculations
-  const totalPages = Math.ceil(filteredTests.length / ITEMS_PER_PAGE);
+  const totalPages = Math.ceil(lobFilteredTests.length / ITEMS_PER_PAGE);
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
   const endIndex = startIndex + ITEMS_PER_PAGE;
-  const paginatedTests = filteredTests.slice(startIndex, endIndex);
+  const paginatedTests = lobFilteredTests.slice(startIndex, endIndex);
 
   // Selection handlers
   const handleSelectAll = (checked: boolean) => {
     if (checked) {
       if (selectAllPages) {
-        selectAllTests(filteredTests.map(test => test.id));
+        selectAllTests(lobFilteredTests.map(test => test.id));
       } else {
         selectAllOnPage(
           true,
@@ -148,53 +146,14 @@ export function TestsInventory() {
     toggleTestSelection(testId, checked);
   };
 
-  // Selection state helpers
-  const isCurrentPageSelected =
-    paginatedTests.length > 0 &&
-    paginatedTests.every(test => selectedTestIds.has(test.id));
-  const isAllPagesSelected =
-    filteredTests.length > 0 &&
-    filteredTests.every(test => selectedTestIds.has(test.id));
-  const isAllSelected = selectAllPages
-    ? isAllPagesSelected
-    : isCurrentPageSelected;
-  const isIndeterminate = selectedTestIds.size > 0 && !isAllSelected;
-  const selectedCount = selectedTestIds.size;
+  const { isAllSelected, isIndeterminate, selectedCount } = useTableSelection({
+    selectedIds: selectedTestIds,
+    paginatedIds: paginatedTests.map(t => t.id),
+    allFilteredIds: lobFilteredTests.map(t => t.id),
+    selectAllPages,
+  });
 
-  // Generate page numbers for pagination
-  const getPageNumbers = () => {
-    const pages = [];
-    const maxVisiblePages = 5;
-
-    if (totalPages <= maxVisiblePages) {
-      for (let i = 1; i <= totalPages; i++) {
-        pages.push(i);
-      }
-    } else {
-      if (currentPage <= 3) {
-        for (let i = 1; i <= 4; i++) {
-          pages.push(i);
-        }
-        pages.push('ellipsis');
-        pages.push(totalPages);
-      } else if (currentPage >= totalPages - 2) {
-        pages.push(1);
-        pages.push('ellipsis');
-        for (let i = totalPages - 3; i <= totalPages; i++) {
-          pages.push(i);
-        }
-      } else {
-        pages.push(1);
-        pages.push('ellipsis');
-        pages.push(currentPage - 1);
-        pages.push(currentPage);
-        pages.push(currentPage + 1);
-        pages.push('ellipsis');
-        pages.push(totalPages);
-      }
-    }
-    return pages;
-  };
+  const pageNumbers = getPageNumbers(currentPage, totalPages);
 
   const getStatusBadge = (status: string) => {
     return (
@@ -210,8 +169,8 @@ export function TestsInventory() {
     const testsToExport =
       selectedCount > 0
         ? tests.filter(test => selectedTestIds.has(test.id))
-        : filteredTests.length > 0
-          ? filteredTests
+        : lobFilteredTests.length > 0
+          ? lobFilteredTests
           : tests;
 
     const yaml = `# Tests Inventory Export
@@ -404,8 +363,12 @@ ${test.supportedRuntimes.map(runtime => `      - ${runtime}`).join('\n')}
       {/* Header with Actions */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold">Tests Inventory</h2>
-          <p className="text-gray-600">Test Cases and Scenarios Management</p>
+          <h2 className="bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-3xl font-bold tracking-tight text-transparent">
+            Tests Inventory
+          </h2>
+          <p className="mt-1 text-gray-500">
+            Test Cases and Scenarios Management
+          </p>
         </div>
         <div className="flex gap-2">
           {hasPermission('create_tests') && (
@@ -499,7 +462,7 @@ ${test.supportedRuntimes.map(runtime => `      - ${runtime}`).join('\n')}
         searchPlaceholder="Search tests..."
         filters={filterConfigs}
         onClearFilters={clearFilters}
-        filteredCount={filteredTests.length}
+        filteredCount={lobFilteredTests.length}
         totalCount={tests.length}
         itemType="tests"
         selectedCount={selectedCount}
@@ -531,6 +494,7 @@ ${test.supportedRuntimes.map(runtime => `      - ${runtime}`).join('\n')}
                 <TableHead>ID</TableHead>
                 <TableHead>Name</TableHead>
                 <TableHead>Flow</TableHead>
+                <TableHead className="w-24">LOB</TableHead>
                 <TableHead>Labels</TableHead>
                 <TableHead>Required Data</TableHead>
                 <TableHead>Runtimes</TableHead>
@@ -567,6 +531,11 @@ ${test.supportedRuntimes.map(runtime => `      - ${runtime}`).join('\n')}
                     {test.flow}
                   </TableCell>
                   <TableCell>
+                    <Badge variant="outline" className="text-xs">
+                      {test.lob}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>
                     <div className="flex flex-wrap gap-1">
                       <Badge variant="outline" className="text-xs">
                         {test.labels.flow}
@@ -578,15 +547,22 @@ ${test.supportedRuntimes.map(runtime => `      - ${runtime}`).join('\n')}
                   </TableCell>
                   <TableCell>
                     <div className="flex max-w-xs flex-wrap gap-1">
-                      {test.dataRequirements.map((requirement, index) => (
-                        <Badge
-                          key={index}
-                          variant="secondary"
-                          className="bg-blue-100 text-xs text-blue-800"
-                        >
-                          {requirement}
-                        </Badge>
-                      ))}
+                      {test.dataRequirements.map((requirement, index) => {
+                        const isSemantic = requirement.includes(':');
+                        return (
+                          <Badge
+                            key={index}
+                            variant={isSemantic ? 'default' : 'secondary'}
+                            className={
+                              isSemantic
+                                ? 'bg-indigo-100 font-mono text-xs text-indigo-800'
+                                : 'bg-blue-100 text-xs text-blue-800'
+                            }
+                          >
+                            {requirement}
+                          </Badge>
+                        );
+                      })}
                     </div>
                   </TableCell>
                   <TableCell>
@@ -668,6 +644,13 @@ ${test.supportedRuntimes.map(runtime => `      - ${runtime}`).join('\n')}
                                     Team:{' '}
                                     <span className="font-medium text-gray-700">
                                       {test.team}
+                                    </span>
+                                  </span>
+                                  <span>•</span>
+                                  <span>
+                                    LOB:{' '}
+                                    <span className="font-medium text-gray-700">
+                                      {test.lob}
                                     </span>
                                   </span>
                                   <span>•</span>
@@ -755,10 +738,10 @@ ${test.supportedRuntimes.map(runtime => `      - ${runtime}`).join('\n')}
               <div className="flex items-center gap-4">
                 <p className="text-muted-foreground text-sm">
                   Showing {startIndex + 1} to{' '}
-                  {Math.min(endIndex, filteredTests.length)} of{' '}
-                  {filteredTests.length} results
+                  {Math.min(endIndex, lobFilteredTests.length)} of{' '}
+                  {lobFilteredTests.length} results
                 </p>
-                {filteredTests.length > ITEMS_PER_PAGE && (
+                {lobFilteredTests.length > ITEMS_PER_PAGE && (
                   <div className="flex items-center gap-2">
                     <Checkbox
                       id="select-all-pages"
@@ -766,7 +749,7 @@ ${test.supportedRuntimes.map(runtime => `      - ${runtime}`).join('\n')}
                       onCheckedChange={checked => {
                         setSelectAllPages(checked as boolean);
                         if (checked && selectedCount === 0) {
-                          selectAllTests(filteredTests.map(test => test.id));
+                          selectAllTests(lobFilteredTests.map(test => test.id));
                         }
                       }}
                     />
@@ -780,51 +763,12 @@ ${test.supportedRuntimes.map(runtime => `      - ${runtime}`).join('\n')}
                 )}
               </div>
 
-              <Pagination>
-                <PaginationContent>
-                  <PaginationItem>
-                    <PaginationPrevious
-                      onClick={() =>
-                        setCurrentPage(Math.max(1, currentPage - 1))
-                      }
-                      className={
-                        currentPage === 1
-                          ? 'pointer-events-none opacity-50'
-                          : 'cursor-pointer'
-                      }
-                    />
-                  </PaginationItem>
-
-                  {getPageNumbers().map((page, index) => (
-                    <PaginationItem key={index}>
-                      {page === 'ellipsis' ? (
-                        <PaginationEllipsis />
-                      ) : (
-                        <PaginationLink
-                          onClick={() => setCurrentPage(page as number)}
-                          isActive={currentPage === page}
-                          className="cursor-pointer"
-                        >
-                          {page}
-                        </PaginationLink>
-                      )}
-                    </PaginationItem>
-                  ))}
-
-                  <PaginationItem>
-                    <PaginationNext
-                      onClick={() =>
-                        setCurrentPage(Math.min(totalPages, currentPage + 1))
-                      }
-                      className={
-                        currentPage === totalPages
-                          ? 'pointer-events-none opacity-50'
-                          : 'cursor-pointer'
-                      }
-                    />
-                  </PaginationItem>
-                </PaginationContent>
-              </Pagination>
+              <PaginationControls
+                currentPage={currentPage}
+                totalPages={totalPages}
+                pageNumbers={pageNumbers}
+                onSetPage={setCurrentPage}
+              />
             </div>
           </div>
         )}

@@ -2,8 +2,11 @@ import React, { useState } from 'react';
 
 import { Upload, X } from 'lucide-react';
 
-import { Test } from '../services/types';
+import { Test, Lob } from '../services/types';
+import { useAuthStore } from '../stores/authStore';
+import { useLobStore, LOB_VALUES } from '../stores/lobStore';
 
+import { ClassificationPicker } from './ClassificationPicker';
 import { Badge } from './ui/badge';
 import { Button } from './ui/button';
 import {
@@ -41,18 +44,6 @@ interface CreateTestDialogProps {
   onClose?: () => void;
 }
 
-const availableClassifications = [
-  'Active account',
-  'Business account',
-  'Primary user',
-  'Authorized user',
-  'Expired account',
-  'Expired credit card',
-  'Inactive credit card',
-  'Card with offer',
-  'To activate',
-];
-
 const availableRuntimes = ['OCP Testing Studio', 'Xero', 'Sierra'];
 
 export function CreateTestDialog({
@@ -61,6 +52,11 @@ export function CreateTestDialog({
   editTest,
   onClose,
 }: CreateTestDialogProps) {
+  const user = useAuthStore(s => s.user);
+  const activeLob = useLobStore(s => s.activeLob);
+  const isAdmin = useLobStore(s => s.isAdmin);
+  const defaultLob = activeLob === 'all' ? user!.lob : activeLob;
+
   const [open, setOpen] = useState(!!editTest);
   const [activeTab, setActiveTab] = useState('runtime');
 
@@ -77,6 +73,7 @@ export function CreateTestDialog({
   const [labelExperience, setLabelExperience] = useState('');
   const [labelProject, setLabelProject] = useState('');
   const [team, setTeam] = useState('');
+  const [lob, setLob] = useState<Lob>(defaultLob);
 
   // Data requirements and runtimes
   const [selectedClassifications, setSelectedClassifications] = useState<
@@ -107,6 +104,7 @@ export function CreateTestDialog({
     setTeam('');
     setSelectedClassifications([]);
     setSelectedRuntimes([]);
+    setLob(defaultLob);
     setDialogGroupId('');
     setSelectedRuntime('');
     setUploadedFile(null);
@@ -126,22 +124,10 @@ export function CreateTestDialog({
       setTeam(editTest.team);
       setSelectedClassifications(editTest.dataRequirements);
       setSelectedRuntimes(editTest.supportedRuntimes);
+      setLob(editTest.lob);
       setOpen(true);
     }
   }, [editTest]);
-
-  const handleClassificationChange = (
-    classification: string,
-    checked: boolean
-  ) => {
-    if (checked) {
-      setSelectedClassifications([...selectedClassifications, classification]);
-    } else {
-      setSelectedClassifications(
-        selectedClassifications.filter(c => c !== classification)
-      );
-    }
-  };
 
   const handleRuntimeChange = (runtime: string, checked: boolean) => {
     if (checked) {
@@ -218,6 +204,7 @@ export function CreateTestDialog({
       id: editTest ? editTest.id : generateTestId(),
       name,
       flow,
+      lob,
       labels: {
         flow: labelFlow,
         intent: labelIntent,
@@ -526,6 +513,32 @@ export function CreateTestDialog({
                           </SelectContent>
                         </Select>
                       </div>
+                      <div>
+                        <Label htmlFor="lob">Line of Business *</Label>
+                        {isAdmin ? (
+                          <Select
+                            value={lob}
+                            onValueChange={value => setLob(value as Lob)}
+                          >
+                            <SelectTrigger className="mt-1">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {LOB_VALUES.map(lobValue => (
+                                <SelectItem key={lobValue} value={lobValue}>
+                                  {lobValue}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        ) : (
+                          <Input
+                            value={lob}
+                            disabled
+                            className="mt-1 bg-gray-50"
+                          />
+                        )}
+                      </div>
                     </div>
                   </CardContent>
                 </Card>
@@ -602,45 +615,10 @@ export function CreateTestDialog({
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <div className="grid grid-cols-2 gap-2">
-                      {availableClassifications.map(classification => (
-                        <div
-                          key={classification}
-                          className="flex items-center space-x-2"
-                        >
-                          <Checkbox
-                            id={`class-${classification}`}
-                            checked={selectedClassifications.includes(
-                              classification
-                            )}
-                            onCheckedChange={checked =>
-                              handleClassificationChange(
-                                classification,
-                                checked as boolean
-                              )
-                            }
-                          />
-                          <Label
-                            htmlFor={`class-${classification}`}
-                            className="text-sm"
-                          >
-                            {classification}
-                          </Label>
-                        </div>
-                      ))}
-                    </div>
-                    {selectedClassifications.length > 0 && (
-                      <div className="mt-4">
-                        <p className="mb-2 text-sm font-medium">Selected:</p>
-                        <div className="flex flex-wrap gap-2">
-                          {selectedClassifications.map(classification => (
-                            <Badge key={classification} variant="secondary">
-                              {classification}
-                            </Badge>
-                          ))}
-                        </div>
-                      </div>
-                    )}
+                    <ClassificationPicker
+                      value={selectedClassifications}
+                      onChange={setSelectedClassifications}
+                    />
                   </CardContent>
                 </Card>
 

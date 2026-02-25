@@ -1,20 +1,11 @@
 import { useEffect, useState } from 'react';
 
-import {
-  ArrowDown,
-  ArrowUp,
-  ArrowUpDown,
-  Download,
-  Eye,
-  Pencil,
-  Plus,
-  RefreshCw,
-  Trash2,
-} from 'lucide-react';
+import { Download, Eye, Pencil, Plus, RefreshCw, Trash2 } from 'lucide-react';
 import { useShallow } from 'zustand/react/shallow';
 
 import { testDataApi } from '../services/apiClient';
 import { CreateTestDataPayload, TestDataRecord } from '../services/types';
+import { useLobStore } from '../stores/lobStore';
 import { useHasPermission } from '../stores/permissionsStore';
 import {
   selectFilteredTestData,
@@ -24,6 +15,12 @@ import {
 import { CreateTestDataDialog } from './CreateTestDataDialog';
 import { EditTestDataDialog } from './EditTestDataDialog';
 import { FilterConfig, SearchAndFilters } from './SearchAndFilters';
+import {
+  ColumnHeader,
+  PaginationControls,
+  getPageNumbers,
+  useTableSelection,
+} from './table';
 import { TestDataDetail } from './TestDataDetail';
 import { Badge } from './ui/badge';
 import { Button, buttonVariants } from './ui/button';
@@ -37,15 +34,6 @@ import {
   DialogTitle,
   DialogTrigger,
 } from './ui/dialog';
-import {
-  Pagination,
-  PaginationContent,
-  PaginationEllipsis,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from './ui/pagination';
 import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
 import {
   Table,
@@ -71,56 +59,17 @@ const SCOPE_BADGE_VARIANTS: Record<string, string> = {
   platform: 'bg-orange-100 text-orange-800',
 };
 
-interface ColumnHeaderProps {
-  title: string;
-  columnKey: string;
-  sortColumn: string | null;
-  sortDirection: 'asc' | 'desc' | null;
-  setSort: (column: string | null, direction: 'asc' | 'desc' | null) => void;
-  className?: string;
-}
-
-function ColumnHeader({
-  title,
-  columnKey,
-  sortColumn,
-  sortDirection,
-  setSort,
-  className,
-}: ColumnHeaderProps) {
-  const isSorted = sortColumn === columnKey;
-
-  return (
-    <div className={cn('flex items-center gap-1', className)}>
-      <Button
-        variant="ghost"
-        size="sm"
-        className="data-[state=open]:bg-accent -ml-3 h-8"
-        onClick={() => {
-          if (isSorted && sortDirection === 'asc') setSort(columnKey, 'desc');
-          else if (isSorted && sortDirection === 'desc') setSort(null, null);
-          else setSort(columnKey, 'asc');
-        }}
-      >
-        <span>{title}</span>
-        {isSorted && sortDirection === 'desc' ? (
-          <ArrowDown className="ml-2 h-4 w-4" />
-        ) : isSorted && sortDirection === 'asc' ? (
-          <ArrowUp className="ml-2 h-4 w-4" />
-        ) : (
-          <ArrowUpDown className="ml-2 h-4 w-4 opacity-50" />
-        )}
-      </Button>
-    </div>
-  );
-}
-
 export function TestDataInventory() {
   const hasPermission = useHasPermission();
 
   // Store state
   const testData = useTestDataStore(s => s.testData);
   const filteredTestData = useTestDataStore(useShallow(selectFilteredTestData));
+  const activeLob = useLobStore(s => s.activeLob);
+  const lobFilteredTestData =
+    activeLob === 'all'
+      ? filteredTestData
+      : filteredTestData.filter(d => d.lob === activeLob);
   const searchTerm = useTestDataStore(s => s.searchTerm);
   const filterStatus = useTestDataStore(s => s.filterStatus);
   const filterScope = useTestDataStore(s => s.filterScope);
@@ -181,16 +130,16 @@ export function TestDataInventory() {
   }, []);
 
   // Pagination calculations
-  const totalPages = Math.ceil(filteredTestData.length / itemsPerPage);
+  const totalPages = Math.ceil(lobFilteredTestData.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
-  const paginatedTestData = filteredTestData.slice(startIndex, endIndex);
+  const paginatedTestData = lobFilteredTestData.slice(startIndex, endIndex);
 
   // Selection handlers
   const handleSelectAll = (checked: boolean) => {
     if (checked) {
       if (selectAllPages) {
-        selectAllData(filteredTestData.map(data => data.id));
+        selectAllData(lobFilteredTestData.map(data => data.id));
       } else {
         selectAllOnPage(
           true,
@@ -213,53 +162,14 @@ export function TestDataInventory() {
     toggleDataSelection(dataId, checked);
   };
 
-  // Selection state helpers
-  const isCurrentPageSelected =
-    paginatedTestData.length > 0 &&
-    paginatedTestData.every(data => selectedDataIds.has(data.id));
-  const isAllPagesSelected =
-    filteredTestData.length > 0 &&
-    filteredTestData.every(data => selectedDataIds.has(data.id));
-  const isAllSelected = selectAllPages
-    ? isAllPagesSelected
-    : isCurrentPageSelected;
-  const isIndeterminate = selectedDataIds.size > 0 && !isAllSelected;
-  const selectedCount = selectedDataIds.size;
+  const { isAllSelected, isIndeterminate, selectedCount } = useTableSelection({
+    selectedIds: selectedDataIds,
+    paginatedIds: paginatedTestData.map(d => d.id),
+    allFilteredIds: lobFilteredTestData.map(d => d.id),
+    selectAllPages,
+  });
 
-  // Generate page numbers for pagination
-  const getPageNumbers = () => {
-    const pages = [];
-    const maxVisiblePages = 5;
-
-    if (totalPages <= maxVisiblePages) {
-      for (let i = 1; i <= totalPages; i++) {
-        pages.push(i);
-      }
-    } else {
-      if (currentPage <= 3) {
-        for (let i = 1; i <= 4; i++) {
-          pages.push(i);
-        }
-        pages.push('ellipsis');
-        pages.push(totalPages);
-      } else if (currentPage >= totalPages - 2) {
-        pages.push(1);
-        pages.push('ellipsis');
-        for (let i = totalPages - 3; i <= totalPages; i++) {
-          pages.push(i);
-        }
-      } else {
-        pages.push(1);
-        pages.push('ellipsis');
-        pages.push(currentPage - 1);
-        pages.push(currentPage);
-        pages.push(currentPage + 1);
-        pages.push('ellipsis');
-        pages.push(totalPages);
-      }
-    }
-    return pages;
-  };
+  const pageNumbers = getPageNumbers(currentPage, totalPages);
 
   const getStatusBadge = (status: string) => {
     return (
@@ -348,8 +258,8 @@ export function TestDataInventory() {
     const dataToExport =
       selectedCount > 0
         ? testData.filter(data => selectedDataIds.has(data.id))
-        : filteredTestData.length > 0
-          ? filteredTestData
+        : lobFilteredTestData.length > 0
+          ? lobFilteredTestData
           : testData;
 
     const yaml = `# Test Data Inventory Export
@@ -522,7 +432,7 @@ ${data.scope.platforms.map(platform => `        - ${platform}`).join('\n')}`
       {/* Header with Actions */}
       <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight text-gray-900">
+          <h2 className="bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-3xl font-bold tracking-tight text-transparent">
             Test Data Inventory
           </h2>
           <p className="mt-1 text-gray-500">
@@ -622,7 +532,7 @@ ${data.scope.platforms.map(platform => `        - ${platform}`).join('\n')}`
         searchPlaceholder="Search test data..."
         filters={filterConfigs}
         onClearFilters={clearFilters}
-        filteredCount={filteredTestData.length}
+        filteredCount={lobFilteredTestData.length}
         totalCount={testData.length}
         itemType="test data records"
         selectedCount={selectedCount}
@@ -714,6 +624,7 @@ ${data.scope.platforms.map(platform => `        - ${platform}`).join('\n')}`
                     setSort={setSort}
                   />
                 </TableHead>
+                <TableHead className="w-24">LOB</TableHead>
                 <TableHead className="w-32">
                   <ColumnHeader
                     title="Scope"
@@ -837,6 +748,11 @@ ${data.scope.platforms.map(platform => `        - ${platform}`).join('\n')}`
                     <Badge variant="outline">{data.team}</Badge>
                   </TableCell>
                   <TableCell>
+                    <Badge variant="outline" className="text-xs">
+                      {data.lob}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>
                     {getScopeBadge(data.scope)}
                     {data.scope.platforms && (
                       <div className="mt-1 text-xs text-gray-500">
@@ -923,6 +839,13 @@ ${data.scope.platforms.map(platform => `        - ${platform}`).join('\n')}`
                                   </span>
                                   <span>•</span>
                                   <span>
+                                    LOB:{' '}
+                                    <span className="font-medium text-gray-700">
+                                      {data.lob}
+                                    </span>
+                                  </span>
+                                  <span>•</span>
+                                  <span>
                                     Environment:{' '}
                                     <span className="font-medium text-gray-700">
                                       {data.labels.environment}
@@ -1005,14 +928,14 @@ ${data.scope.platforms.map(platform => `        - ${platform}`).join('\n')}`
         </CardContent>
 
         {/* Pagination */}
-        {filteredTestData.length > 0 && (
+        {lobFilteredTestData.length > 0 && (
           <div className="border-t px-4 py-4 sm:px-6">
             <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
                 <p className="text-muted-foreground whitespace-nowrap text-sm">
                   Showing {startIndex + 1} to{' '}
-                  {Math.min(endIndex, filteredTestData.length)} of{' '}
-                  {filteredTestData.length} records
+                  {Math.min(endIndex, lobFilteredTestData.length)} of{' '}
+                  {lobFilteredTestData.length} records
                 </p>
                 <div className="flex items-center gap-2">
                   <span className="text-muted-foreground whitespace-nowrap text-sm">
@@ -1030,7 +953,7 @@ ${data.scope.platforms.map(platform => `        - ${platform}`).join('\n')}`
                     ))}
                   </select>
                 </div>
-                {filteredTestData.length > itemsPerPage && (
+                {lobFilteredTestData.length > itemsPerPage && (
                   <div className="flex items-center gap-2">
                     <Checkbox
                       id="select-all-pages-testdata"
@@ -1038,7 +961,9 @@ ${data.scope.platforms.map(platform => `        - ${platform}`).join('\n')}`
                       onCheckedChange={checked => {
                         setSelectAllPages(checked as boolean);
                         if (checked && selectedCount === 0) {
-                          selectAllData(filteredTestData.map(data => data.id));
+                          selectAllData(
+                            lobFilteredTestData.map(data => data.id)
+                          );
                         }
                       }}
                     />
@@ -1052,51 +977,12 @@ ${data.scope.platforms.map(platform => `        - ${platform}`).join('\n')}`
                 )}
               </div>
 
-              <Pagination>
-                <PaginationContent>
-                  <PaginationItem>
-                    <PaginationPrevious
-                      onClick={() =>
-                        setCurrentPage(Math.max(1, currentPage - 1))
-                      }
-                      className={
-                        currentPage === 1
-                          ? 'pointer-events-none opacity-50'
-                          : 'cursor-pointer'
-                      }
-                    />
-                  </PaginationItem>
-
-                  {getPageNumbers().map((page, index) => (
-                    <PaginationItem key={index}>
-                      {page === 'ellipsis' ? (
-                        <PaginationEllipsis />
-                      ) : (
-                        <PaginationLink
-                          onClick={() => setCurrentPage(page as number)}
-                          isActive={currentPage === page}
-                          className="cursor-pointer"
-                        >
-                          {page}
-                        </PaginationLink>
-                      )}
-                    </PaginationItem>
-                  ))}
-
-                  <PaginationItem>
-                    <PaginationNext
-                      onClick={() =>
-                        setCurrentPage(Math.min(totalPages, currentPage + 1))
-                      }
-                      className={
-                        currentPage === totalPages
-                          ? 'pointer-events-none opacity-50'
-                          : 'cursor-pointer'
-                      }
-                    />
-                  </PaginationItem>
-                </PaginationContent>
-              </Pagination>
+              <PaginationControls
+                currentPage={currentPage}
+                totalPages={totalPages}
+                pageNumbers={pageNumbers}
+                onSetPage={setCurrentPage}
+              />
             </div>
           </div>
         )}

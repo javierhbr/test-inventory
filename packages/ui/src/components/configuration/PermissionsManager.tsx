@@ -2,22 +2,21 @@ import { useState } from 'react';
 
 import { Settings, Shield, User } from 'lucide-react';
 
-import { UserPermissions } from '../services/types';
+import { UserPermissions } from '../../services/types';
 import {
   getPermissionsFromRoles,
   usePermissionsStore,
-} from '../stores/permissionsStore';
-
-import { Badge } from './ui/badge';
-import { Button } from './ui/button';
+} from '../../stores/permissionsStore';
+import { Badge } from '../ui/badge';
+import { Button } from '../ui/button';
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from './ui/card';
-import { Checkbox } from './ui/checkbox';
+} from '../ui/card';
+import { Checkbox } from '../ui/checkbox';
 import {
   Dialog,
   DialogContent,
@@ -25,7 +24,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from './ui/dialog';
+} from '../ui/dialog';
 
 export function PermissionsManager() {
   const userPermissions = usePermissionsStore(s => s.userPermissions);

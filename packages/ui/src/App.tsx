@@ -1,18 +1,20 @@
 import { useEffect, useState } from 'react';
 
+import { Settings, Users } from 'lucide-react';
+
+import { SystemConfiguration } from './components/configuration/SystemConfiguration';
+import { UserManagement } from './components/configuration/UserManagement';
 import { ExecutionBuilder } from './components/ExecutionBuilder';
 import { Header } from './components/Header';
 import { Login } from './components/Login';
-import { SystemConfiguration } from './components/SystemConfiguration';
 import { TestDataInventory } from './components/TestDataInventory';
 import { TestsInventory } from './components/TestsInventory';
-import { Button } from './components/ui/button';
 import { cn } from './components/ui/utils';
-import { UserManagement } from './components/UserManagement';
 import { useNavigationHistory } from './hooks/useNavigationHistory';
 import { AppConfig, configService } from './services/configService';
 import { User } from './services/types';
 import { useAuthStore } from './stores/authStore';
+import { useLobStore } from './stores/lobStore';
 import {
   getPermissionsFromRoles,
   usePermissionsStore,
@@ -29,6 +31,8 @@ function App() {
     s => s.initializeDefaultPermissions
   );
 
+  const initializeLob = useLobStore(s => s.initializeFromUser);
+
   const handleLogin = (loggedInUser: User) => {
     login(loggedInUser);
     const roles = [loggedInUser.profile];
@@ -38,6 +42,7 @@ function App() {
       roles,
       permissions: getPermissionsFromRoles(roles),
     });
+    initializeLob(loggedInUser.lob, loggedInUser.profile);
   };
 
   // Load configurations on mount
@@ -109,6 +114,7 @@ function AppContent({ appConfig }: { appConfig: AppConfig | null }) {
 
   const logout = () => {
     sessionStorage.removeItem('permissions-storage');
+    sessionStorage.removeItem('lob-storage');
     storeLogout();
   };
   const {
@@ -152,10 +158,12 @@ const settingsMenuItems = [
   {
     id: 'system',
     label: 'System Configuration',
+    icon: <Settings className="h-4 w-4" />,
   },
   {
     id: 'users',
     label: 'User Management',
+    icon: <Users className="h-4 w-4" />,
   },
 ];
 
@@ -164,22 +172,37 @@ function SettingsComponent() {
 
   return (
     <div className="space-y-6">
-      {/* Header-style menu */}
-      <div className="flex items-center justify-center gap-6 border-b">
-        {settingsMenuItems.map(item => (
-          <Button
-            key={item.id}
-            variant="ghost"
-            onClick={() => setActiveTab(item.id)}
-            className={cn(
-              'hover:text-primary flex items-center gap-2 pb-4 text-gray-600',
-              activeTab === item.id &&
-                'border-primary text-primary border-b-2 font-semibold'
-            )}
-          >
-            <span>{item.label}</span>
-          </Button>
-        ))}
+      {/* Premium Segmented Control Menu */}
+      <div className="mb-8 flex justify-center">
+        <nav className="flex items-center gap-1.5 rounded-2xl border border-gray-200/80 bg-gray-100/50 p-1.5 shadow-inner backdrop-blur-sm">
+          {settingsMenuItems.map(item => {
+            const isActive = activeTab === item.id;
+            return (
+              <button
+                key={item.id}
+                onClick={() => setActiveTab(item.id)}
+                className={cn(
+                  'group relative flex items-center gap-2.5 rounded-xl px-5 py-2.5 text-sm font-semibold transition-all duration-300 ease-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2',
+                  isActive
+                    ? 'bg-white text-blue-700 shadow-sm ring-1 ring-black/5'
+                    : 'text-gray-500 hover:bg-white/60 hover:text-gray-900'
+                )}
+              >
+                <span
+                  className={cn(
+                    'transition-transform duration-300',
+                    isActive
+                      ? 'scale-110 text-blue-600'
+                      : 'text-gray-400 group-hover:scale-105 group-hover:text-gray-500'
+                  )}
+                >
+                  {item.icon}
+                </span>
+                <span>{item.label}</span>
+              </button>
+            );
+          })}
+        </nav>
       </div>
 
       {/* Content */}

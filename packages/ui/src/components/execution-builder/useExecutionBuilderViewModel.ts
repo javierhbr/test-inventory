@@ -5,6 +5,7 @@ import {
   selectFilteredTests,
   useExecutionStore,
 } from '../../stores/executionStore';
+import { useLobStore } from '../../stores/lobStore';
 import { FilterConfig } from '../SearchAndFilters';
 
 import {
@@ -104,6 +105,9 @@ export interface ExecutionBuilderViewModel {
   copyYamlToClipboard: () => void;
   downloadYaml: () => void;
   setSearchTerm: (term: string) => void;
+  sortColumn: string | null;
+  sortDirection: 'asc' | 'desc' | null;
+  setSort: (column: string | null, direction: 'asc' | 'desc' | null) => void;
 }
 
 export const useExecutionBuilderViewModel = (): ExecutionBuilderViewModel => {
@@ -114,6 +118,7 @@ export const useExecutionBuilderViewModel = (): ExecutionBuilderViewModel => {
   const cart = useExecutionStore(s => s.cart);
   const filteredTests = useExecutionStore(useShallow(selectFilteredTests));
   const filteredCart = useExecutionStore(useShallow(selectFilteredCart));
+  const activeLob = useLobStore(s => s.activeLob);
   const searchTerm = useExecutionStore(s => s.searchTerm);
   const filterFlow = useExecutionStore(s => s.filterFlow);
   const filterStatus = useExecutionStore(s => s.filterStatus);
@@ -161,24 +166,37 @@ export const useExecutionBuilderViewModel = (): ExecutionBuilderViewModel => {
   const setCurrentPage = useExecutionStore(s => s.setCurrentPage);
   const setCartCurrentPage = useExecutionStore(s => s.setCartCurrentPage);
   const setCartSearchFilter = useExecutionStore(s => s.setCartSearchFilter);
+  const sortColumn = useExecutionStore(s => s.sortColumn);
+  const sortDirection = useExecutionStore(s => s.sortDirection);
+  const setSort = useExecutionStore(s => s.setSort);
 
-  const totalPages = Math.ceil(filteredTests.length / ITEMS_PER_PAGE);
+  const lobFilteredTests =
+    activeLob === 'all'
+      ? filteredTests
+      : filteredTests.filter(t => t.lob === activeLob);
+
+  const lobFilteredCart =
+    activeLob === 'all'
+      ? filteredCart
+      : filteredCart.filter(item => item.test.lob === activeLob);
+
+  const totalPages = Math.ceil(lobFilteredTests.length / ITEMS_PER_PAGE);
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
   const endIndex = startIndex + ITEMS_PER_PAGE;
-  const paginatedTests = filteredTests.slice(startIndex, endIndex);
+  const paginatedTests = lobFilteredTests.slice(startIndex, endIndex);
 
-  const cartTotalPages = Math.ceil(filteredCart.length / ITEMS_PER_PAGE);
+  const cartTotalPages = Math.ceil(lobFilteredCart.length / ITEMS_PER_PAGE);
   const cartStartIndex = (cartCurrentPage - 1) * ITEMS_PER_PAGE;
   const cartEndIndex = cartStartIndex + ITEMS_PER_PAGE;
-  const paginatedCart = filteredCart.slice(cartStartIndex, cartEndIndex);
+  const paginatedCart = lobFilteredCart.slice(cartStartIndex, cartEndIndex);
 
   const selectedCount = selectedTests.size;
   const isCurrentPageSelected =
     paginatedTests.length > 0 &&
     paginatedTests.every(test => selectedTests.has(test.id));
   const isAllPagesSelected =
-    filteredTests.length > 0 &&
-    filteredTests.every(test => selectedTests.has(test.id));
+    lobFilteredTests.length > 0 &&
+    lobFilteredTests.every(test => selectedTests.has(test.id));
   const isAllSelected = selectAllPages
     ? isAllPagesSelected
     : isCurrentPageSelected;
@@ -230,7 +248,7 @@ export const useExecutionBuilderViewModel = (): ExecutionBuilderViewModel => {
   const handleSelectAll = (checked: boolean) => {
     if (checked) {
       if (selectAllPages) {
-        selectAllTests(filteredTests.map(test => test.id));
+        selectAllTests(lobFilteredTests.map(test => test.id));
       } else {
         selectAllOnPage(
           true,
@@ -251,7 +269,7 @@ export const useExecutionBuilderViewModel = (): ExecutionBuilderViewModel => {
   };
 
   const handleRemoveFiltered = () => {
-    const filteredCartIds = new Set(filteredCart.map(item => item.test.id));
+    const filteredCartIds = new Set(lobFilteredCart.map(item => item.test.id));
     removeFilteredCart(filteredCartIds);
   };
 
@@ -303,8 +321,8 @@ export const useExecutionBuilderViewModel = (): ExecutionBuilderViewModel => {
     loadExecutionData,
     tests,
     cart,
-    filteredTests,
-    filteredCart,
+    filteredTests: lobFilteredTests,
+    filteredCart: lobFilteredCart,
     paginatedTests,
     paginatedCart,
     searchTerm,
@@ -356,5 +374,8 @@ export const useExecutionBuilderViewModel = (): ExecutionBuilderViewModel => {
     copyYamlToClipboard,
     downloadYaml,
     setSearchTerm,
+    sortColumn,
+    sortDirection,
+    setSort,
   };
 };

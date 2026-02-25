@@ -23,6 +23,8 @@ interface ExecutionState {
   currentPage: number;
   cartCurrentPage: number;
   cartSearchFilter: string;
+  sortColumn: string | null;
+  sortDirection: 'asc' | 'desc' | null;
   isLoading: boolean;
   loadError: string | null;
   actionError: string | null;
@@ -64,6 +66,9 @@ interface ExecutionActions {
   clearSelection: () => void;
   setSelectAllPages: (value: boolean) => void;
 
+  // Sort
+  setSort: (column: string | null, direction: 'asc' | 'desc' | null) => void;
+
   // Runtime & pagination
   setSelectedRuntime: (runtime: string) => void;
   setCurrentPage: (page: number) => void;
@@ -93,6 +98,8 @@ const initialState: ExecutionState = {
   currentPage: 1,
   cartCurrentPage: 1,
   cartSearchFilter: 'all',
+  sortColumn: null,
+  sortDirection: null,
   isLoading: false,
   loadError: null,
   actionError: null,
@@ -255,6 +262,8 @@ export const useExecutionStore = create<ExecutionStore>()((set, get) => ({
       filterStatus: 'all',
       filterRuntime: 'all',
       filterTeam: 'all',
+      sortColumn: null,
+      sortDirection: null,
       currentPage: 1,
     }),
 
@@ -283,6 +292,10 @@ export const useExecutionStore = create<ExecutionStore>()((set, get) => ({
   clearSelection: () => set({ selectedTests: new Set<string>() }),
   setSelectAllPages: value => set({ selectAllPages: value }),
 
+  // Sort
+  setSort: (column, direction) =>
+    set({ sortColumn: column, sortDirection: direction }),
+
   // Runtime & pagination
   setSelectedRuntime: runtime => set({ selectedRuntime: runtime }),
   setCurrentPage: page => set({ currentPage: page }),
@@ -295,7 +308,7 @@ export const useExecutionStore = create<ExecutionStore>()((set, get) => ({
 export const selectFilteredTests = (state: ExecutionStore): Test[] => {
   const cartIds = new Set(state.cart.map(item => item.test.id));
 
-  return state.tests.filter(test => {
+  let filtered = state.tests.filter(test => {
     const matchesSearch =
       test.name.toLowerCase().includes(state.searchTerm.toLowerCase()) ||
       test.id.toLowerCase().includes(state.searchTerm.toLowerCase());
@@ -342,6 +355,38 @@ export const selectFilteredTests = (state: ExecutionStore): Test[] => {
       notInCart
     );
   });
+
+  if (state.sortColumn && state.sortDirection) {
+    filtered = [...filtered].sort((a, b) => {
+      let aValue: string | number = '';
+      let bValue: string | number = '';
+
+      switch (state.sortColumn) {
+        case 'id':
+          aValue = a.id;
+          bValue = b.id;
+          break;
+        case 'name':
+          aValue = a.name;
+          bValue = b.name;
+          break;
+        case 'flow':
+          aValue = a.labels.flow;
+          bValue = b.labels.flow;
+          break;
+        case 'experience':
+          aValue = a.labels.experience;
+          bValue = b.labels.experience;
+          break;
+      }
+
+      if (aValue < bValue) return state.sortDirection === 'asc' ? -1 : 1;
+      if (aValue > bValue) return state.sortDirection === 'asc' ? 1 : -1;
+      return 0;
+    });
+  }
+
+  return filtered;
 };
 
 // Derived selector: filtered cart items

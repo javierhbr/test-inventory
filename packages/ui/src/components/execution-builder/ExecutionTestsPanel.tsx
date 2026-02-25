@@ -1,6 +1,7 @@
 import { Plus, ShoppingCart, Upload } from 'lucide-react';
 
 import { SearchAndFilters } from '../SearchAndFilters';
+import { ColumnHeader, PaginationControls } from '../table';
 import { Badge } from '../ui/badge';
 import { Button, buttonVariants } from '../ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
@@ -14,15 +15,6 @@ import {
   DialogTrigger,
 } from '../ui/dialog';
 import {
-  Pagination,
-  PaginationContent,
-  PaginationEllipsis,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from '../ui/pagination';
-import {
   Table,
   TableBody,
   TableCell,
@@ -33,7 +25,7 @@ import {
 import { Textarea } from '../ui/textarea';
 import { cn } from '../ui/utils';
 
-import { ITEMS_PER_PAGE, PaginationPage } from './utils';
+import { ITEMS_PER_PAGE } from './utils';
 
 import type { ExecutionBuilderViewModel } from './useExecutionBuilderViewModel';
 import type { Test } from '../../services/types';
@@ -69,61 +61,10 @@ type ExecutionTestsPanelProps = Pick<
   | 'currentPage'
   | 'setCurrentPage'
   | 'pageNumbers'
+  | 'sortColumn'
+  | 'sortDirection'
+  | 'setSort'
 >;
-
-const PaginationControl = ({
-  currentPage,
-  totalPages,
-  pageNumbers,
-  onSetPage,
-}: {
-  currentPage: number;
-  totalPages: number;
-  pageNumbers: PaginationPage[];
-  onSetPage: (page: number) => void;
-}) => (
-  <Pagination>
-    <PaginationContent>
-      <PaginationItem>
-        <PaginationPrevious
-          onClick={() => onSetPage(Math.max(1, currentPage - 1))}
-          className={
-            currentPage === 1
-              ? 'pointer-events-none opacity-50'
-              : 'cursor-pointer'
-          }
-        />
-      </PaginationItem>
-
-      {pageNumbers.map((page, index) => (
-        <PaginationItem key={`${page}-${index}`}>
-          {page === 'ellipsis' ? (
-            <PaginationEllipsis />
-          ) : (
-            <PaginationLink
-              onClick={() => onSetPage(page)}
-              isActive={currentPage === page}
-              className="cursor-pointer"
-            >
-              {page}
-            </PaginationLink>
-          )}
-        </PaginationItem>
-      ))}
-
-      <PaginationItem>
-        <PaginationNext
-          onClick={() => onSetPage(Math.min(totalPages, currentPage + 1))}
-          className={
-            currentPage === totalPages
-              ? 'pointer-events-none opacity-50'
-              : 'cursor-pointer'
-          }
-        />
-      </PaginationItem>
-    </PaginationContent>
-  </Pagination>
-);
 
 export function ExecutionTestsPanel({
   searchTerm,
@@ -155,6 +96,9 @@ export function ExecutionTestsPanel({
   currentPage,
   setCurrentPage,
   pageNumbers,
+  sortColumn,
+  sortDirection,
+  setSort,
 }: ExecutionTestsPanelProps) {
   return (
     <div className="col-span-5 space-y-4">
@@ -257,8 +201,24 @@ TC-00198`}
                       />
                     </div>
                   </TableHead>
-                  <TableHead>Test</TableHead>
-                  <TableHead>Labels</TableHead>
+                  <TableHead>
+                    <ColumnHeader
+                      title="Test"
+                      columnKey="id"
+                      sortColumn={sortColumn}
+                      sortDirection={sortDirection}
+                      setSort={setSort}
+                    />
+                  </TableHead>
+                  <TableHead>
+                    <ColumnHeader
+                      title="Labels"
+                      columnKey="flow"
+                      sortColumn={sortColumn}
+                      sortDirection={sortDirection}
+                      setSort={setSort}
+                    />
+                  </TableHead>
                   <TableHead>Action</TableHead>
                 </TableRow>
               </TableHeader>
@@ -339,7 +299,7 @@ TC-00198`}
                 )}
               </div>
 
-              <PaginationControl
+              <PaginationControls
                 currentPage={currentPage}
                 totalPages={totalPages}
                 pageNumbers={pageNumbers}

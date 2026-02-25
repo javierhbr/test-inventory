@@ -2,6 +2,9 @@ import React, { useRef, useState } from 'react';
 
 import { BookOpen, Check, ChevronsUpDown, X } from 'lucide-react';
 
+import { configService, TdmRecipeConfig } from '../services/configService';
+import { useLobStore } from '../stores/lobStore';
+
 import { Button } from './ui/button';
 import {
   Command,
@@ -12,123 +15,64 @@ import {
   CommandList,
 } from './ui/command';
 
-export interface TdmRecipe {
-  id: string;
-  name: string;
-  description: string;
-  tags: string[];
-}
-
-const TDM_RECIPES: TdmRecipe[] = [
-  {
-    id: 'recipe-primary-checking',
-    name: 'Primary Checking Account',
-    description: 'Standard primary user with an active checking account',
-    tags: [
-      'customer-type:primary-user',
-      'account-type:checking',
-      'account:primary',
-      'user:primary',
-    ],
-  },
-  {
-    id: 'recipe-authorized-savings',
-    name: 'Authorized Savings User',
-    description: 'Authorized user with a savings account and MFA',
-    tags: [
-      'customer-type:authorized-user',
-      'account-type:savings',
-      'user:authorized',
-      'user:mfa',
-    ],
-  },
-  {
-    id: 'recipe-business-credit',
-    name: 'Business Credit Card',
-    description: 'Company entity with an active credit card and high balance',
-    tags: [
-      'customer-type:company',
-      'account-type:credit-card',
-      'card:active',
-      'balance:high',
-    ],
-  },
-  {
-    id: 'recipe-retail-debit',
-    name: 'Retail Debit Card',
-    description: 'Retail customer with a debit card',
-    tags: [
-      'customer-type:retail',
-      'account-type:debit-card',
-      'card:active',
-      'user:verified',
-    ],
-  },
-  {
-    id: 'recipe-expired-card',
-    name: 'Expired Card Scenario',
-    description: 'Primary user with an expired credit card for renewal testing',
-    tags: [
-      'customer-type:primary-user',
-      'account-type:credit-card',
-      'card:expired',
-      'account:primary',
-    ],
-  },
-  {
-    id: 'recipe-low-balance',
-    name: 'Low Balance Account',
-    description: 'Primary user with low balance checking for NSF testing',
-    tags: [
-      'customer-type:primary-user',
-      'account-type:checking',
-      'balance:low',
-      'account:primary',
-    ],
-  },
-  {
-    id: 'recipe-business-loc',
-    name: 'Business Line of Credit',
-    description: 'Company with a line of credit and pending transactions',
-    tags: [
-      'customer-type:company',
-      'account-type:line-of-credit',
-      'balance:high',
-    ],
-  },
-  {
-    id: 'recipe-mfa-verified',
-    name: 'MFA Verified User',
-    description: 'Fully verified user with MFA for security flow testing',
-    tags: [
-      'customer-type:primary-user',
-      'account-type:checking',
-      'user:mfa',
-      'user:verified',
-      'account:primary',
-    ],
-  },
-];
+// Hardcoded recipes removed in favor of dynamic API fetching
 
 interface TdmRecipeComboboxProps {
-  onSelect: (recipe: TdmRecipe) => void;
+  onSelect: (recipes: TdmRecipeConfig[]) => void;
 }
 
 export function TdmRecipeCombobox({ onSelect }: TdmRecipeComboboxProps) {
   const [open, setOpen] = useState(false);
-  const [selected, setSelected] = useState<TdmRecipe | null>(null);
+  const [selectedRecipeIds, setSelectedRecipeIds] = useState<string[]>([]);
+  const [recipes, setRecipes] = useState<TdmRecipeConfig[]>([]);
   const containerRef = useRef<HTMLDivElement>(null);
+  const { activeLob } = useLobStore();
 
-  const handleSelect = (recipe: TdmRecipe) => {
-    setSelected(recipe);
-    setOpen(false);
-    onSelect(recipe);
+  React.useEffect(() => {
+    configService.loadSystemConfig().then(config => {
+      setRecipes(config.dsls.recipes);
+    });
+  }, []);
+
+  const filteredRecipes = React.useMemo(() => {
+    if (activeLob === 'all') return recipes;
+    return recipes.filter(r => r.lob === activeLob);
+  }, [recipes, activeLob]);
+
+  const toggleRecipe = (recipeId: string) => {
+    const isSelected = selectedRecipeIds.includes(recipeId);
+    let newSelection: string[];
+
+    if (isSelected) {
+      newSelection = selectedRecipeIds.filter(id => id !== recipeId);
+    } else {
+      newSelection = [...selectedRecipeIds, recipeId];
+    }
+    setSelectedRecipeIds(newSelection);
+    onSelect(
+      newSelection.map(id => recipes.find(r => r.id === id)!).filter(Boolean)
+    );
   };
 
   const handleClear = (e: React.MouseEvent) => {
     e.stopPropagation();
-    setSelected(null);
+    setSelectedRecipeIds([]);
+    onSelect([]);
   };
+
+  const selectedRecipes = React.useMemo(() => {
+    return recipes.filter(recipe => selectedRecipeIds.includes(recipe.id));
+  }, [recipes, selectedRecipeIds]);
+
+  const selectedRecipeNames = selectedRecipes.map(r => r.name).join(', ');
+
+  const uniqueTags = React.useMemo(() => {
+    const tags = new Set<string>();
+    selectedRecipes.forEach(recipe => {
+      recipe.tags.forEach(tag => tags.add(tag));
+    });
+    return Array.from(tags);
+  }, [selectedRecipes]);
 
   return (
     <div ref={containerRef} className="relative">
@@ -142,18 +86,18 @@ export function TdmRecipeCombobox({ onSelect }: TdmRecipeComboboxProps) {
         onClick={() => setOpen(!open)}
         className="w-full justify-between font-normal"
       >
-        {selected ? (
+        {selectedRecipeIds.length > 0 ? (
           <span className="flex items-center gap-2 truncate">
-            <span>{selected.name}</span>
+            <span>{selectedRecipeNames}</span>
             <span className="text-xs text-gray-400">
-              ({selected.tags.length} tags)
+              ({uniqueTags.length} tags)
             </span>
           </span>
         ) : (
           <span className="text-muted-foreground">Search for a recipe...</span>
         )}
         <span className="flex items-center gap-1">
-          {selected && (
+          {selectedRecipeIds.length > 0 && (
             <span
               role="button"
               tabIndex={0}
@@ -179,16 +123,18 @@ export function TdmRecipeCombobox({ onSelect }: TdmRecipeComboboxProps) {
             <CommandList>
               <CommandEmpty>No recipe found.</CommandEmpty>
               <CommandGroup>
-                {TDM_RECIPES.map(recipe => (
+                {filteredRecipes.map(recipe => (
                   <CommandItem
                     key={recipe.id}
-                    value={`${recipe.name} ${recipe.description}`}
-                    onSelect={() => handleSelect(recipe)}
+                    value={`${recipe.name} ${recipe.description} ${recipe.tags.join(' ')}`}
+                    onSelect={() => toggleRecipe(recipe.id)}
                     className="cursor-pointer"
                   >
                     <Check
                       className={`mr-2 h-4 w-4 ${
-                        selected?.id === recipe.id ? 'opacity-100' : 'opacity-0'
+                        selectedRecipeIds.includes(recipe.id)
+                          ? 'opacity-100'
+                          : 'opacity-0'
                       }`}
                     />
                     <div className="flex flex-col">

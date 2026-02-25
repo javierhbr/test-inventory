@@ -35,7 +35,7 @@ function isValidTest(candidate: unknown): candidate is Test {
   }
 
   const test = candidate as Partial<Test>;
-  return Boolean(test.id && test.name && test.flow);
+  return Boolean(test.id && test.name && test.flow && test.lob);
 }
 
 export function listTestsCatalog(): ServiceSuccess<Test[]> {

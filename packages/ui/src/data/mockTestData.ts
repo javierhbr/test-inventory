@@ -37,6 +37,7 @@ export const mockTestData: TestDataRecord[] = [
       runtime: 'OCP Testing Studio',
     },
     team: 'QA-Team',
+    lob: 'CARD',
   },
   {
     id: 'TD-20041',
@@ -65,6 +66,7 @@ export const mockTestData: TestDataRecord[] = [
     status: 'Available',
     lastUsed: null,
     team: 'QA-Team',
+    lob: 'BANK',
   },
   {
     id: 'TD-20052',
@@ -97,6 +99,7 @@ export const mockTestData: TestDataRecord[] = [
       runtime: 'Manual Testing',
     },
     team: 'DataTeam',
+    lob: 'BANK',
   },
   {
     id: 'TD-20032',
@@ -126,6 +129,7 @@ export const mockTestData: TestDataRecord[] = [
     status: 'Available',
     lastUsed: null,
     team: 'QA Team',
+    lob: 'FS',
   },
   {
     id: 'TD-20033',
@@ -159,6 +163,7 @@ export const mockTestData: TestDataRecord[] = [
       runtime: 'Sierra',
     },
     team: 'Core Team',
+    lob: 'DFS',
   },
   {
     id: 'TD-20034',
@@ -192,6 +197,7 @@ export const mockTestData: TestDataRecord[] = [
       runtime: 'OCP Testing Studio',
     },
     team: 'Mobile Team',
+    lob: 'BANK',
   },
   {
     id: 'TD-20035',
@@ -225,6 +231,7 @@ export const mockTestData: TestDataRecord[] = [
     status: 'Available',
     lastUsed: null,
     team: 'Web Team',
+    lob: 'FS',
   },
   {
     id: 'TD-20036',
@@ -258,6 +265,7 @@ export const mockTestData: TestDataRecord[] = [
       runtime: 'Xero',
     },
     team: 'QA Team',
+    lob: 'CARD',
   },
   {
     id: 'TD-20037',
@@ -295,6 +303,7 @@ export const mockTestData: TestDataRecord[] = [
       runtime: 'Sierra',
     },
     team: 'Core Team',
+    lob: 'BANK',
   },
   {
     id: 'TD-20038',
@@ -328,6 +337,7 @@ export const mockTestData: TestDataRecord[] = [
       runtime: 'OCP Testing Studio',
     },
     team: 'Core Team',
+    lob: 'BANK',
   },
   {
     id: 'TD-20039',
@@ -365,6 +375,7 @@ export const mockTestData: TestDataRecord[] = [
       runtime: 'Xero',
     },
     team: 'Web Team',
+    lob: 'DFS',
   },
   {
     id: 'TD-20040',
@@ -402,6 +413,7 @@ export const mockTestData: TestDataRecord[] = [
       runtime: 'Xero',
     },
     team: 'QA Team',
+    lob: 'CARD',
   },
   {
     id: 'TD-20042',
@@ -434,5 +446,6 @@ export const mockTestData: TestDataRecord[] = [
     status: 'Inactive',
     lastUsed: null,
     team: 'Core Team',
+    lob: 'DFS',
   },
 ];

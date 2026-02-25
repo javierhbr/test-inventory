@@ -2,12 +2,11 @@ import React, { useState } from 'react';
 
 import { Pencil, Save, X } from 'lucide-react';
 
-import { TestDataRecord } from '../services/types';
+import { configService, SemanticRuleConfig } from '../services/configService';
+import { Lob, TestDataRecord } from '../services/types';
+import { LOB_VALUES, useLobStore } from '../stores/lobStore';
 
-import {
-  ClassificationPicker,
-  SINGULAR_TAG_KEYS,
-} from './ClassificationPicker';
+import { ClassificationPicker } from './ClassificationPicker';
 import { TdmRecipeCombobox } from './TdmRecipeCombobox';
 import { Button } from './ui/button';
 import {
@@ -35,6 +34,18 @@ import {
   SelectValue,
 } from './ui/select';
 
+function scheduleToTags(
+  schedule: { month?: number; days?: number; year?: number } | null
+): string[] {
+  if (!schedule) return [];
+  const tags: string[] = [];
+  if (schedule.month !== undefined)
+    tags.push(`schedule:month:${schedule.month}`);
+  if (schedule.days !== undefined) tags.push(`schedule:days:${schedule.days}`);
+  if (schedule.year !== undefined) tags.push(`schedule:year:${schedule.year}`);
+  return tags;
+}
+
 interface EditTestDataDialogProps {
   testData: TestDataRecord;
   onTestDataUpdated: (updatedData: TestDataRecord) => Promise<void> | void;
@@ -46,9 +57,21 @@ export function EditTestDataDialog({
   onTestDataUpdated,
   children,
 }: EditTestDataDialogProps) {
+  const isAdmin = useLobStore(s => s.isAdmin);
   const [isOpen, setIsOpen] = useState(false);
+  const [semanticRules, setSemanticRules] = React.useState<
+    SemanticRuleConfig[]
+  >([]);
+
+  React.useEffect(() => {
+    configService.loadSystemConfig().then(config => {
+      setSemanticRules(config.dsls.semanticRules);
+    });
+  }, []);
+
   const [classifications, setClassifications] = useState<string[]>([
     ...testData.classifications,
+    ...scheduleToTags(testData.reconditioningSchedule),
   ]);
   const [formData, setFormData] = useState({
     project: testData.labels.project,
@@ -60,6 +83,7 @@ export function EditTestDataDialog({
     platforms: testData.scope.platforms?.join(', ') || '',
     status: testData.status,
     team: testData.team,
+    lob: testData.lob,
   });
 
   const handleInputChange = (field: string, value: string) => {
@@ -96,6 +120,7 @@ export function EditTestDataDialog({
         | 'Reconditioning'
         | 'Inactive',
       team: formData.team,
+      lob: formData.lob as Lob,
     };
 
     try {
@@ -109,7 +134,10 @@ export function EditTestDataDialog({
   };
 
   const handleReset = () => {
-    setClassifications([...testData.classifications]);
+    setClassifications([
+      ...testData.classifications,
+      ...scheduleToTags(testData.reconditioningSchedule),
+    ]);
     setFormData({
       project: testData.labels.project,
       environment: testData.labels.environment,
@@ -120,6 +148,7 @@ export function EditTestDataDialog({
       platforms: testData.scope.platforms?.join(', ') || '',
       status: testData.status,
       team: testData.team,
+      lob: testData.lob,
     });
   };
 
@@ -241,11 +270,15 @@ export function EditTestDataDialog({
                     Test Data Flavor
                   </Label>
                   <TdmRecipeCombobox
-                    onSelect={recipe => {
+                    onSelect={recipes => {
                       const merged = [...classifications];
-                      for (const tag of recipe.tags) {
+                      const singularKeys = new Set(
+                        semanticRules.map(r => r.key)
+                      );
+                      const allTags = recipes.flatMap(r => r.tags);
+                      for (const tag of allTags) {
                         const key = tag.split(':')[0];
-                        const isSingular = SINGULAR_TAG_KEYS.has(key);
+                        const isSingular = singularKeys.has(key);
                         if (isSingular) {
                           const idx = merged.findIndex(c =>
                             c.startsWith(`${key}:`)
@@ -421,6 +454,36 @@ export function EditTestDataDialog({
                       onChange={e => handleInputChange('team', e.target.value)}
                       className="mt-1"
                     />
+                  </div>
+                  <div>
+                    <Label htmlFor="lob" className="text-sm font-medium">
+                      Line of Business
+                    </Label>
+                    {isAdmin ? (
+                      <Select
+                        value={formData.lob}
+                        onValueChange={value =>
+                          handleInputChange('lob', value as Lob)
+                        }
+                      >
+                        <SelectTrigger className="mt-1">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {LOB_VALUES.map(lobValue => (
+                            <SelectItem key={lobValue} value={lobValue}>
+                              {lobValue}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    ) : (
+                      <Input
+                        value={formData.lob}
+                        disabled
+                        className="mt-1 bg-gray-50"
+                      />
+                    )}
                   </div>
                 </div>
               </CardContent>

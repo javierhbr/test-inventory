@@ -1,5 +1,7 @@
 import { UserProfile } from '../components/Login';
 
+import { Lob } from './types';
+
 // Configuration interfaces
 export interface TabConfig {
   id: string;
@@ -40,6 +42,28 @@ export interface RolePermissions {
   permissions: string[];
 }
 
+export type GroupedDsls = Record<
+  string, // e.g., 'TestDataFlavorsBANK', 'TestDataReconCARD', 'TDMRecipesBANK'
+  Array<SemanticRuleConfig | TdmRecipeConfig>
+>;
+
+export interface SemanticRuleConfig {
+  id: string; // Used for UI identification
+  lob: Lob;
+  category: 'Flavor' | 'Recon';
+  key: string;
+  regexString: string;
+  suggestions: string[];
+}
+
+export interface TdmRecipeConfig {
+  id: string;
+  lob: Lob;
+  name: string;
+  description: string;
+  tags: string[];
+}
+
 export interface SystemConfig {
   systemConfiguration: {
     title: string;
@@ -61,6 +85,13 @@ export interface SystemConfig {
       descriptionColor: string;
     };
     roles: Record<UserProfile, RolePermissions>;
+  };
+  dsls: {
+    title: string;
+    description: string;
+    semanticRules: SemanticRuleConfig[];
+    recipes: TdmRecipeConfig[];
+    grouped: GroupedDsls;
   };
 }
 
@@ -252,6 +283,14 @@ const SYSTEM_CONFIG: SystemConfig = {
       },
     },
   },
+  dsls: {
+    title: 'DSLs Management',
+    description:
+      'Manage Domain Specific Languages used across the system for semantic tagging.',
+    semanticRules: [],
+    recipes: [],
+    grouped: {},
+  },
 };
 
 const USER_CONFIG: UserConfig = {
@@ -416,8 +455,27 @@ class ConfigService {
 
   async loadSystemConfig(): Promise<SystemConfig> {
     if (!this.systemConfig) {
-      // Simulate async loading with a small delay
-      await new Promise(resolve => setTimeout(resolve, 10));
+      try {
+        const response = await fetch('/api/dsls');
+        if (response.ok) {
+          const resJson = await response.json();
+          if (resJson.success && resJson.data) {
+            this.systemConfig = {
+              ...SYSTEM_CONFIG,
+              dsls: {
+                ...SYSTEM_CONFIG.dsls,
+                semanticRules: resJson.data.semanticRules || [],
+                recipes: resJson.data.recipes || [],
+                grouped: resJson.data.grouped || {},
+              },
+            };
+            return this.systemConfig;
+          }
+        }
+      } catch (error) {
+        console.error('Failed to load DSLs from API', error);
+      }
+      // Fallback
       this.systemConfig = SYSTEM_CONFIG;
     }
     return this.systemConfig;

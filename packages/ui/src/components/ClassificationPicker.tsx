@@ -2,123 +2,43 @@ import React, { useRef, useState } from 'react';
 
 import { Check, Pencil, X } from 'lucide-react';
 
+import { configService, SemanticRuleConfig } from '../services/configService';
+
 import { Badge } from './ui/badge';
 import { Input } from './ui/input';
 
 // --- Semantic tag parser ---
 
-interface SemanticRule {
-  key: string;
-  regex: RegExp;
-  parse: (match: RegExpMatchArray) => Record<string, unknown>;
-  format: (parsed: Record<string, unknown>) => string;
-  suggestions: string[];
-}
-
-const SEMANTIC_RULES: SemanticRule[] = [
-  {
-    key: 'customer-type',
-    regex: /^customer-type:(primary-user|authorized-user|company|retail)$/i,
-    parse: match => ({ 'customer-type': match[1].toLowerCase() }),
-    format: parsed => `customer-type:${parsed['customer-type']}`,
-    suggestions: [
-      'customer-type:primary-user',
-      'customer-type:authorized-user',
-      'customer-type:company',
-      'customer-type:retail',
-    ],
-  },
-  {
-    key: 'account-type',
-    regex:
-      /^account-type:(checking|savings|credit-card|debit-card|business|line-of-credit)$/i,
-    parse: match => ({ 'account-type': match[1].toLowerCase() }),
-    format: parsed => `account-type:${parsed['account-type']}`,
-    suggestions: [
-      'account-type:checking',
-      'account-type:savings',
-      'account-type:credit-card',
-      'account-type:debit-card',
-      'account-type:business',
-      'account-type:line-of-credit',
-    ],
-  },
-  {
-    key: 'account',
-    regex: /^account:(primary|secondary)$/i,
-    parse: match => ({ account: match[1].toLowerCase() }),
-    format: parsed => `account:${parsed.account}`,
-    suggestions: ['account:primary', 'account:secondary'],
-  },
-  {
-    key: 'transactions',
-    regex: /^transactions:(pending|completed):(\d+)$/i,
-    parse: match => ({
-      transactions: {
-        status: match[1].toLowerCase(),
-        count: parseInt(match[2], 10),
-      },
-    }),
-    format: parsed => {
-      const t = parsed.transactions as { status: string; count: number };
-      return `transactions:${t.status}:${t.count}`;
-    },
-    suggestions: ['transactions:pending:', 'transactions:completed:'],
-  },
-  {
-    key: 'card',
-    regex: /^card:(active|expired|inactive|new)$/i,
-    parse: match => ({ card: match[1].toLowerCase() }),
-    format: parsed => `card:${parsed.card}`,
-    suggestions: ['card:active', 'card:expired', 'card:inactive', 'card:new'],
-  },
-  {
-    key: 'balance',
-    regex: /^balance:(high|low)$/i,
-    parse: match => ({ balance: match[1].toLowerCase() }),
-    format: parsed => `balance:${parsed.balance}`,
-    suggestions: ['balance:high', 'balance:low'],
-  },
-  {
-    key: 'user',
-    regex: /^user:(primary|authorized|verified|mfa)$/i,
-    parse: match => ({ user: match[1].toLowerCase() }),
-    format: parsed => `user:${parsed.user}`,
-    suggestions: [
-      'user:primary',
-      'user:authorized',
-      'user:verified',
-      'user:mfa',
-    ],
-  },
-];
-
-const ALL_SEMANTIC_SUGGESTIONS = SEMANTIC_RULES.flatMap(r => r.suggestions);
-const PRIMARY_TAG_CATEGORIES = SEMANTIC_RULES.map(r => `${r.key}:`);
-
 function tryParseSemanticTag(
-  input: string
+  input: string,
+  semanticRules: SemanticRuleConfig[]
 ): { tag: string; parsed: Record<string, unknown> } | null {
   const trimmed = input.trim();
-  for (const rule of SEMANTIC_RULES) {
-    const match = trimmed.match(rule.regex);
-    if (match) {
-      const parsed = rule.parse(match);
-      return { tag: rule.format(parsed), parsed };
+  for (const rule of semanticRules) {
+    try {
+      const regex = new RegExp(rule.regexString, 'i');
+      const match = trimmed.match(regex);
+      if (match) {
+        return { tag: trimmed.toLowerCase(), parsed: {} };
+      }
+    } catch {
+      // ignore invalid regexes
     }
   }
   return null;
 }
 
-function getSemanticSuggestions(input: string): string[] {
-  if (!input.trim()) return PRIMARY_TAG_CATEGORIES;
+function getSemanticSuggestions(
+  input: string,
+  semanticRules: SemanticRuleConfig[]
+): string[] {
+  const allSuggestions = semanticRules.flatMap(r => r.suggestions);
+  const primaryCategories = semanticRules.map(r => `${r.key}:`);
+
+  if (!input.trim()) return primaryCategories;
   const lower = input.toLowerCase();
-  const matchingCategories = PRIMARY_TAG_CATEGORIES.filter(c =>
-    c.startsWith(lower)
-  );
-  const matchingLeaves = ALL_SEMANTIC_SUGGESTIONS.filter(s =>
-    s.startsWith(lower)
-  );
+  const matchingCategories = primaryCategories.filter(c => c.startsWith(lower));
+  const matchingLeaves = allSuggestions.filter(s => s.startsWith(lower));
   return matchingLeaves.length > 0 ? matchingLeaves : matchingCategories;
 }
 
@@ -132,8 +52,7 @@ export function extractTagValue(
   return tag ? tag.slice(prefix.length) : undefined;
 }
 
-/** Map of tag keys that should be treated as singular (only one allowed). */
-export const SINGULAR_TAG_KEYS = new Set(['customer-type', 'account-type']);
+// Removed static SINGULAR_TAG_KEYS. Singular logic is now dynamic based on rule keys.
 
 const availableClassifications = [
   'Active account',
@@ -189,10 +108,23 @@ export function ClassificationPicker({
   const [highlightedIndex, setHighlightedIndex] = useState(-1);
   const inputRef = useRef<HTMLInputElement>(null);
 
+  const [semanticRules, setSemanticRules] = React.useState<
+    SemanticRuleConfig[]
+  >([]);
+
+  React.useEffect(() => {
+    configService.loadSystemConfig().then(config => {
+      setSemanticRules(config.dsls.semanticRules);
+    });
+  }, []);
+
   const inputTrimmed = inputValue.trim();
   const isSemanticMode = inputTrimmed.includes(':');
 
-  const semanticSuggestions = getSemanticSuggestions(inputTrimmed).filter(s => {
+  const semanticSuggestions = getSemanticSuggestions(
+    inputTrimmed,
+    semanticRules
+  ).filter(s => {
     if (value.includes(s)) return false;
     // For singular tags, hide suggestions if a different value is already selected
     // (but still show them so the user can replace)
@@ -211,7 +143,7 @@ export function ClassificationPicker({
     semanticSuggestions.length > 0 ? semanticSuggestions : plainSuggestions;
 
   const liveParseResult = isSemanticMode
-    ? tryParseSemanticTag(inputTrimmed)
+    ? tryParseSemanticTag(inputTrimmed, semanticRules)
     : null;
 
   const addClassification = (classification: string) => {
@@ -222,13 +154,20 @@ export function ClassificationPicker({
       return;
     }
 
-    const parsed = tryParseSemanticTag(trimmed);
-    const tag = parsed ? parsed.tag : trimmed;
+    const parsed = tryParseSemanticTag(trimmed, semanticRules);
+    const tag = parsed ? parsed.tag : trimmed.toLowerCase();
 
     if (!value.includes(tag)) {
-      // For singular tags, replace existing tag with same key
-      const tagKey = tag.includes(':') ? tag.split(':')[0] : null;
-      const isSingular = tagKey && SINGULAR_TAG_KEYS.has(tagKey);
+      // For singular tags, replace existing tag with same key.
+      const parts = tag.split(':');
+      const tagKey =
+        parts.length >= 3 && parts[0] === 'schedule'
+          ? `${parts[0]}:${parts[1]}`
+          : parts[0];
+      // Check if tagKey matches any semantic rule key, indicating it's singular
+      const isSingular =
+        tag.includes(':') &&
+        semanticRules.some(r => r.key === tagKey || tagKey.startsWith(r.key));
       const filtered = isSingular
         ? value.filter(c => !c.startsWith(`${tagKey}:`))
         : value;
@@ -469,7 +408,8 @@ export function ClassificationPicker({
           </code>{' '}
           <code className="rounded bg-gray-100 px-1">card:expired</code>{' '}
           <code className="rounded bg-gray-100 px-1">balance:high</code>{' '}
-          <code className="rounded bg-gray-100 px-1">user:mfa</code>
+          <code className="rounded bg-gray-100 px-1">user:mfa</code>{' '}
+          <code className="rounded bg-gray-100 px-1">schedule:month:6</code>
         </p>
       </div>
     </div>

@@ -2,7 +2,9 @@ import React, { useState } from 'react';
 
 import { AlertCircle, Loader2 } from 'lucide-react';
 
-import { CreateTestDataPayload } from '../services/types';
+import { CreateTestDataPayload, Lob } from '../services/types';
+import { useAuthStore } from '../stores/authStore';
+import { LOB_VALUES, useLobStore } from '../stores/lobStore';
 
 import { ClassificationPicker, extractTagValue } from './ClassificationPicker';
 import { TdmRecipeCombobox } from './TdmRecipeCombobox';
@@ -45,6 +47,11 @@ export function CreateTestDataDialog({
   children,
   onTestDataCreated,
 }: CreateTestDataDialogProps) {
+  const user = useAuthStore(s => s.user);
+  const activeLob = useLobStore(s => s.activeLob);
+  const isAdmin = useLobStore(s => s.isAdmin);
+  const defaultLob = activeLob === 'all' ? user!.lob : activeLob;
+
   const [open, setOpen] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
 
@@ -66,6 +73,9 @@ export function CreateTestDataDialog({
     'account-type'
   );
 
+  // LOB
+  const [lob, setLob] = useState<Lob>(defaultLob);
+
   // Labels
   const [project, setProject] = useState('');
   const [environment, setEnvironment] = useState('');
@@ -82,6 +92,7 @@ export function CreateTestDataDialog({
   const resetForm = () => {
     setSelectedClassifications([]);
     setSelectedRecipeId(undefined);
+    setLob(defaultLob);
     setProject('');
     setEnvironment('');
     setDataOwner('');
@@ -123,6 +134,7 @@ export function CreateTestDataDialog({
     try {
       const payload: CreateTestDataPayload = {
         classifications: selectedClassifications,
+        lob,
         labels: {
           project,
           environment,
@@ -202,11 +214,16 @@ export function CreateTestDataDialog({
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <TdmRecipeCombobox
-                    onSelect={recipe => {
-                      setSelectedRecipeId(recipe.id);
+                    onSelect={recipes => {
+                      // Only set ID if exactly one is selected, else undefined
+                      setSelectedRecipeId(
+                        recipes.length === 1 ? recipes[0].id : undefined
+                      );
+
                       // Merge recipe tags with existing, singular tags replace
                       const merged = [...selectedClassifications];
-                      for (const tag of recipe.tags) {
+                      const allTags = recipes.flatMap(r => r.tags);
+                      for (const tag of allTags) {
                         const key = tag.split(':')[0];
                         const isSingular =
                           key === 'customer-type' || key === 'account-type';
@@ -238,6 +255,25 @@ export function CreateTestDataDialog({
                 </CardHeader>
                 <CardContent>
                   <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="lob">LOB *</Label>
+                      <Select
+                        value={lob}
+                        onValueChange={value => setLob(value as Lob)}
+                        disabled={!isAdmin && activeLob !== 'all'}
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {LOB_VALUES.map(v => (
+                            <SelectItem key={v} value={v}>
+                              {v}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
                     <div>
                       <Label htmlFor="project">Project *</Label>
                       <Input

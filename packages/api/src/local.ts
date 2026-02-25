@@ -1,5 +1,6 @@
 import { createServer } from 'node:http';
 
+import { handleDslHttpRoute } from './lib/dslRoutes';
 import { handleExecutionHttpRoute } from './lib/executionRoutes';
 import { handleApiAction } from './lib/router';
 import { handleTestCatalogHttpRoute } from './lib/testCatalogRoutes';
@@ -145,6 +146,14 @@ createServer(async (req, res) => {
     }
 
     const routeResult = handleExecutionHttpRoute(method, path, body);
+    if (routeResult) {
+      writeJson(res, routeResult.statusCode, routeResult.body);
+      return;
+    }
+  }
+
+  if (path.startsWith('/api/dsls')) {
+    const routeResult = handleDslHttpRoute(method, path);
     if (routeResult) {
       writeJson(res, routeResult.statusCode, routeResult.body);
       return;

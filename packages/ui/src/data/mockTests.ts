@@ -25,6 +25,7 @@ export const mockTests: Test[] = [
     lastModified: '2025-08-20T09:15:00Z',
     version: 'v1.2',
     team: 'QA Team',
+    lob: 'CARD',
   },
   {
     id: 'TC-00145',
@@ -46,6 +47,7 @@ export const mockTests: Test[] = [
     lastModified: '2025-08-19T16:45:00Z',
     version: 'v2.1',
     team: 'Core Team',
+    lob: 'BANK',
   },
   {
     id: 'TC-00156',
@@ -67,6 +69,7 @@ export const mockTests: Test[] = [
     lastModified: '2025-08-20T10:30:00Z',
     version: 'v1.5',
     team: 'Mobile Team',
+    lob: 'BANK',
   },
   {
     id: 'TC-00167',
@@ -88,6 +91,7 @@ export const mockTests: Test[] = [
     lastModified: '2025-08-18T08:20:00Z',
     version: 'v2.3',
     team: 'Web Team',
+    lob: 'FS',
   },
   {
     id: 'TC-00178',
@@ -109,6 +113,7 @@ export const mockTests: Test[] = [
     lastModified: '2025-08-19T11:15:00Z',
     version: 'v1.8',
     team: 'QA Team',
+    lob: 'CARD',
   },
   {
     id: 'TC-00189',
@@ -130,6 +135,7 @@ export const mockTests: Test[] = [
     lastModified: '2025-08-20T12:00:00Z',
     version: 'v3.1',
     team: 'Core Team',
+    lob: 'BANK',
   },
   {
     id: 'TC-00190',
@@ -151,6 +157,7 @@ export const mockTests: Test[] = [
     lastModified: '2025-08-20T14:10:00Z',
     version: 'v2.0',
     team: 'Core Team',
+    lob: 'BANK',
   },
   {
     id: 'TC-00198',
@@ -168,6 +175,7 @@ export const mockTests: Test[] = [
     lastModified: '2025-08-20T11:30:00Z',
     version: 'v1.0',
     team: 'Mobile Team',
+    lob: 'BANK',
   },
   {
     id: 'TC-00201',
@@ -193,6 +201,7 @@ export const mockTests: Test[] = [
     lastModified: '2025-08-19T09:45:00Z',
     version: 'v1.0',
     team: 'Web Team',
+    lob: 'FS',
   },
   {
     id: 'TC-00212',
@@ -214,6 +223,7 @@ export const mockTests: Test[] = [
     lastModified: '2025-08-18T16:30:00Z',
     version: 'v1.3',
     team: 'Mobile Team',
+    lob: 'DFS',
   },
   {
     id: 'TC-00223',
@@ -235,6 +245,7 @@ export const mockTests: Test[] = [
     lastModified: '2025-08-20T13:45:00Z',
     version: 'v2.5',
     team: 'Web Team',
+    lob: 'DFS',
   },
   {
     id: 'TC-00234',
@@ -260,6 +271,7 @@ export const mockTests: Test[] = [
     lastModified: '2025-08-20T15:20:00Z',
     version: 'v1.7',
     team: 'QA Team',
+    lob: 'CARD',
   },
   {
     id: 'TC-00245',
@@ -281,6 +293,7 @@ export const mockTests: Test[] = [
     lastModified: '2025-08-20T16:00:00Z',
     version: 'v1.0',
     team: 'Core Team',
+    lob: 'BANK',
   },
   {
     id: 'TC-00256',
@@ -302,6 +315,7 @@ export const mockTests: Test[] = [
     lastModified: '2025-08-20T08:30:00Z',
     version: 'v1.1',
     team: 'Core Team',
+    lob: 'BANK',
   },
   {
     id: 'TC-00267',
@@ -323,5 +337,6 @@ export const mockTests: Test[] = [
     lastModified: '2025-08-20T14:15:00Z',
     version: 'v2.0',
     team: 'Web Team',
+    lob: 'CARD',
   },
 ];

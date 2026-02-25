@@ -1,9 +1,13 @@
 // Shared types for the application
 
+export const LOB_VALUES = ['CARD', 'BANK', 'FS', 'DFS'] as const;
+export type Lob = (typeof LOB_VALUES)[number];
+
 export interface User {
   id: string;
   name: string;
   profile: UserProfile;
+  lob: Lob;
 }
 
 export type UserProfile =
@@ -33,6 +37,7 @@ export interface Test {
   lastModified: string;
   version: string;
   team: string;
+  lob: Lob;
 }
 
 export interface TestDataRecord {
@@ -67,6 +72,12 @@ export interface TestDataRecord {
     runtime: string;
   } | null;
   team: string;
+  lob: Lob;
+  reconditioningSchedule: {
+    month?: number;
+    days?: number;
+    year?: number;
+  } | null;
 }
 
 export interface AssignedTestData {
@@ -94,6 +105,7 @@ export interface CreateTestFormData {
   };
   dataRequirements: string[];
   supportedRuntimes: string[];
+  lob: Lob;
   [key: string]: unknown;
 }
 
@@ -111,6 +123,7 @@ export interface CreateTestDataPayload {
     platforms?: string[];
   };
   recipeId?: string;
+  lob: Lob;
 }
 
 export interface FilterOptions {

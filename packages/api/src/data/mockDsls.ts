@@ -1,0 +1,185 @@
+import { SemanticRuleConfig, TdmRecipeConfig } from '../types/domain';
+
+export const mockSemanticRules: SemanticRuleConfig[] = [
+  {
+    id: 'rule-customer-type',
+    lob: 'BANK',
+    category: 'Flavor',
+    key: 'customer-type',
+    regexString:
+      '^customer-type:(primary-user|authorized-user|company|retail)$',
+    suggestions: [
+      'customer-type:primary-user',
+      'customer-type:authorized-user',
+      'customer-type:company',
+      'customer-type:retail',
+    ],
+  },
+  {
+    id: 'rule-account-type',
+    lob: 'BANK',
+    category: 'Flavor',
+    key: 'account-type',
+    regexString:
+      '^account-type:(checking|savings|credit-card|debit-card|business|line-of-credit)$',
+    suggestions: [
+      'account-type:checking',
+      'account-type:savings',
+      'account-type:credit-card',
+      'account-type:debit-card',
+      'account-type:business',
+      'account-type:line-of-credit',
+    ],
+  },
+  {
+    id: 'rule-account',
+    lob: 'BANK',
+    category: 'Flavor',
+    key: 'account',
+    regexString: '^account:(primary|secondary)$',
+    suggestions: ['account:primary', 'account:secondary'],
+  },
+  {
+    id: 'rule-transactions',
+    lob: 'BANK',
+    category: 'Flavor',
+    key: 'transactions',
+    regexString: '^transactions:(pending|completed):(\\d+)$',
+    suggestions: ['transactions:pending:', 'transactions:completed:'],
+  },
+  {
+    id: 'rule-card',
+    lob: 'CARD',
+    category: 'Flavor',
+    key: 'card',
+    regexString: '^card:(active|expired|inactive|new)$',
+    suggestions: ['card:active', 'card:expired', 'card:inactive', 'card:new'],
+  },
+  {
+    id: 'rule-balance',
+    lob: 'BANK',
+    category: 'Flavor',
+    key: 'balance',
+    regexString: '^balance:(high|low)$',
+    suggestions: ['balance:high', 'balance:low'],
+  },
+  {
+    id: 'rule-user',
+    lob: 'BANK',
+    category: 'Flavor',
+    key: 'user',
+    regexString: '^user:(primary|authorized|verified|mfa)$',
+    suggestions: [
+      'user:primary',
+      'user:authorized',
+      'user:verified',
+      'user:mfa',
+    ],
+  },
+  {
+    id: 'rule-schedule',
+    lob: 'BANK',
+    category: 'Recon',
+    key: 'schedule',
+    regexString: '^schedule:(month|days|year):(\\d+)$',
+    suggestions: ['schedule:month:', 'schedule:days:', 'schedule:year:'],
+  },
+];
+
+export const mockTdmRecipes: TdmRecipeConfig[] = [
+  {
+    id: 'recipe-primary-checking',
+    lob: 'BANK',
+    name: 'Primary Checking Account',
+    description: 'Standard primary user with an active checking account',
+    tags: [
+      'customer-type:primary-user',
+      'account-type:checking',
+      'account:primary',
+      'user:primary',
+    ],
+  },
+  {
+    id: 'recipe-authorized-savings',
+    lob: 'BANK',
+    name: 'Authorized Savings User',
+    description: 'Authorized user with a savings account and MFA',
+    tags: [
+      'customer-type:authorized-user',
+      'account-type:savings',
+      'user:authorized',
+      'user:mfa',
+    ],
+  },
+  {
+    id: 'recipe-business-credit',
+    lob: 'CARD',
+    name: 'Business Credit Card',
+    description: 'Company entity with an active credit card and high balance',
+    tags: [
+      'customer-type:company',
+      'account-type:credit-card',
+      'card:active',
+      'balance:high',
+    ],
+  },
+  {
+    id: 'recipe-retail-debit',
+    lob: 'CARD',
+    name: 'Retail Debit Card',
+    description: 'Retail customer with a debit card',
+    tags: [
+      'customer-type:retail',
+      'account-type:debit-card',
+      'card:active',
+      'user:verified',
+    ],
+  },
+  {
+    id: 'recipe-expired-card',
+    lob: 'CARD',
+    name: 'Expired Card Scenario',
+    description: 'Primary user with an expired credit card for renewal testing',
+    tags: [
+      'customer-type:primary-user',
+      'account-type:credit-card',
+      'card:expired',
+      'account:primary',
+    ],
+  },
+  {
+    id: 'recipe-low-balance',
+    lob: 'BANK',
+    name: 'Low Balance Account',
+    description: 'Primary user with low balance checking for NSF testing',
+    tags: [
+      'customer-type:primary-user',
+      'account-type:checking',
+      'balance:low',
+      'account:primary',
+    ],
+  },
+  {
+    id: 'recipe-business-loc',
+    lob: 'BANK',
+    name: 'Business Line of Credit',
+    description: 'Company with a line of credit and pending transactions',
+    tags: [
+      'customer-type:company',
+      'account-type:line-of-credit',
+      'balance:high',
+    ],
+  },
+  {
+    id: 'recipe-mfa-verified',
+    lob: 'BANK',
+    name: 'MFA Verified Customer',
+    description: 'Verified retail customer with MFA enabled',
+    tags: [
+      'customer-type:retail',
+      'user:verified',
+      'user:mfa',
+      'account:primary',
+    ],
+  },
+];

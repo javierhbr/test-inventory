@@ -1,7 +1,16 @@
 // Test Data service - handles all test data-related business logic
 
-import { CreateTestDataFormData, FilterOptions } from './types';
-import { generateId, filterItems, validateRequiredFields } from './utils';
+import { FilterOptions } from './types';
+import { filterItems, generateId, validateRequiredFields } from './utils';
+
+export interface CreateTestDataFormData {
+  accountId: string;
+  referenceId: string;
+  customerId: string;
+  classification: string[];
+  metadata: any;
+  [key: string]: unknown;
+}
 
 interface TestData {
   id: string;

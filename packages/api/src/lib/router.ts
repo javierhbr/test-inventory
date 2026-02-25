@@ -163,6 +163,7 @@ function handleAuthAction(action: string, payload: unknown): ActionResult {
       name:
         provider === 'enterprise' ? 'Corporate User' : `User from ${provider}`,
       profile,
+      lob: 'BANK',
     };
 
     return success(user);

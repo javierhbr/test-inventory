@@ -37,6 +37,8 @@ export const mockTestData: TestDataRecord[] = [
       runtime: 'OCP Testing Studio',
     },
     team: 'QA-Team',
+    lob: 'CARD',
+    reconditioningSchedule: { month: 3 },
   },
   {
     id: 'TD-20041',
@@ -65,6 +67,8 @@ export const mockTestData: TestDataRecord[] = [
     status: 'Available',
     lastUsed: null,
     team: 'QA-Team',
+    lob: 'BANK',
+    reconditioningSchedule: null,
   },
   {
     id: 'TD-20052',
@@ -97,6 +101,8 @@ export const mockTestData: TestDataRecord[] = [
       runtime: 'Manual Testing',
     },
     team: 'DataTeam',
+    lob: 'BANK',
+    reconditioningSchedule: { days: 30 },
   },
   {
     id: 'TD-20032',
@@ -126,6 +132,8 @@ export const mockTestData: TestDataRecord[] = [
     status: 'Available',
     lastUsed: null,
     team: 'QA Team',
+    lob: 'FS',
+    reconditioningSchedule: null,
   },
   {
     id: 'TD-20033',
@@ -159,6 +167,8 @@ export const mockTestData: TestDataRecord[] = [
       runtime: 'Sierra',
     },
     team: 'Core Team',
+    lob: 'DFS',
+    reconditioningSchedule: { month: 6, days: 15 },
   },
   {
     id: 'TD-20034',
@@ -192,6 +202,8 @@ export const mockTestData: TestDataRecord[] = [
       runtime: 'OCP Testing Studio',
     },
     team: 'Mobile Team',
+    lob: 'BANK',
+    reconditioningSchedule: null,
   },
   {
     id: 'TD-20035',
@@ -225,6 +237,8 @@ export const mockTestData: TestDataRecord[] = [
     status: 'Available',
     lastUsed: null,
     team: 'Web Team',
+    lob: 'FS',
+    reconditioningSchedule: null,
   },
   {
     id: 'TD-20036',
@@ -258,6 +272,8 @@ export const mockTestData: TestDataRecord[] = [
       runtime: 'Xero',
     },
     team: 'QA Team',
+    lob: 'CARD',
+    reconditioningSchedule: null,
   },
   {
     id: 'TD-20037',
@@ -295,6 +311,8 @@ export const mockTestData: TestDataRecord[] = [
       runtime: 'Sierra',
     },
     team: 'Core Team',
+    lob: 'BANK',
+    reconditioningSchedule: null,
   },
   {
     id: 'TD-20038',
@@ -328,6 +346,8 @@ export const mockTestData: TestDataRecord[] = [
       runtime: 'OCP Testing Studio',
     },
     team: 'Core Team',
+    lob: 'BANK',
+    reconditioningSchedule: { year: 2026 },
   },
   {
     id: 'TD-20039',
@@ -365,6 +385,8 @@ export const mockTestData: TestDataRecord[] = [
       runtime: 'Xero',
     },
     team: 'Web Team',
+    lob: 'DFS',
+    reconditioningSchedule: null,
   },
   {
     id: 'TD-20040',
@@ -402,6 +424,8 @@ export const mockTestData: TestDataRecord[] = [
       runtime: 'Xero',
     },
     team: 'QA Team',
+    lob: 'CARD',
+    reconditioningSchedule: null,
   },
   {
     id: 'TD-20042',
@@ -434,5 +458,7 @@ export const mockTestData: TestDataRecord[] = [
     status: 'Inactive',
     lastUsed: null,
     team: 'Core Team',
+    lob: 'DFS',
+    reconditioningSchedule: null,
   },
 ];

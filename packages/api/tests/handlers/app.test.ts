@@ -157,6 +157,7 @@ describe('app handler', () => {
         'customer-type:primary-user',
         'account-type:checking',
         'Active account',
+        'schedule:month:6',
       ],
       labels: {
         project: 'Core Migration',
@@ -167,6 +168,7 @@ describe('app handler', () => {
         visibility: 'manual',
       },
       recipeId: 'recipe-primary-checking',
+      lob: 'BANK',
     });
 
     const createResult = await handler(
@@ -183,12 +185,23 @@ describe('app handler', () => {
       id: string;
       customer: { type: string };
       account: { type: string };
+      classifications: string[];
+      reconditioningSchedule: {
+        month?: number;
+        days?: number;
+        year?: number;
+      } | null;
     }>;
 
     expect(createEnvelope.success).toBe(true);
     expect(createEnvelope.data?.id).toMatch(/^TD-/);
     expect(createEnvelope.data?.customer.type).toBe('Primary user');
     expect(createEnvelope.data?.account.type).toBe('Checking Account');
+    // Schedule tags should be extracted into dedicated field
+    expect(createEnvelope.data?.reconditioningSchedule).toEqual({ month: 6 });
+    expect(createEnvelope.data?.classifications).not.toContain(
+      'schedule:month:6'
+    );
 
     const createdId = createEnvelope.data!.id;
 
@@ -230,6 +243,7 @@ describe('app handler', () => {
       scope: {
         visibility: 'manual',
       },
+      lob: 'CARD',
     });
 
     const createResult = await handler(
@@ -269,6 +283,8 @@ describe('app handler', () => {
           'customer-type:company',
           'account-type:credit-card',
           'balance:high',
+          'schedule:days:45',
+          'schedule:year:2027',
         ],
         labels: {
           project: 'Core Migration',
@@ -281,6 +297,8 @@ describe('app handler', () => {
         status: 'Available',
         lastUsed: null,
         team: 'QA Team',
+        lob: 'CARD',
+        reconditioningSchedule: null,
       }
     );
 
@@ -292,13 +310,28 @@ describe('app handler', () => {
     const updateEnvelope = JSON.parse(
       (updateResult as any).body
     ) as ApiEnvelope<{
-      customer: {
-        name: string;
-      };
+      customer: { name: string };
+      classifications: string[];
+      reconditioningSchedule: {
+        month?: number;
+        days?: number;
+        year?: number;
+      } | null;
     }>;
     expect((updateResult as any).statusCode).toBe(200);
     expect(updateEnvelope.success).toBe(true);
     expect(updateEnvelope.data?.customer.name).toBe('Updated Test User');
+    // Schedule tags should be extracted on update too
+    expect(updateEnvelope.data?.reconditioningSchedule).toEqual({
+      days: 45,
+      year: 2027,
+    });
+    expect(updateEnvelope.data?.classifications).not.toContain(
+      'schedule:days:45'
+    );
+    expect(updateEnvelope.data?.classifications).not.toContain(
+      'schedule:year:2027'
+    );
 
     const getEventPayload = createEvent(
       'GET',
@@ -338,6 +371,7 @@ describe('app handler', () => {
       lastModified: new Date().toISOString(),
       version: 'v1.0',
       team: 'QA Team',
+      lob: 'BANK',
     });
 
     const createResult = await handler(

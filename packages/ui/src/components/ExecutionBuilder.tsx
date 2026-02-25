@@ -24,7 +24,19 @@ export function ExecutionBuilder() {
   }
 
   return (
-    <>
+    <div className="w-full min-w-0 space-y-6">
+      {/* Header with Actions */}
+      <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+        <div>
+          <h2 className="bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-3xl font-bold tracking-tight text-transparent">
+            Execution Builder
+          </h2>
+          <p className="mt-1 text-gray-500">
+            Construct and manage test executions
+          </p>
+        </div>
+      </div>
+
       {(vm.loadError || vm.actionError) && (
         <Card className="mb-4 border-red-200 bg-red-50">
           <CardContent className="flex items-center justify-between py-3">
@@ -73,6 +85,9 @@ export function ExecutionBuilder() {
           currentPage={vm.currentPage}
           setCurrentPage={vm.setCurrentPage}
           pageNumbers={vm.pageNumbers}
+          sortColumn={vm.sortColumn}
+          sortDirection={vm.sortDirection}
+          setSort={vm.setSort}
         />
 
         <div className="col-span-7 space-y-4">
@@ -113,6 +128,6 @@ export function ExecutionBuilder() {
         downloadYaml={vm.downloadYaml}
         generatedYaml={vm.generatedYaml}
       />
-    </>
+    </div>
   );
 }

@@ -49,7 +49,7 @@ function isValidRecord(candidate: unknown): candidate is TestDataRecord {
   }
 
   const record = candidate as Partial<TestDataRecord>;
-  return Boolean(record.id && record.customer && record.account);
+  return Boolean(record.id && record.customer && record.account && record.lob);
 }
 
 function isValidCreatePayload(
@@ -66,7 +66,9 @@ function isValidCreatePayload(
     payload.labels.environment &&
     payload.labels.dataOwner &&
     payload.scope &&
-    payload.scope.visibility
+    payload.scope.visibility &&
+    typeof payload.lob === 'string' &&
+    payload.lob.length > 0
   );
 }
 
@@ -97,6 +99,27 @@ function generateId(prefix: string): string {
 
 function generateNumericId(prefix: string): string {
   return `${prefix}-${Math.floor(Math.random() * 90000) + 10000}`;
+}
+
+function extractScheduleFromTags(tags: string[]): {
+  schedule: { month?: number; days?: number; year?: number } | null;
+  remainingTags: string[];
+} {
+  const schedule: { month?: number; days?: number; year?: number } = {};
+  const remainingTags: string[] = [];
+  for (const tag of tags) {
+    const m = tag.match(/^schedule:(month|days|year):(\d+)$/i);
+    if (m) {
+      const unit = m[1].toLowerCase() as 'month' | 'days' | 'year';
+      schedule[unit] = parseInt(m[2], 10);
+    } else {
+      remainingTags.push(tag);
+    }
+  }
+  return {
+    schedule: Object.keys(schedule).length > 0 ? schedule : null,
+    remainingTags,
+  };
 }
 
 export function listTestData(): ServiceSuccess<TestDataRecord[]> {
@@ -141,6 +164,10 @@ export function createTestData(
     );
   }
 
+  const { schedule, remainingTags } = extractScheduleFromTags(
+    candidate.classifications
+  );
+
   const customerId = generateNumericId('CUST');
   const accountId = generateNumericId('ACC');
 
@@ -165,12 +192,14 @@ export function createTestData(
       type: accountTypeLabel,
       createdAt: new Date().toISOString(),
     },
-    classifications: candidate.classifications,
+    classifications: remainingTags,
     labels: candidate.labels,
     scope: candidate.scope,
     status: 'Available',
     lastUsed: null,
     team: candidate.labels.dataOwner || 'Default Team',
+    lob: candidate.lob,
+    reconditioningSchedule: schedule,
   };
 
   testDataStore.push(created);
@@ -202,7 +231,17 @@ export function updateTestData(
     return failure(404, 'NOT_FOUND', `Test data "${id}" was not found`);
   }
 
-  testDataStore[index] = clone(candidate);
+  const { schedule, remainingTags } = extractScheduleFromTags(
+    candidate.classifications
+  );
+
+  const updated: TestDataRecord = {
+    ...clone(candidate),
+    classifications: remainingTags,
+    reconditioningSchedule: schedule,
+  };
+
+  testDataStore[index] = updated;
   return success(clone(testDataStore[index]));
 }
 

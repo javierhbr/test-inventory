@@ -1,3 +1,6 @@
+export const LOB_VALUES = ['CARD', 'BANK', 'FS', 'DFS'] as const;
+export type Lob = (typeof LOB_VALUES)[number];
+
 export type UserProfile =
   | 'dev'
   | 'automation'
@@ -9,6 +12,7 @@ export interface User {
   id: string;
   name: string;
   profile: UserProfile;
+  lob: Lob;
 }
 
 export interface Test {
@@ -31,6 +35,7 @@ export interface Test {
   lastModified: string;
   version: string;
   team: string;
+  lob: Lob;
 }
 
 export interface TestDataRecord {
@@ -65,6 +70,12 @@ export interface TestDataRecord {
     runtime: string;
   } | null;
   team: string;
+  lob: Lob;
+  reconditioningSchedule: {
+    month?: number;
+    days?: number;
+    year?: number;
+  } | null;
 }
 
 export interface CreateTestDataPayload {
@@ -81,6 +92,7 @@ export interface CreateTestDataPayload {
     platforms?: string[];
   };
   recipeId?: string;
+  lob: Lob;
 }
 
 export interface ApiActionRequest {
@@ -103,3 +115,25 @@ export interface ApiErrorResponse {
 }
 
 export type ApiActionResponse<T> = ApiSuccessResponse<T> | ApiErrorResponse;
+
+export interface SemanticRuleConfig {
+  id: string;
+  lob: Lob;
+  category: 'Flavor' | 'Recon';
+  key: string;
+  regexString: string;
+  suggestions: string[];
+}
+
+export interface TdmRecipeConfig {
+  id: string;
+  lob: Lob;
+  name: string;
+  description: string;
+  tags: string[];
+}
+
+export type GroupedDsls = Record<
+  string, // e.g., 'TestDataFlavorsBANK', 'TestDataReconCARD', 'TDMRecipesBANK'
+  Array<SemanticRuleConfig | TdmRecipeConfig>
+>;

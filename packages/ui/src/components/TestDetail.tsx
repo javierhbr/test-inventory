@@ -201,6 +201,12 @@ executions:
                 </div>
                 <div>
                   <label className="text-sm font-medium text-gray-500">
+                    LOB
+                  </label>
+                  <Badge variant="outline">{test.lob}</Badge>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-500">
                     Current Version
                   </label>
                   <Badge variant="outline">{test.version}</Badge>
@@ -253,16 +259,23 @@ executions:
                 <CardTitle>Data Requirements</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-2">
-                  {test.dataRequirements.map((req, index) => (
-                    <Badge
-                      key={index}
-                      variant="secondary"
-                      className="mb-2 mr-2"
-                    >
-                      {req}
-                    </Badge>
-                  ))}
+                <div className="flex flex-wrap">
+                  {test.dataRequirements.map((req, index) => {
+                    const isSemantic = req.includes(':');
+                    return (
+                      <Badge
+                        key={index}
+                        variant={isSemantic ? 'default' : 'secondary'}
+                        className={
+                          isSemantic
+                            ? 'mb-2 mr-2 bg-indigo-100 font-mono text-xs text-indigo-800'
+                            : 'mb-2 mr-2'
+                        }
+                      >
+                        {req}
+                      </Badge>
+                    );
+                  })}
                 </div>
               </CardContent>
             </Card>

@@ -14,9 +14,8 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 
-import { configService, UserConfig } from '../services/configService';
-
-import { UserProfile } from './Login';
+import { configService, UserConfig } from '../../services/configService';
+import { UserProfile } from '../Login';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -27,11 +26,11 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from './ui/alert-dialog';
-import { Badge } from './ui/badge';
-import { Button, buttonVariants } from './ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
-import { Checkbox } from './ui/checkbox';
+} from '../ui/alert-dialog';
+import { Badge } from '../ui/badge';
+import { Button, buttonVariants } from '../ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
+import { Checkbox } from '../ui/checkbox';
 import {
   Dialog,
   DialogContent,
@@ -39,16 +38,16 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from './ui/dialog';
-import { Input } from './ui/input';
-import { Label } from './ui/label';
+} from '../ui/dialog';
+import { Input } from '../ui/input';
+import { Label } from '../ui/label';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from './ui/select';
+} from '../ui/select';
 import {
   Table,
   TableBody,
@@ -56,8 +55,8 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from './ui/table';
-import { cn } from './ui/utils';
+} from '../ui/table';
+import { cn } from '../ui/utils';
 
 interface AppUser {
   id: string;
@@ -401,15 +400,17 @@ export function UserManagement() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="flex items-center gap-2 text-xl font-semibold">
-            <Users className="h-5 w-5" />
-            {config.title}
-          </h2>
-          <p className="text-muted-foreground mt-1 text-sm">
-            {config.description}
-          </p>
+      <div className="mb-6 flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className="rounded-xl bg-blue-50 p-2 shadow-sm ring-1 ring-blue-100/50">
+            <Users className="h-6 w-6 text-blue-600" />
+          </div>
+          <div>
+            <h2 className="bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-3xl font-bold tracking-tight text-transparent">
+              {config.title}
+            </h2>
+            <p className="mt-2 text-gray-500">{config.description}</p>
+          </div>
         </div>
         <Button onClick={() => setIsCreateDialogOpen(true)}>
           <Plus className="mr-2 h-4 w-4" />
