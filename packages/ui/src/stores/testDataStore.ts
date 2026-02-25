@@ -225,8 +225,12 @@ export const selectFilteredTestData = (
 
   if (state.sortColumn && state.sortDirection) {
     filtered = [...filtered].sort((a, b) => {
-      let aValue: any = a[state.sortColumn as keyof TestDataRecord];
-      let bValue: any = b[state.sortColumn as keyof TestDataRecord];
+      let aValue: string | number = a[
+        state.sortColumn as keyof TestDataRecord
+      ] as string;
+      let bValue: string | number = b[
+        state.sortColumn as keyof TestDataRecord
+      ] as string;
 
       if (state.sortColumn === 'customer') {
         aValue = a.customer.name;

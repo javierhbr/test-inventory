@@ -57,20 +57,24 @@ function SelectContent({
 }: React.ComponentProps<typeof SelectPrimitive.Popup> & { position?: string }) {
   return (
     <SelectPrimitive.Portal>
-      <SelectPrimitive.Positioner className="z-50">
+      <SelectPrimitive.Positioner
+        className="z-50"
+        side="bottom"
+        align="start"
+        sideOffset={4}
+        alignItemWithTrigger={false}
+      >
         <SelectPrimitive.Popup
           data-slot="select-content"
           className={cn(
-            'bg-popover text-popover-foreground data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 relative z-50 min-w-[8rem] overflow-y-auto overflow-x-hidden rounded-md border shadow-md',
+            'bg-popover text-popover-foreground data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 min-w-(--reference-width) relative z-50 overflow-y-auto overflow-x-hidden rounded-md border shadow-md',
             position === 'popper' &&
               'data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2',
             className
           )}
           {...props}
         >
-          <SelectScrollUpButton />
           <div className="p-1">{children}</div>
-          <SelectScrollDownButton />
         </SelectPrimitive.Popup>
       </SelectPrimitive.Positioner>
     </SelectPrimitive.Portal>

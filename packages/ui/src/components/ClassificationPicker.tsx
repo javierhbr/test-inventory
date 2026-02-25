@@ -43,6 +43,7 @@ function getSemanticSuggestions(
 }
 
 /** Extract the value of a semantic tag by key from a list of classifications. */
+// eslint-disable-next-line react-refresh/only-export-components
 export function extractTagValue(
   classifications: string[],
   key: string

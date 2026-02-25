@@ -13,6 +13,7 @@ export function ExecutionBuilder() {
 
   useEffect(() => {
     void vm.loadExecutionData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [vm.loadExecutionData]);
 
   if (vm.isLoading && vm.tests.length === 0) {

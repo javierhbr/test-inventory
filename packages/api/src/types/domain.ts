@@ -139,3 +139,19 @@ export interface TdmRecipeConfig {
 
 export type GroupedDsls = Record<string, DslListConfig>;
 export type GroupedRecipes = Record<string, TdmRecipeConfig[]>;
+
+export interface ConfigurationSection {
+  id: string;
+  title: string;
+  description: string;
+  type: 'list' | 'keyvalue';
+  items: string[] | Record<string, string>;
+}
+
+export interface LobConfiguration {
+  runtimes: ConfigurationSection;
+  s3config: ConfigurationSection;
+  githubRepos: ConfigurationSection;
+}
+
+export type LobConfigurationSections = Record<Lob, LobConfiguration>;

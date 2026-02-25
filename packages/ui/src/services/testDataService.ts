@@ -8,7 +8,7 @@ export interface CreateTestDataFormData {
   referenceId: string;
   customerId: string;
   classification: string[];
-  metadata: any;
+  metadata: Record<string, unknown>;
   [key: string]: unknown;
 }
 

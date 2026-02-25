@@ -7,6 +7,12 @@ import {
   UserProfile,
 } from './types';
 
+import type {
+  GroupedDsls,
+  GroupedRecipes,
+  LobConfigurationSections,
+} from './configService';
+
 interface ApiSuccessResponse<T> {
   success: true;
   data: T;
@@ -30,6 +36,7 @@ const API_ENDPOINT = `${API_BASE_URL}/api`;
 const TEST_CATALOG_ENDPOINT = `${API_BASE_URL}/api/test-catalog`;
 const TEST_DATA_ENDPOINT = `${API_BASE_URL}/api/test-data`;
 const EXECUTION_ENDPOINT = `${API_BASE_URL}/api/execution`;
+const DSL_ENDPOINT = `${API_BASE_URL}/api/dsls`;
 
 async function invokeApi<T>(
   resource: string,
@@ -174,5 +181,30 @@ export const executionApi = {
     invokeRestApi(`${EXECUTION_ENDPOINT}/assign-test-data`, {
       method: 'POST',
       body: JSON.stringify({ tests }),
+    }),
+};
+
+export const configApi = {
+  load: (): Promise<{
+    grouped: GroupedDsls;
+    recipes: GroupedRecipes;
+    lobConfig: LobConfigurationSections;
+  }> => invokeRestApi(DSL_ENDPOINT),
+
+  saveDsls: (
+    grouped: GroupedDsls,
+    recipes: GroupedRecipes
+  ): Promise<{ grouped: GroupedDsls; recipes: GroupedRecipes }> =>
+    invokeRestApi(DSL_ENDPOINT, {
+      method: 'PUT',
+      body: JSON.stringify({ grouped, recipes }),
+    }),
+
+  saveLobConfig: (
+    lobConfig: LobConfigurationSections
+  ): Promise<LobConfigurationSections> =>
+    invokeRestApi(`${DSL_ENDPOINT}/lob-config`, {
+      method: 'PUT',
+      body: JSON.stringify(lobConfig),
     }),
 };

@@ -25,6 +25,7 @@ function PopoverContent({
 }) {
   return (
     <BasePopover.Portal>
+      {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
       <BasePopover.Positioner sideOffset={_sideOffset} align={_align as any}>
         <BasePopover.Popup
           data-slot="popover-content"

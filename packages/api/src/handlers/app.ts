@@ -1,4 +1,5 @@
 import { createHandler } from '../lib/middleware';
+import { handleDslHttpRoute } from '../lib/dslRoutes';
 import { handleExecutionHttpRoute } from '../lib/executionRoutes';
 import { handleTestCatalogHttpRoute } from '../lib/testCatalogRoutes';
 import { handleApiAction } from '../lib/router';
@@ -90,6 +91,14 @@ export const handler = createHandler(
       return {
         statusCode: executionRouteResult.statusCode,
         body: JSON.stringify(executionRouteResult.body),
+      };
+    }
+
+    const dslRouteResult = handleDslHttpRoute(method, path, parsedBody);
+    if (dslRouteResult) {
+      return {
+        statusCode: dslRouteResult.statusCode,
+        body: JSON.stringify(dslRouteResult.body),
       };
     }
 

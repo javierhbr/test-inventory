@@ -16,7 +16,6 @@ import { LOB_VALUES, useLobStore } from '../stores/lobStore';
 
 import { PermissionsManager } from './configuration/PermissionsManager';
 import { Avatar, AvatarFallback } from './ui/avatar';
-import { Badge } from './ui/badge';
 import { Button } from './ui/button';
 import {
   DropdownMenu,
@@ -74,7 +73,6 @@ export function Header({
   const ProfileIcon = profileIcons[user.profile];
   const activeLob = useLobStore(s => s.activeLob);
   const setActiveLob = useLobStore(s => s.setActiveLob);
-  const isAdmin = useLobStore(s => s.isAdmin);
 
   const menuItems = [
     {
@@ -122,31 +120,22 @@ export function Header({
               <span className="text-xs font-bold uppercase tracking-widest text-gray-400">
                 LOB
               </span>
-              {isAdmin ? (
-                <Select
-                  value={activeLob}
-                  onValueChange={value => setActiveLob(value as Lob | 'all')}
-                >
-                  <SelectTrigger className="h-8 w-40 border-0 bg-transparent shadow-none focus:ring-0">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All LOBs</SelectItem>
-                    {LOB_VALUES.map(lob => (
-                      <SelectItem key={lob} value={lob}>
-                        {lob}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              ) : (
-                <Badge
-                  variant="secondary"
-                  className="px-2 py-0.5 text-xs font-medium"
-                >
-                  {activeLob}
-                </Badge>
-              )}
+              <Select
+                value={activeLob}
+                onValueChange={value => setActiveLob(value as Lob | 'all')}
+              >
+                <SelectTrigger className="h-8 w-32 border-0 bg-transparent font-medium shadow-none focus:ring-0">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All LOBs</SelectItem>
+                  {LOB_VALUES.map(lob => (
+                    <SelectItem key={lob} value={lob}>
+                      {lob}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
             <div className="h-8 w-px bg-gray-200"></div>
