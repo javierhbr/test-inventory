@@ -592,16 +592,21 @@ export function hydrateGroupedDsls(
   return result;
 }
 
-export function flattenRulesFromGrouped(grouped: GroupedDsls): SemanticRule[] {
-  return Object.values(grouped).flatMap(config =>
-    config.items.map(hydrateRule)
-  );
+export function flattenRulesFromGrouped(
+  grouped: GroupedDsls,
+  lob?: Lob
+): SemanticRule[] {
+  return Object.values(grouped)
+    .filter(config => !lob || config.lob === lob)
+    .flatMap(config => config.items.map(hydrateRule));
 }
 
 export function flattenRecipesFromGrouped(
-  recipes: GroupedRecipes
+  recipes: GroupedRecipes,
+  lob?: Lob
 ): TdmRecipeConfig[] {
-  return Object.values(recipes).flat();
+  const all = Object.values(recipes).flat();
+  return lob ? all.filter(r => r.lob === lob) : all;
 }
 
 class ConfigService {

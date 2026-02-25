@@ -191,6 +191,14 @@ export const configApi = {
     lobConfig: LobConfigurationSections;
   }> => invokeRestApi(DSL_ENDPOINT),
 
+  loadByLob: (
+    lob: string
+  ): Promise<{
+    grouped: GroupedDsls;
+    recipes: GroupedRecipes;
+    lobConfig: LobConfigurationSections;
+  }> => invokeRestApi(`${DSL_ENDPOINT}?lob=${encodeURIComponent(lob)}`),
+
   saveDsls: (
     grouped: GroupedDsls,
     recipes: GroupedRecipes

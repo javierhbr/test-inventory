@@ -1,15 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 
-import {
-  ChevronDown,
-  ChevronRight,
-  Database,
-  Edit2,
-  Plus,
-  Save,
-  Trash2,
-  X,
-} from 'lucide-react';
+import { Database, Edit2, Plus, Save, Trash2, X } from 'lucide-react';
 
 import { LOB_VALUES } from '../../stores/lobStore';
 import {
@@ -25,11 +16,6 @@ import {
 import { Badge } from '../ui/badge';
 import { Button } from '../ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from '../ui/collapsible';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 import { ScrollArea } from '../ui/scroll-area';
@@ -64,6 +50,7 @@ import type { Lob } from '../../services/types';
 // ---------------------------------------------------------------------------
 
 interface DslManagementProps {
+  activeLob: Lob;
   groupedDsls: GroupedDsls;
   groupedRecipes: GroupedRecipes;
   onUpdateDsls: (updated: GroupedDsls) => void;
@@ -154,6 +141,7 @@ function SidebarRenameInput({
 // ---------------------------------------------------------------------------
 
 export function DslManagement({
+  activeLob,
   groupedDsls,
   groupedRecipes,
   onUpdateDsls,
@@ -178,8 +166,16 @@ export function DslManagement({
     label: string;
   } | null>(null);
 
-  // -- Collapsible LOB state --
-  const [openLobs, setOpenLobs] = useState<Set<string>>(new Set(LOB_VALUES));
+  // -- Reset selection when LOB changes --
+  const prevLobRef = useRef(activeLob);
+  useEffect(() => {
+    if (prevLobRef.current !== activeLob) {
+      prevLobRef.current = activeLob;
+      resetEditing();
+      setSelectedGroupKey(null);
+      setRightPaneMode('empty');
+    }
+  }, [activeLob]);
 
   // -- Inline rename state --
   const [renamingGroupKey, setRenamingGroupKey] = useState<string | null>(null);
@@ -215,7 +211,11 @@ export function DslManagement({
     return result;
   }, [groupedDsls, groupedRecipes]);
 
-  const sortedLobs = useMemo(() => Object.keys(lobGroups).sort(), [lobGroups]);
+  const activeLobGroups = lobGroups[activeLob] ?? {
+    flavor: [],
+    recon: [],
+    recipes: [],
+  };
 
   // -------------------------------------------------------------------------
   // Navigation with dirty guard
@@ -494,99 +494,79 @@ export function DslManagement({
   // Render: Sidebar
   // -------------------------------------------------------------------------
 
-  const toggleLob = (lob: string) => {
-    setOpenLobs(prev => {
-      const next = new Set(prev);
-      if (next.has(lob)) next.delete(lob);
-      else next.add(lob);
-      return next;
-    });
-  };
-
   const renderSidebarSubSection = (
-    lob: Lob,
     label: string,
     entries: SidebarEntry[],
     type: 'flavor' | 'recon' | 'recipes'
-  ) => {
-    if (
-      entries.length === 0 &&
-      type !== 'flavor' &&
-      type !== 'recon' &&
-      type !== 'recipes'
-    )
-      return null;
+  ) => (
+    <div key={type} className="flex flex-col gap-1">
+      <div className="flex items-center justify-between px-2 py-1">
+        <span className="text-muted-foreground text-[10px] font-bold uppercase tracking-wider">
+          {label}
+        </span>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-5 w-5 text-slate-500 hover:bg-slate-200 hover:text-slate-900"
+          onClick={e => {
+            e.stopPropagation();
+            handleAddGroup(activeLob, type);
+          }}
+          title={`New ${label} group`}
+        >
+          <Plus className="h-3 w-3" />
+        </Button>
+      </div>
+      <div className="flex flex-col gap-1">
+        {entries.map(entry => {
+          const isSelected = selectedGroupKey === entry.groupKey;
+          const isRenaming = renamingGroupKey === entry.groupKey;
 
-    return (
-      <div key={type} className="flex flex-col gap-1">
-        <div className="flex items-center justify-between px-2 py-1">
-          <span className="text-muted-foreground text-[10px] font-bold uppercase tracking-wider">
-            {label}
-          </span>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-5 w-5 text-slate-500 hover:bg-slate-200 hover:text-slate-900"
-            onClick={e => {
-              e.stopPropagation();
-              handleAddGroup(lob, type);
-            }}
-            title={`New ${label} group`}
-          >
-            <Plus className="h-3 w-3" />
-          </Button>
-        </div>
-        <div className="flex flex-col gap-1">
-          {entries.map(entry => {
-            const isSelected = selectedGroupKey === entry.groupKey;
-            const isRenaming = renamingGroupKey === entry.groupKey;
-
-            if (isRenaming) {
-              return (
-                <SidebarRenameInput
-                  key={entry.groupKey}
-                  value={renameValue}
-                  onChange={setRenameValue}
-                  onCommit={commitRename}
-                  onCancel={cancelRenaming}
-                />
-              );
-            }
-
+          if (isRenaming) {
             return (
-              <button
+              <SidebarRenameInput
                 key={entry.groupKey}
-                onClick={() => selectGroup(entry.groupKey)}
-                onDoubleClick={() => startRenaming(entry.groupKey)}
-                className={`flex w-full items-center justify-between rounded-full px-3 py-1.5 text-left text-sm transition-all duration-150 ${
+                value={renameValue}
+                onChange={setRenameValue}
+                onCommit={commitRename}
+                onCancel={cancelRenaming}
+              />
+            );
+          }
+
+          return (
+            <button
+              key={entry.groupKey}
+              onClick={() => selectGroup(entry.groupKey)}
+              onDoubleClick={() => startRenaming(entry.groupKey)}
+              className={`flex w-full items-center justify-between rounded-full px-3 py-1.5 text-left text-sm transition-all duration-150 ${
+                isSelected
+                  ? 'bg-white font-semibold text-slate-900 shadow-sm ring-1 ring-slate-200/50'
+                  : 'font-medium text-slate-600 hover:bg-slate-200/50 hover:text-slate-900'
+              }`}
+            >
+              <span className="truncate">{entry.groupKey}</span>
+              <Badge
+                variant={isSelected ? 'default' : 'secondary'}
+                className={`ml-2 flex h-5 min-w-[1.25rem] items-center justify-center rounded-full px-1 text-[10px] ${
                   isSelected
-                    ? 'bg-white font-semibold text-slate-900 shadow-sm ring-1 ring-slate-200/50'
-                    : 'font-medium text-slate-600 hover:bg-slate-200/50 hover:text-slate-900'
+                    ? ''
+                    : 'bg-slate-200 text-slate-600 hover:bg-slate-300'
                 }`}
               >
-                <span className="truncate">{entry.groupKey}</span>
-                <Badge
-                  variant={isSelected ? 'default' : 'secondary'}
-                  className={`ml-2 flex h-5 min-w-[1.25rem] items-center justify-center rounded-full px-1 text-[10px] ${
-                    isSelected
-                      ? ''
-                      : 'bg-slate-200 text-slate-600 hover:bg-slate-300'
-                  }`}
-                >
-                  {entry.itemCount}
-                </Badge>
-              </button>
-            );
-          })}
-          {entries.length === 0 && (
-            <p className="px-3 py-1 text-[11px] italic text-slate-400">
-              No groups
-            </p>
-          )}
-        </div>
+                {entry.itemCount}
+              </Badge>
+            </button>
+          );
+        })}
+        {entries.length === 0 && (
+          <p className="px-3 py-1 text-[11px] italic text-slate-400">
+            No groups
+          </p>
+        )}
       </div>
-    );
-  };
+    </div>
+  );
 
   const renderSidebar = () => (
     <div className="flex h-full w-64 shrink-0 flex-col border-r bg-white">
@@ -596,54 +576,25 @@ export function DslManagement({
             DSL Lists
           </h3>
           <p className="text-xs leading-tight text-slate-500">
-            Grouped by LOB and type
+            {activeLob} — Grouped by type
           </p>
         </div>
       </div>
       <ScrollArea className="flex-1">
-        <div className="flex flex-col gap-2 p-3">
-          {sortedLobs.map(lob => {
-            const groups = lobGroups[lob];
-            const isOpen = openLobs.has(lob);
-            return (
-              <Collapsible
-                key={lob}
-                open={isOpen}
-                onOpenChange={() => toggleLob(lob)}
-              >
-                <CollapsibleTrigger className="flex w-full items-center gap-2 rounded-lg px-2 py-2 text-left font-semibold text-slate-700 transition-colors hover:bg-slate-100">
-                  {isOpen ? (
-                    <ChevronDown className="h-4 w-4 shrink-0 text-slate-500" />
-                  ) : (
-                    <ChevronRight className="h-4 w-4 shrink-0 text-slate-500" />
-                  )}
-                  <span>{lob}</span>
-                </CollapsibleTrigger>
-                <CollapsibleContent>
-                  <div className="mb-2 ml-2 mt-1 flex flex-col gap-3 rounded-xl bg-slate-100 p-2">
-                    {renderSidebarSubSection(
-                      lob as Lob,
-                      'Flavor',
-                      groups.flavor,
-                      'flavor'
-                    )}
-                    {renderSidebarSubSection(
-                      lob as Lob,
-                      'Recon',
-                      groups.recon,
-                      'recon'
-                    )}
-                    {renderSidebarSubSection(
-                      lob as Lob,
-                      'Recipes',
-                      groups.recipes,
-                      'recipes'
-                    )}
-                  </div>
-                </CollapsibleContent>
-              </Collapsible>
-            );
-          })}
+        <div className="flex flex-col gap-3 p-3">
+          <div className="flex flex-col gap-3 rounded-xl bg-slate-100 p-2">
+            {renderSidebarSubSection(
+              'Flavor',
+              activeLobGroups.flavor,
+              'flavor'
+            )}
+            {renderSidebarSubSection('Recon', activeLobGroups.recon, 'recon')}
+            {renderSidebarSubSection(
+              'Recipes',
+              activeLobGroups.recipes,
+              'recipes'
+            )}
+          </div>
         </div>
       </ScrollArea>
     </div>

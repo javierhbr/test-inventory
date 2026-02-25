@@ -2,10 +2,9 @@ import React, { useRef, useState } from 'react';
 
 import { Check, Pencil, X } from 'lucide-react';
 
-import {
-  configService,
-  flattenRulesFromGrouped,
-} from '../services/configService';
+import { configApi } from '../services/apiClient';
+import { flattenRulesFromGrouped } from '../services/configService';
+import { useLobStore } from '../stores/lobStore';
 
 import { Badge } from './ui/badge';
 import { Input } from './ui/input';
@@ -110,12 +109,15 @@ export function ClassificationPicker({
   const inputRef = useRef<HTMLInputElement>(null);
 
   const [semanticRules, setSemanticRules] = React.useState<SemanticRule[]>([]);
+  const activeLob = useLobStore(s => s.activeLob);
 
   React.useEffect(() => {
-    configService.loadSystemConfig().then(config => {
-      setSemanticRules(flattenRulesFromGrouped(config.dsls.grouped));
+    const lob = activeLob === 'all' ? undefined : activeLob;
+    const promise = lob ? configApi.loadByLob(lob) : configApi.load();
+    promise.then(data => {
+      setSemanticRules(flattenRulesFromGrouped(data.grouped));
     });
-  }, []);
+  }, [activeLob]);
 
   const inputTrimmed = inputValue.trim();
   const isSemanticMode = inputTrimmed.includes(':');

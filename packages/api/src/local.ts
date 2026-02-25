@@ -175,7 +175,9 @@ createServer(async (req, res) => {
       }
     }
 
-    const routeResult = handleDslHttpRoute(method, path, body);
+    const queryString = url.split('?')[1] || '';
+    const queryParams = Object.fromEntries(new URLSearchParams(queryString));
+    const routeResult = handleDslHttpRoute(method, path, body, queryParams);
     if (routeResult) {
       writeJson(res, routeResult.statusCode, routeResult.body);
       return;

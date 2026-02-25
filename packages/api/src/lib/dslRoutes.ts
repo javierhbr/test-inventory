@@ -3,7 +3,9 @@ import { mockLobConfigurations } from '../data/mockLobConfig';
 import type {
   GroupedDsls,
   GroupedRecipes,
+  Lob,
   LobConfigurationSections,
+  TdmRecipeConfig,
 } from '../types/domain';
 
 interface DslRouteResult {
@@ -56,21 +58,38 @@ function methodNotAllowed(method: string, path: string): DslRouteResult {
 export function handleDslHttpRoute(
   method: string,
   rawPath: string,
-  body: unknown
+  body: unknown,
+  queryParams?: Record<string, string | undefined>
 ): DslRouteResult | null {
   const path = normalizePath(rawPath);
 
-  // GET /api/dsls — read all config
+  // GET /api/dsls — read all config (optionally filtered by ?lob=CARD)
   // PUT /api/dsls — replace grouped DSLs + recipes
   if (path === '/api/dsls') {
     if (method === 'GET') {
+      const lobFilter = queryParams?.lob as Lob | undefined;
+
+      let grouped = dslStore;
+      let recipes = recipeStore;
+
+      if (lobFilter) {
+        grouped = Object.fromEntries(
+          Object.entries(dslStore).filter(([, v]) => v.lob === lobFilter)
+        );
+        recipes = Object.fromEntries(
+          Object.entries(recipeStore)
+            .map(([k, v]) => [k, v.filter(r => r.lob === lobFilter)])
+            .filter(([, v]) => (v as TdmRecipeConfig[]).length > 0)
+        );
+      }
+
       return {
         statusCode: 200,
         body: {
           success: true,
           data: {
-            grouped: dslStore,
-            recipes: recipeStore,
+            grouped,
+            recipes,
             lobConfig: lobConfigStore,
           },
         },

@@ -8,7 +8,7 @@ import {
   ConfigurationSection,
   SystemConfig,
 } from '../../services/configService';
-import { LOB_VALUES } from '../../stores/lobStore';
+import { LOB_VALUES, useLobStore } from '../../stores/lobStore';
 import { Badge } from '../ui/badge';
 import { Button } from '../ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
@@ -171,6 +171,11 @@ function ConfigSectionCard({
 
 export function SystemConfiguration() {
   const [systemConfig, setSystemConfig] = useState<SystemConfig | null>(null);
+  const globalLob = useLobStore(s => s.activeLob);
+  const isAllLobs = globalLob === 'all';
+  const [selectedTab, setSelectedTab] = useState<Lob>(LOB_VALUES[0]);
+  // When a specific LOB is selected globally, lock to it; otherwise use tab selection
+  const activeLob: Lob = isAllLobs ? selectedTab : globalLob;
   const [editingSection, setEditingSection] = useState<EditingTarget | null>(
     null
   );
@@ -305,55 +310,94 @@ export function SystemConfiguration() {
       </div>
 
       {/* LOB Configuration Sections */}
-      <Tabs defaultValue={LOB_VALUES[0]}>
-        <TabsList>
-          {LOB_VALUES.map(lob => (
-            <TabsTrigger key={lob} value={lob}>
-              {lob}
-            </TabsTrigger>
-          ))}
-        </TabsList>
+      {isAllLobs ? (
+        <Tabs value={selectedTab} onValueChange={v => setSelectedTab(v as Lob)}>
+          <TabsList>
+            {LOB_VALUES.map(lob => (
+              <TabsTrigger key={lob} value={lob}>
+                {lob}
+              </TabsTrigger>
+            ))}
+          </TabsList>
 
-        {LOB_VALUES.map(lob => {
-          const lobConfig = lobConfigurations[lob];
-          return (
-            <TabsContent key={lob} value={lob}>
-              <div className="grid grid-cols-1 gap-6 pt-4 md:grid-cols-3">
-                {(['runtimes', 's3config', 'githubRepos'] as const).map(
-                  sectionKey => {
-                    const section = lobConfig[sectionKey];
-                    const isEditing =
-                      editingSection?.lob === lob &&
-                      editingSection?.sectionKey === sectionKey;
+          {LOB_VALUES.map(lob => {
+            const lobConfig = lobConfigurations[lob];
+            return (
+              <TabsContent key={lob} value={lob}>
+                <div className="grid grid-cols-1 gap-6 pt-4 md:grid-cols-3">
+                  {(['runtimes', 's3config', 'githubRepos'] as const).map(
+                    sectionKey => {
+                      const section = lobConfig[sectionKey];
+                      const isEditing =
+                        editingSection?.lob === lob &&
+                        editingSection?.sectionKey === sectionKey;
 
-                    return (
-                      <ConfigSectionCard
-                        key={section.id}
-                        section={section}
-                        isEditing={isEditing}
-                        editingDisabled={editingSection !== null}
-                        editData={editData}
-                        hasChanges={hasChanges}
-                        editableKeys={sectionKey === 'runtimes'}
-                        onEdit={() => handleEditSection(lob, sectionKey)}
-                        onSave={handleSaveSection}
-                        onCancel={handleCancelEdit}
-                        onKeyValueChange={handleKeyValueChange}
-                        onKeyRename={handleKeyRename}
-                        onAddKeyValue={handleAddKeyValue}
-                        onRemoveKeyValue={handleRemoveKeyValue}
-                      />
-                    );
-                  }
-                )}
-              </div>
-            </TabsContent>
-          );
-        })}
-      </Tabs>
+                      return (
+                        <ConfigSectionCard
+                          key={section.id}
+                          section={section}
+                          isEditing={isEditing}
+                          editingDisabled={editingSection !== null}
+                          editData={editData}
+                          hasChanges={hasChanges}
+                          editableKeys={sectionKey === 'runtimes'}
+                          onEdit={() => handleEditSection(lob, sectionKey)}
+                          onSave={handleSaveSection}
+                          onCancel={handleCancelEdit}
+                          onKeyValueChange={handleKeyValueChange}
+                          onKeyRename={handleKeyRename}
+                          onAddKeyValue={handleAddKeyValue}
+                          onRemoveKeyValue={handleRemoveKeyValue}
+                        />
+                      );
+                    }
+                  )}
+                </div>
+              </TabsContent>
+            );
+          })}
+        </Tabs>
+      ) : (
+        <div>
+          <div className="mb-4 flex items-center gap-2">
+            <Badge className="text-sm">{activeLob}</Badge>
+          </div>
+
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+            {(['runtimes', 's3config', 'githubRepos'] as const).map(
+              sectionKey => {
+                const section = lobConfigurations[activeLob][sectionKey];
+                const isEditing =
+                  editingSection?.lob === activeLob &&
+                  editingSection?.sectionKey === sectionKey;
+
+                return (
+                  <ConfigSectionCard
+                    key={section.id}
+                    section={section}
+                    isEditing={isEditing}
+                    editingDisabled={editingSection !== null}
+                    editData={editData}
+                    hasChanges={hasChanges}
+                    editableKeys={sectionKey === 'runtimes'}
+                    onEdit={() => handleEditSection(activeLob, sectionKey)}
+                    onSave={handleSaveSection}
+                    onCancel={handleCancelEdit}
+                    onKeyValueChange={handleKeyValueChange}
+                    onKeyRename={handleKeyRename}
+                    onAddKeyValue={handleAddKeyValue}
+                    onRemoveKeyValue={handleRemoveKeyValue}
+                  />
+                );
+              }
+            )}
+          </div>
+        </div>
+      )}
 
       {/* DSLs Management Section — Master-Detail */}
       <DslManagement
+        activeLob={activeLob}
         groupedDsls={groupedDsls}
         groupedRecipes={groupedRecipes}
         onUpdateDsls={updated => {

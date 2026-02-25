@@ -2,8 +2,8 @@ import React, { useRef, useState } from 'react';
 
 import { BookOpen, Check, ChevronsUpDown, X } from 'lucide-react';
 
+import { configApi } from '../services/apiClient';
 import {
-  configService,
   flattenRecipesFromGrouped,
   TdmRecipeConfig,
 } from '../services/configService';
@@ -33,15 +33,12 @@ export function TdmRecipeCombobox({ onSelect }: TdmRecipeComboboxProps) {
   const { activeLob } = useLobStore();
 
   React.useEffect(() => {
-    configService.loadSystemConfig().then(config => {
-      setRecipes(flattenRecipesFromGrouped(config.dsls.recipes));
+    const promise =
+      activeLob === 'all' ? configApi.load() : configApi.loadByLob(activeLob);
+    promise.then(data => {
+      setRecipes(flattenRecipesFromGrouped(data.recipes));
     });
-  }, []);
-
-  const filteredRecipes = React.useMemo(() => {
-    if (activeLob === 'all') return recipes;
-    return recipes.filter(r => r.lob === activeLob);
-  }, [recipes, activeLob]);
+  }, [activeLob]);
 
   const toggleRecipe = (recipeId: string) => {
     const isSelected = selectedRecipeIds.includes(recipeId);
@@ -127,7 +124,7 @@ export function TdmRecipeCombobox({ onSelect }: TdmRecipeComboboxProps) {
             <CommandList>
               <CommandEmpty>No recipe found.</CommandEmpty>
               <CommandGroup>
-                {filteredRecipes.map(recipe => (
+                {recipes.map(recipe => (
                   <CommandItem
                     key={recipe.id}
                     value={`${recipe.name} ${recipe.description} ${recipe.tags.join(' ')}`}

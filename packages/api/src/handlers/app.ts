@@ -94,7 +94,12 @@ export const handler = createHandler(
       };
     }
 
-    const dslRouteResult = handleDslHttpRoute(method, path, parsedBody);
+    const dslRouteResult = handleDslHttpRoute(
+      method,
+      path,
+      parsedBody,
+      event.queryStringParameters ?? {}
+    );
     if (dslRouteResult) {
       return {
         statusCode: dslRouteResult.statusCode,
