@@ -19,19 +19,23 @@ function PopoverContent({
   align: _align = 'center',
   sideOffset: _sideOffset = 4,
   ...props
-}: React.HTMLAttributes<HTMLDivElement> & {
+}: React.ComponentProps<typeof BasePopover.Popup> & {
   align?: string;
   sideOffset?: number;
 }) {
   return (
-    <div
-      data-slot="popover-content"
-      className={cn(
-        'bg-popover text-popover-foreground z-50 w-72 rounded-md border p-4 shadow-md',
-        className
-      )}
-      {...props}
-    />
+    <BasePopover.Portal>
+      <BasePopover.Positioner sideOffset={_sideOffset} align={_align as any}>
+        <BasePopover.Popup
+          data-slot="popover-content"
+          className={cn(
+            'bg-popover text-popover-foreground z-50 w-72 rounded-md border p-4 shadow-md',
+            className
+          )}
+          {...props}
+        />
+      </BasePopover.Positioner>
+    </BasePopover.Portal>
   );
 }
 
@@ -39,4 +43,4 @@ function PopoverAnchor({ ...props }: React.ComponentProps<'div'>) {
   return <div data-slot="popover-anchor" {...props} />;
 }
 
-export { Popover, PopoverTrigger, PopoverContent, PopoverAnchor };
+export { Popover, PopoverAnchor, PopoverContent, PopoverTrigger };

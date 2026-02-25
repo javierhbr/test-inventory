@@ -1,10 +1,20 @@
 import { useEffect, useState } from 'react';
 
-import { Download, Eye, Pencil, Plus, RefreshCw, Trash2 } from 'lucide-react';
+import {
+  ArrowDown,
+  ArrowUp,
+  ArrowUpDown,
+  Download,
+  Eye,
+  Pencil,
+  Plus,
+  RefreshCw,
+  Trash2,
+} from 'lucide-react';
 import { useShallow } from 'zustand/react/shallow';
 
 import { testDataApi } from '../services/apiClient';
-import { TestDataRecord } from '../services/types';
+import { CreateTestDataPayload, TestDataRecord } from '../services/types';
 import { useHasPermission } from '../stores/permissionsStore';
 import {
   selectFilteredTestData,
@@ -36,6 +46,7 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from './ui/pagination';
+import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
 import {
   Table,
   TableBody,
@@ -45,8 +56,6 @@ import {
   TableRow,
 } from './ui/table';
 import { cn } from './ui/utils';
-
-const ITEMS_PER_PAGE = 10;
 
 const STATUS_BADGE_VARIANTS: Record<string, string> = {
   Available: 'bg-green-100 text-green-800',
@@ -61,6 +70,50 @@ const SCOPE_BADGE_VARIANTS: Record<string, string> = {
   automated: 'bg-blue-100 text-blue-800',
   platform: 'bg-orange-100 text-orange-800',
 };
+
+interface ColumnHeaderProps {
+  title: string;
+  columnKey: string;
+  sortColumn: string | null;
+  sortDirection: 'asc' | 'desc' | null;
+  setSort: (column: string | null, direction: 'asc' | 'desc' | null) => void;
+  className?: string;
+}
+
+function ColumnHeader({
+  title,
+  columnKey,
+  sortColumn,
+  sortDirection,
+  setSort,
+  className,
+}: ColumnHeaderProps) {
+  const isSorted = sortColumn === columnKey;
+
+  return (
+    <div className={cn('flex items-center gap-1', className)}>
+      <Button
+        variant="ghost"
+        size="sm"
+        className="data-[state=open]:bg-accent -ml-3 h-8"
+        onClick={() => {
+          if (isSorted && sortDirection === 'asc') setSort(columnKey, 'desc');
+          else if (isSorted && sortDirection === 'desc') setSort(null, null);
+          else setSort(columnKey, 'asc');
+        }}
+      >
+        <span>{title}</span>
+        {isSorted && sortDirection === 'desc' ? (
+          <ArrowDown className="ml-2 h-4 w-4" />
+        ) : isSorted && sortDirection === 'asc' ? (
+          <ArrowUp className="ml-2 h-4 w-4" />
+        ) : (
+          <ArrowUpDown className="ml-2 h-4 w-4 opacity-50" />
+        )}
+      </Button>
+    </div>
+  );
+}
 
 export function TestDataInventory() {
   const hasPermission = useHasPermission();
@@ -78,6 +131,9 @@ export function TestDataInventory() {
   const currentPage = useTestDataStore(s => s.currentPage);
   const selectAllPages = useTestDataStore(s => s.selectAllPages);
   const selectedTestData = useTestDataStore(s => s.selectedTestData);
+  const sortColumn = useTestDataStore(s => s.sortColumn);
+  const sortDirection = useTestDataStore(s => s.sortDirection);
+  const itemsPerPage = useTestDataStore(s => s.itemsPerPage);
 
   // Store actions
   const setSearchTerm = useTestDataStore(s => s.setSearchTerm);
@@ -99,6 +155,8 @@ export function TestDataInventory() {
   const updateTestData = useTestDataStore(s => s.updateTestData);
   const deleteTestData = useTestDataStore(s => s.deleteTestData);
   const bulkDelete = useTestDataStore(s => s.bulkDelete);
+  const setSort = useTestDataStore(s => s.setSort);
+  const setItemsPerPage = useTestDataStore(s => s.setItemsPerPage);
   const [isLoadingData, setIsLoadingData] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
 
@@ -123,9 +181,9 @@ export function TestDataInventory() {
   }, []);
 
   // Pagination calculations
-  const totalPages = Math.ceil(filteredTestData.length / ITEMS_PER_PAGE);
-  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-  const endIndex = startIndex + ITEMS_PER_PAGE;
+  const totalPages = Math.ceil(filteredTestData.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
   const paginatedTestData = filteredTestData.slice(startIndex, endIndex);
 
   // Selection handlers
@@ -226,8 +284,8 @@ export function TestDataInventory() {
     );
   };
 
-  const handleCreateTestData = async (newTestData: TestDataRecord) => {
-    const createdTestData = await testDataApi.create(newTestData);
+  const handleCreateTestData = async (payload: CreateTestDataPayload) => {
+    const createdTestData = await testDataApi.create(payload);
     addTestData(createdTestData);
   };
 
@@ -460,7 +518,7 @@ ${data.scope.platforms.map(platform => `        - ${platform}`).join('\n')}`
   }
 
   return (
-    <div className="space-y-6">
+    <div className="w-full min-w-0 space-y-6">
       {/* Header with Actions */}
       <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
@@ -471,7 +529,7 @@ ${data.scope.platforms.map(platform => `        - ${platform}`).join('\n')}`
             Manage your test data and banking entities efficiently
           </p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-2 sm:gap-3">
           {hasPermission('create_test_data') && (
             <CreateTestDataDialog onTestDataCreated={handleCreateTestData}>
               <div
@@ -593,17 +651,97 @@ ${data.scope.platforms.map(platform => `        - ${platform}`).join('\n')}`
                     />
                   </div>
                 </TableHead>
-                <TableHead>ID</TableHead>
-                <TableHead>Customer</TableHead>
-                <TableHead>Account Ref</TableHead>
-                <TableHead>Type</TableHead>
-                <TableHead>Classifications</TableHead>
-                <TableHead>Labels</TableHead>
-                <TableHead>Team</TableHead>
-                <TableHead>Scope</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Last Used</TableHead>
-                <TableHead>Actions</TableHead>
+                <TableHead className="w-24">
+                  <ColumnHeader
+                    title="ID"
+                    columnKey="id"
+                    sortColumn={sortColumn}
+                    sortDirection={sortDirection}
+                    setSort={setSort}
+                  />
+                </TableHead>
+                <TableHead className="min-w-[200px]">
+                  <ColumnHeader
+                    title="Customer"
+                    columnKey="customer"
+                    sortColumn={sortColumn}
+                    sortDirection={sortDirection}
+                    setSort={setSort}
+                  />
+                </TableHead>
+                <TableHead className="w-40">
+                  <ColumnHeader
+                    title="Account Ref"
+                    columnKey="accountRef"
+                    sortColumn={sortColumn}
+                    sortDirection={sortDirection}
+                    setSort={setSort}
+                  />
+                </TableHead>
+                <TableHead className="w-40">
+                  <ColumnHeader
+                    title="Type"
+                    columnKey="type"
+                    sortColumn={sortColumn}
+                    sortDirection={sortDirection}
+                    setSort={setSort}
+                  />
+                </TableHead>
+                <TableHead className="w-48">
+                  <ColumnHeader
+                    title="Flavors"
+                    columnKey="classifications"
+                    sortColumn={sortColumn}
+                    sortDirection={sortDirection}
+                    setSort={setSort}
+                  />
+                </TableHead>
+                <TableHead className="w-40">
+                  <ColumnHeader
+                    title="Labels"
+                    columnKey="labels"
+                    sortColumn={sortColumn}
+                    sortDirection={sortDirection}
+                    setSort={setSort}
+                  />
+                </TableHead>
+                <TableHead className="w-32">
+                  <ColumnHeader
+                    title="Team"
+                    columnKey="team"
+                    sortColumn={sortColumn}
+                    sortDirection={sortDirection}
+                    setSort={setSort}
+                  />
+                </TableHead>
+                <TableHead className="w-32">
+                  <ColumnHeader
+                    title="Scope"
+                    columnKey="scope"
+                    sortColumn={sortColumn}
+                    sortDirection={sortDirection}
+                    setSort={setSort}
+                  />
+                </TableHead>
+                <TableHead className="w-32">
+                  <ColumnHeader
+                    title="Status"
+                    columnKey="status"
+                    sortColumn={sortColumn}
+                    sortDirection={sortDirection}
+                    setSort={setSort}
+                  />
+                </TableHead>
+                <TableHead className="w-40">
+                  <ColumnHeader
+                    title="Last Used"
+                    columnKey="lastUsed"
+                    sortColumn={sortColumn}
+                    sortDirection={sortDirection}
+                    setSort={setSort}
+                  />
+                </TableHead>
+                <TableHead className="w-24">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -654,9 +792,34 @@ ${data.scope.platforms.map(platform => `        - ${platform}`).join('\n')}`
                           </Badge>
                         ))}
                       {data.classifications.length > 2 && (
-                        <Badge variant="outline" className="text-xs">
-                          +{data.classifications.length - 2}
-                        </Badge>
+                        <Popover>
+                          <PopoverTrigger className="cursor-pointer">
+                            <Badge
+                              variant="outline"
+                              className="text-xs hover:bg-gray-100"
+                            >
+                              +{data.classifications.length - 2}
+                            </Badge>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-56 p-3" align="start">
+                            <h4 className="mb-2 text-sm font-medium leading-none">
+                              All Flavors
+                            </h4>
+                            <div className="flex flex-wrap gap-1">
+                              {data.classifications.map(
+                                (classification, index) => (
+                                  <Badge
+                                    key={index}
+                                    variant="secondary"
+                                    className="text-xs"
+                                  >
+                                    {classification}
+                                  </Badge>
+                                )
+                              )}
+                            </div>
+                          </PopoverContent>
+                        </Popover>
                       )}
                     </div>
                   </TableCell>
@@ -842,16 +1005,32 @@ ${data.scope.platforms.map(platform => `        - ${platform}`).join('\n')}`
         </CardContent>
 
         {/* Pagination */}
-        {totalPages > 1 && (
-          <div className="border-t px-6 py-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <p className="text-muted-foreground text-sm">
+        {filteredTestData.length > 0 && (
+          <div className="border-t px-4 py-4 sm:px-6">
+            <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
+                <p className="text-muted-foreground whitespace-nowrap text-sm">
                   Showing {startIndex + 1} to{' '}
                   {Math.min(endIndex, filteredTestData.length)} of{' '}
-                  {filteredTestData.length} results
+                  {filteredTestData.length} records
                 </p>
-                {filteredTestData.length > ITEMS_PER_PAGE && (
+                <div className="flex items-center gap-2">
+                  <span className="text-muted-foreground whitespace-nowrap text-sm">
+                    Per page:
+                  </span>
+                  <select
+                    className="border-input bg-background focus-visible:ring-ring h-8 rounded-md border px-2 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1"
+                    value={itemsPerPage}
+                    onChange={e => setItemsPerPage(Number(e.target.value))}
+                  >
+                    {[15, 30, 45, 60].map(size => (
+                      <option key={size} value={size}>
+                        {size}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                {filteredTestData.length > itemsPerPage && (
                   <div className="flex items-center gap-2">
                     <Checkbox
                       id="select-all-pages-testdata"

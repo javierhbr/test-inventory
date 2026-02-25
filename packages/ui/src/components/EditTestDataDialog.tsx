@@ -4,6 +4,11 @@ import { Pencil, Save, X } from 'lucide-react';
 
 import { TestDataRecord } from '../services/types';
 
+import {
+  ClassificationPicker,
+  SINGULAR_TAG_KEYS,
+} from './ClassificationPicker';
+import { TdmRecipeCombobox } from './TdmRecipeCombobox';
 import { Button } from './ui/button';
 import {
   Card,
@@ -29,7 +34,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from './ui/select';
-import { Textarea } from './ui/textarea';
 
 interface EditTestDataDialogProps {
   testData: TestDataRecord;
@@ -43,8 +47,10 @@ export function EditTestDataDialog({
   children,
 }: EditTestDataDialogProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const [classifications, setClassifications] = useState<string[]>([
+    ...testData.classifications,
+  ]);
   const [formData, setFormData] = useState({
-    classifications: testData.classifications.join(', '),
     project: testData.labels.project,
     environment: testData.labels.environment,
     dataOwner: testData.labels.dataOwner,
@@ -66,10 +72,7 @@ export function EditTestDataDialog({
   const handleSave = async () => {
     const updatedTestData: TestDataRecord = {
       ...testData,
-      classifications: formData.classifications
-        .split(',')
-        .map(c => c.trim())
-        .filter(c => c.length > 0),
+      classifications,
       labels: {
         project: formData.project,
         environment: formData.environment,
@@ -106,8 +109,8 @@ export function EditTestDataDialog({
   };
 
   const handleReset = () => {
+    setClassifications([...testData.classifications]);
     setFormData({
-      classifications: testData.classifications.join(', '),
       project: testData.labels.project,
       environment: testData.labels.environment,
       dataOwner: testData.labels.dataOwner,
@@ -232,27 +235,32 @@ export function EditTestDataDialog({
                 <CardDescription>Modify these fields as needed</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                {/* Classifications */}
-                <div>
-                  <Label
-                    htmlFor="classifications"
-                    className="text-sm font-medium"
-                  >
-                    Classifications
+                {/* Test Data Flavor */}
+                <div className="space-y-3">
+                  <Label className="text-sm font-medium">
+                    Test Data Flavor
                   </Label>
-                  <Textarea
-                    id="classifications"
-                    placeholder="Enter classifications separated by commas"
-                    value={formData.classifications}
-                    onChange={e =>
-                      handleInputChange('classifications', e.target.value)
-                    }
-                    className="mt-1"
-                    rows={3}
+                  <TdmRecipeCombobox
+                    onSelect={recipe => {
+                      const merged = [...classifications];
+                      for (const tag of recipe.tags) {
+                        const key = tag.split(':')[0];
+                        const isSingular = SINGULAR_TAG_KEYS.has(key);
+                        if (isSingular) {
+                          const idx = merged.findIndex(c =>
+                            c.startsWith(`${key}:`)
+                          );
+                          if (idx >= 0) merged.splice(idx, 1);
+                        }
+                        if (!merged.includes(tag)) merged.push(tag);
+                      }
+                      setClassifications(merged);
+                    }}
                   />
-                  <p className="mt-1 text-xs text-gray-500">
-                    Separate multiple classifications with commas
-                  </p>
+                  <ClassificationPicker
+                    value={classifications}
+                    onChange={setClassifications}
+                  />
                 </div>
 
                 {/* Labels Section */}

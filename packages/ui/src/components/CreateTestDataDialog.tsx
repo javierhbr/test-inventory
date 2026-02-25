@@ -2,9 +2,10 @@ import React, { useState } from 'react';
 
 import { AlertCircle, Loader2 } from 'lucide-react';
 
-import { TestDataRecord } from '../services/types';
+import { CreateTestDataPayload } from '../services/types';
 
-import { ClassificationPicker } from './ClassificationPicker';
+import { ClassificationPicker, extractTagValue } from './ClassificationPicker';
+import { TdmRecipeCombobox } from './TdmRecipeCombobox';
 import { Badge } from './ui/badge';
 import { Button } from './ui/button';
 import {
@@ -35,21 +36,10 @@ import {
 
 interface CreateTestDataDialogProps {
   children: React.ReactNode;
-  onTestDataCreated: (testData: TestDataRecord) => Promise<void> | void;
+  onTestDataCreated: (payload: CreateTestDataPayload) => Promise<void> | void;
 }
 
 const availablePlatforms = ['OCP Testing Studio', 'Xero', 'Sierra'];
-
-const customerTypes = ['Primary user', 'Authorized user', 'Company', 'Retail'];
-
-const accountTypes = [
-  'Checking Account',
-  'Savings Account',
-  'Credit Card',
-  'Debit Card',
-  'Business Account',
-  'Line of Credit',
-];
 
 export function CreateTestDataDialog({
   children,
@@ -58,12 +48,23 @@ export function CreateTestDataDialog({
   const [open, setOpen] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
 
-  // Form fields
-  const [customerType, setCustomerType] = useState('');
-  const [accountType, setAccountType] = useState('');
+  // Classifications (includes customer-type: and account-type: tags)
   const [selectedClassifications, setSelectedClassifications] = useState<
     string[]
   >([]);
+  const [selectedRecipeId, setSelectedRecipeId] = useState<
+    string | undefined
+  >();
+
+  // Derive customer/account type from semantic tags
+  const customerTypeTag = extractTagValue(
+    selectedClassifications,
+    'customer-type'
+  );
+  const accountTypeTag = extractTagValue(
+    selectedClassifications,
+    'account-type'
+  );
 
   // Labels
   const [project, setProject] = useState('');
@@ -79,9 +80,8 @@ export function CreateTestDataDialog({
   const [selectedPlatforms, setSelectedPlatforms] = useState<string[]>([]);
 
   const resetForm = () => {
-    setCustomerType('');
-    setAccountType('');
     setSelectedClassifications([]);
+    setSelectedRecipeId(undefined);
     setProject('');
     setEnvironment('');
     setDataOwner('');
@@ -99,51 +99,12 @@ export function CreateTestDataDialog({
     }
   };
 
-  const generateTestDataId = () => {
-    return `TD-${Date.now().toString().slice(-5)}`;
-  };
-
-  const generateCustomerId = () => {
-    return `CUST-${Math.floor(Math.random() * 90000) + 10000}`;
-  };
-
-  const generateAccountId = () => {
-    return `ACC-${Math.floor(Math.random() * 90000) + 10000}`;
-  };
-
-  const generateAccountRef = (accountId: string) => {
-    return `REF-${accountId}`;
-  };
-
-  const simulateApiCall = async () => {
-    // Simulate API call delay
-    await new Promise(resolve => setTimeout(resolve, 2000));
-
-    // Simulate potential API failure (10% chance)
-    if (Math.random() < 0.1) {
-      throw new Error('Failed to create account via external API');
-    }
-
-    const customerId = generateCustomerId();
-    const accountId = generateAccountId();
-
-    return {
-      customerId,
-      accountId,
-      referenceId: generateAccountRef(accountId),
-      customerName:
-        customerType === 'Company'
-          ? `Company ${customerId.slice(-3)}`
-          : `User ${customerId.slice(-3)}`,
-    };
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (
-      !customerType ||
-      !accountType ||
+      !customerTypeTag ||
+      !accountTypeTag ||
       selectedClassifications.length === 0 ||
       !environment ||
       !dataOwner
@@ -160,22 +121,7 @@ export function CreateTestDataDialog({
     setIsCreating(true);
 
     try {
-      // Simulate API call to create account/customer
-      const apiResult = await simulateApiCall();
-
-      const newTestData: TestDataRecord = {
-        id: generateTestDataId(),
-        customer: {
-          customerId: apiResult.customerId,
-          name: apiResult.customerName,
-          type: customerType,
-        },
-        account: {
-          accountId: apiResult.accountId,
-          referenceId: apiResult.referenceId,
-          type: accountType,
-          createdAt: new Date().toISOString(),
-        },
+      const payload: CreateTestDataPayload = {
         classifications: selectedClassifications,
         labels: {
           project,
@@ -188,12 +134,10 @@ export function CreateTestDataDialog({
           visibility,
           ...(visibility === 'platform' && { platforms: selectedPlatforms }),
         },
-        status: 'Available',
-        lastUsed: null,
-        team: dataOwner || 'Default Team',
+        ...(selectedRecipeId && { recipeId: selectedRecipeId }),
       };
 
-      await onTestDataCreated(newTestData);
+      await onTestDataCreated(payload);
       setOpen(false);
       resetForm();
     } catch (error) {
@@ -240,71 +184,43 @@ export function CreateTestDataDialog({
                 </CardContent>
               </Card>
 
-              {/* Account Configuration */}
+              {/* Test Data Flavor — includes mandatory customer-type: and account-type: tags */}
               <Card>
                 <CardHeader>
-                  <CardTitle>Account Configuration</CardTitle>
+                  <CardTitle>Test Data Flavor *</CardTitle>
                   <CardDescription>
-                    Specify the type of account and customer to create
+                    Define the flavor of your test data using semantic tags.{' '}
+                    <code className="rounded bg-gray-100 px-1 text-xs">
+                      customer-type:
+                    </code>{' '}
+                    and{' '}
+                    <code className="rounded bg-gray-100 px-1 text-xs">
+                      account-type:
+                    </code>{' '}
+                    are required. Optionally pick a TDM Recipe to pre-fill.
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="customerType">Customer Type *</Label>
-                      <Select
-                        value={customerType}
-                        onValueChange={value =>
-                          setCustomerType(value as string)
+                  <TdmRecipeCombobox
+                    onSelect={recipe => {
+                      setSelectedRecipeId(recipe.id);
+                      // Merge recipe tags with existing, singular tags replace
+                      const merged = [...selectedClassifications];
+                      for (const tag of recipe.tags) {
+                        const key = tag.split(':')[0];
+                        const isSingular =
+                          key === 'customer-type' || key === 'account-type';
+                        if (isSingular) {
+                          const idx = merged.findIndex(c =>
+                            c.startsWith(`${key}:`)
+                          );
+                          if (idx >= 0) merged.splice(idx, 1);
                         }
-                      >
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {customerTypes.map(type => (
-                            <SelectItem key={type} value={type}>
-                              {type}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div>
-                      <Label htmlFor="accountType">Account Type *</Label>
-                      <Select
-                        value={accountType}
-                        onValueChange={value => setAccountType(value as string)}
-                      >
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {accountTypes.map(type => (
-                            <SelectItem key={type} value={type}>
-                              {type}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Classifications */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>Classifications *</CardTitle>
-                  <CardDescription>
-                    Type to search, use semantic tags (e.g.{' '}
-                    <code className="rounded bg-gray-100 px-1 text-xs">
-                      account:primary
-                    </code>
-                    ), or add custom values
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
+                        if (!merged.includes(tag)) merged.push(tag);
+                      }
+                      setSelectedClassifications(merged);
+                    }}
+                  />
                   <ClassificationPicker
                     value={selectedClassifications}
                     onChange={setSelectedClassifications}

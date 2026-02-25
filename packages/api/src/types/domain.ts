@@ -67,6 +67,22 @@ export interface TestDataRecord {
   team: string;
 }
 
+export interface CreateTestDataPayload {
+  classifications: string[];
+  labels: {
+    project: string;
+    environment: string;
+    dataOwner: string;
+    group?: string;
+    source?: string;
+  };
+  scope: {
+    visibility: 'manual' | 'automated' | 'platform';
+    platforms?: string[];
+  };
+  recipeId?: string;
+}
+
 export interface ApiActionRequest {
   resource: string;
   action: string;

@@ -1,4 +1,11 @@
-import { Test, TestDataRecord, User, UserProfile } from './types';
+import {
+  AssignedTestData,
+  CreateTestDataPayload,
+  Test,
+  TestDataRecord,
+  User,
+  UserProfile,
+} from './types';
 
 interface ApiSuccessResponse<T> {
   success: true;
@@ -22,6 +29,7 @@ const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || '').replace(
 const API_ENDPOINT = `${API_BASE_URL}/api`;
 const TEST_CATALOG_ENDPOINT = `${API_BASE_URL}/api/test-catalog`;
 const TEST_DATA_ENDPOINT = `${API_BASE_URL}/api/test-data`;
+const EXECUTION_ENDPOINT = `${API_BASE_URL}/api/execution`;
 
 async function invokeApi<T>(
   resource: string,
@@ -87,10 +95,10 @@ export const testDataApi = {
   list: (): Promise<TestDataRecord[]> => invokeRestApi(TEST_DATA_ENDPOINT),
   get: (id: string): Promise<TestDataRecord> =>
     invokeRestApi(`${TEST_DATA_ENDPOINT}/${encodeURIComponent(id)}`),
-  create: (record: TestDataRecord): Promise<TestDataRecord> =>
+  create: (payload: CreateTestDataPayload): Promise<TestDataRecord> =>
     invokeRestApi(TEST_DATA_ENDPOINT, {
       method: 'POST',
-      body: JSON.stringify(record),
+      body: JSON.stringify(payload),
     }),
   update: (record: TestDataRecord): Promise<TestDataRecord> =>
     invokeRestApi(`${TEST_DATA_ENDPOINT}/${encodeURIComponent(record.id)}`, {
@@ -140,5 +148,31 @@ export const testCatalogApi = {
     invokeRestApi(TEST_CATALOG_ENDPOINT, {
       method: 'DELETE',
       body: JSON.stringify({ ids }),
+    }),
+};
+
+export const executionApi = {
+  listTests: (): Promise<Test[]> =>
+    invokeRestApi(`${EXECUTION_ENDPOINT}/tests`),
+  listTestData: (): Promise<TestDataRecord[]> =>
+    invokeRestApi(`${EXECUTION_ENDPOINT}/test-data`),
+  importCsv: (
+    csvContent: string
+  ): Promise<{ tests: Test[]; invalidTestIds: string[] }> =>
+    invokeRestApi(`${EXECUTION_ENDPOINT}/import-csv`, {
+      method: 'POST',
+      body: JSON.stringify({ csvContent }),
+    }),
+  assignTestData: (
+    tests: Array<{ id: string; dataRequirements: string[] }>
+  ): Promise<{
+    assignments: Array<{
+      testId: string;
+      assignedTestData: AssignedTestData | null;
+    }>;
+  }> =>
+    invokeRestApi(`${EXECUTION_ENDPOINT}/assign-test-data`, {
+      method: 'POST',
+      body: JSON.stringify({ tests }),
     }),
 };

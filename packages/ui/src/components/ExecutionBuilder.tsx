@@ -1,14 +1,47 @@
+import { useEffect } from 'react';
+
 import { ExecutionCartPanel } from './execution-builder/ExecutionCartPanel';
 import { ExecutionConfigurationCard } from './execution-builder/ExecutionConfigurationCard';
 import { ExecutionDialogs } from './execution-builder/ExecutionDialogs';
 import { ExecutionTestsPanel } from './execution-builder/ExecutionTestsPanel';
 import { useExecutionBuilderViewModel } from './execution-builder/useExecutionBuilderViewModel';
+import { Button } from './ui/button';
+import { Card, CardContent } from './ui/card';
 
 export function ExecutionBuilder() {
   const vm = useExecutionBuilderViewModel();
 
+  useEffect(() => {
+    void vm.loadExecutionData();
+  }, [vm.loadExecutionData]);
+
+  if (vm.isLoading && vm.tests.length === 0) {
+    return (
+      <div className="flex min-h-[360px] items-center justify-center rounded-lg border bg-white">
+        <div className="text-sm text-gray-600">Loading execution data...</div>
+      </div>
+    );
+  }
+
   return (
     <>
+      {(vm.loadError || vm.actionError) && (
+        <Card className="mb-4 border-red-200 bg-red-50">
+          <CardContent className="flex items-center justify-between py-3">
+            <p className="text-sm text-red-700">
+              {vm.loadError || vm.actionError}
+            </p>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => void vm.loadExecutionData()}
+            >
+              Retry
+            </Button>
+          </CardContent>
+        </Card>
+      )}
+
       <div className="grid h-[calc(100vh-200px)] grid-cols-12 gap-6">
         <ExecutionTestsPanel
           searchTerm={vm.searchTerm}

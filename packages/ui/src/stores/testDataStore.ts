@@ -13,7 +13,12 @@ interface TestDataState {
   selectedTestData: TestDataRecord | null;
   selectedDataIds: Set<string>;
   currentPage: number;
+  itemsPerPage: number;
   selectAllPages: boolean;
+
+  // Column specific filters and sort
+  sortColumn: string | null;
+  sortDirection: 'asc' | 'desc' | null;
 }
 
 interface TestDataActions {
@@ -33,6 +38,7 @@ interface TestDataActions {
   setFilterProyecto: (proyecto: string | string[]) => void;
   setFilterTeam: (team: string | string[]) => void;
   clearFilters: () => void;
+  setSort: (column: string | null, direction: 'asc' | 'desc' | null) => void;
 
   // UI state
   setSelectedTestData: (data: TestDataRecord | null) => void;
@@ -41,6 +47,7 @@ interface TestDataActions {
   selectAllData: (dataIds: string[]) => void;
   clearSelection: () => void;
   setCurrentPage: (page: number) => void;
+  setItemsPerPage: (itemsPerPage: number) => void;
   setSelectAllPages: (value: boolean) => void;
 }
 
@@ -57,7 +64,10 @@ const initialState: TestDataState = {
   selectedTestData: null,
   selectedDataIds: new Set<string>(),
   currentPage: 1,
+  itemsPerPage: 15,
   selectAllPages: false,
+  sortColumn: null,
+  sortDirection: null,
 };
 
 export const useTestDataStore = create<TestDataStore>()(set => ({
@@ -114,7 +124,11 @@ export const useTestDataStore = create<TestDataStore>()(set => ({
       filterProyecto: 'all',
       filterTeam: 'all',
       currentPage: 1,
+      sortColumn: null,
+      sortDirection: null,
     }),
+  setSort: (column, direction) =>
+    set({ sortColumn: column, sortDirection: direction }),
 
   // UI state
   setSelectedTestData: data => set({ selectedTestData: data }),
@@ -143,6 +157,7 @@ export const useTestDataStore = create<TestDataStore>()(set => ({
   clearSelection: () => set({ selectedDataIds: new Set<string>() }),
 
   setCurrentPage: page => set({ currentPage: page }),
+  setItemsPerPage: itemsPerPage => set({ itemsPerPage, currentPage: 1 }),
   setSelectAllPages: value => set({ selectAllPages: value }),
 }));
 
@@ -150,7 +165,7 @@ export const useTestDataStore = create<TestDataStore>()(set => ({
 export const selectFilteredTestData = (
   state: TestDataStore
 ): TestDataRecord[] => {
-  return state.testData.filter(data => {
+  let filtered = state.testData.filter(data => {
     const matchesSearch =
       data.id.toLowerCase().includes(state.searchTerm.toLowerCase()) ||
       data.customer.name
@@ -207,4 +222,34 @@ export const selectFilteredTestData = (
       matchesTeam
     );
   });
+
+  if (state.sortColumn && state.sortDirection) {
+    filtered = [...filtered].sort((a, b) => {
+      let aValue: any = a[state.sortColumn as keyof TestDataRecord];
+      let bValue: any = b[state.sortColumn as keyof TestDataRecord];
+
+      if (state.sortColumn === 'customer') {
+        aValue = a.customer.name;
+        bValue = b.customer.name;
+      } else if (state.sortColumn === 'accountRef') {
+        aValue = a.account.referenceId;
+        bValue = b.account.referenceId;
+      } else if (state.sortColumn === 'type') {
+        aValue = a.account.type;
+        bValue = b.account.type;
+      } else if (state.sortColumn === 'lastUsed') {
+        aValue = a.lastUsed ? new Date(a.lastUsed.date).getTime() : 0;
+        bValue = b.lastUsed ? new Date(b.lastUsed.date).getTime() : 0;
+      } else if (state.sortColumn === 'scope') {
+        aValue = a.scope.visibility;
+        bValue = b.scope.visibility;
+      }
+
+      if (aValue < bValue) return state.sortDirection === 'asc' ? -1 : 1;
+      if (aValue > bValue) return state.sortDirection === 'asc' ? 1 : -1;
+      return 0;
+    });
+  }
+
+  return filtered;
 };

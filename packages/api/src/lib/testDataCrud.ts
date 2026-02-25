@@ -1,5 +1,5 @@
 import { mockTestData } from '../data/mockTestData';
-import { TestDataRecord } from '../types/domain';
+import { CreateTestDataPayload, TestDataRecord } from '../types/domain';
 
 export interface ServiceSuccess<T> {
   ok: true;
@@ -52,6 +52,53 @@ function isValidRecord(candidate: unknown): candidate is TestDataRecord {
   return Boolean(record.id && record.customer && record.account);
 }
 
+function isValidCreatePayload(
+  candidate: unknown
+): candidate is CreateTestDataPayload {
+  if (typeof candidate !== 'object' || candidate === null) {
+    return false;
+  }
+
+  const payload = candidate as Partial<CreateTestDataPayload>;
+  return Boolean(
+    Array.isArray(payload.classifications) &&
+    payload.labels &&
+    payload.labels.environment &&
+    payload.labels.dataOwner &&
+    payload.scope &&
+    payload.scope.visibility
+  );
+}
+
+const CUSTOMER_TYPE_LABELS: Record<string, string> = {
+  'primary-user': 'Primary user',
+  'authorized-user': 'Authorized user',
+  company: 'Company',
+  retail: 'Retail',
+};
+
+const ACCOUNT_TYPE_LABELS: Record<string, string> = {
+  checking: 'Checking Account',
+  savings: 'Savings Account',
+  'credit-card': 'Credit Card',
+  'debit-card': 'Debit Card',
+  business: 'Business Account',
+  'line-of-credit': 'Line of Credit',
+};
+
+function extractTagValue(tags: string[], key: string): string | undefined {
+  const tag = tags.find(t => t.startsWith(`${key}:`));
+  return tag ? tag.slice(key.length + 1) : undefined;
+}
+
+function generateId(prefix: string): string {
+  return `${prefix}-${Date.now().toString().slice(-5)}`;
+}
+
+function generateNumericId(prefix: string): string {
+  return `${prefix}-${Math.floor(Math.random() * 90000) + 10000}`;
+}
+
 export function listTestData(): ServiceSuccess<TestDataRecord[]> {
   return success(clone(testDataStore));
 }
@@ -69,24 +116,63 @@ export function getTestData(id: string): ServiceResult<TestDataRecord> {
 export function createTestData(
   candidate: unknown
 ): ServiceResult<TestDataRecord> {
-  if (!isValidRecord(candidate)) {
+  if (!isValidCreatePayload(candidate)) {
     return failure(
       400,
       'BAD_REQUEST',
-      'Create payload must be a valid test data record'
+      'Create payload must include classifications, labels, and scope'
     );
   }
 
-  const exists = testDataStore.some(item => item.id === candidate.id);
-  if (exists) {
+  const customerTypeTag = extractTagValue(
+    candidate.classifications,
+    'customer-type'
+  );
+  const accountTypeTag = extractTagValue(
+    candidate.classifications,
+    'account-type'
+  );
+
+  if (!customerTypeTag || !accountTypeTag) {
     return failure(
-      409,
-      'CONFLICT',
-      `Test data "${candidate.id}" already exists`
+      400,
+      'BAD_REQUEST',
+      'Classifications must include both customer-type: and account-type: tags'
     );
   }
 
-  const created = clone(candidate);
+  const customerId = generateNumericId('CUST');
+  const accountId = generateNumericId('ACC');
+
+  const customerTypeLabel =
+    CUSTOMER_TYPE_LABELS[customerTypeTag] || customerTypeTag;
+  const accountTypeLabel =
+    ACCOUNT_TYPE_LABELS[accountTypeTag] || accountTypeTag;
+
+  const created: TestDataRecord = {
+    id: generateId('TD'),
+    customer: {
+      customerId,
+      name:
+        customerTypeTag === 'company'
+          ? `Company ${customerId.slice(-3)}`
+          : `User ${customerId.slice(-3)}`,
+      type: customerTypeLabel,
+    },
+    account: {
+      accountId,
+      referenceId: `REF-${accountId}`,
+      type: accountTypeLabel,
+      createdAt: new Date().toISOString(),
+    },
+    classifications: candidate.classifications,
+    labels: candidate.labels,
+    scope: candidate.scope,
+    status: 'Available',
+    lastUsed: null,
+    team: candidate.labels.dataOwner || 'Default Team',
+  };
+
   testDataStore.push(created);
   return success(clone(created), 201);
 }

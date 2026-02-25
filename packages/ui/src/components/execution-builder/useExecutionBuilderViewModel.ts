@@ -45,6 +45,10 @@ const FILTER_TEAM_OPTIONS = [
 ];
 
 export interface ExecutionBuilderViewModel {
+  isLoading: boolean;
+  loadError: string | null;
+  actionError: string | null;
+  loadExecutionData: () => Promise<void>;
   tests: Test[];
   cart: CartItem[];
   filteredTests: Test[];
@@ -103,6 +107,9 @@ export interface ExecutionBuilderViewModel {
 }
 
 export const useExecutionBuilderViewModel = (): ExecutionBuilderViewModel => {
+  const isLoading = useExecutionStore(s => s.isLoading);
+  const loadError = useExecutionStore(s => s.loadError);
+  const actionError = useExecutionStore(s => s.actionError);
   const tests = useExecutionStore(s => s.tests);
   const cart = useExecutionStore(s => s.cart);
   const filteredTests = useExecutionStore(useShallow(selectFilteredTests));
@@ -124,6 +131,7 @@ export const useExecutionBuilderViewModel = (): ExecutionBuilderViewModel => {
   const cartCurrentPage = useExecutionStore(s => s.cartCurrentPage);
   const cartSearchFilter = useExecutionStore(s => s.cartSearchFilter);
 
+  const loadExecutionData = useExecutionStore(s => s.loadExecutionData);
   const setSearchTerm = useExecutionStore(s => s.setSearchTerm);
   const setFilterFlow = useExecutionStore(s => s.setFilterFlow);
   const setFilterStatus = useExecutionStore(s => s.setFilterStatus);
@@ -135,9 +143,9 @@ export const useExecutionBuilderViewModel = (): ExecutionBuilderViewModel => {
   const removeFilteredCart = useExecutionStore(s => s.removeFilteredCart);
   const clearCart = useExecutionStore(s => s.clearCart);
   const addSelectedToCart = useExecutionStore(s => s.addSelectedToCart);
-  const assignTestData = useExecutionStore(s => s.assignTestData);
+  const assignTestDataFromApi = useExecutionStore(s => s.assignTestData);
   const setCsvInput = useExecutionStore(s => s.setCsvInput);
-  const handleCsvImport = useExecutionStore(s => s.handleCsvImport);
+  const handleCsvImportFromApi = useExecutionStore(s => s.handleCsvImport);
   const setShowCsvDialog = useExecutionStore(s => s.setShowCsvDialog);
   const setShowYamlDialog = useExecutionStore(s => s.setShowYamlDialog);
   const setShowValidationModal = useExecutionStore(
@@ -247,6 +255,14 @@ export const useExecutionBuilderViewModel = (): ExecutionBuilderViewModel => {
     removeFilteredCart(filteredCartIds);
   };
 
+  const assignTestData = () => {
+    void assignTestDataFromApi();
+  };
+
+  const handleCsvImport = () => {
+    void handleCsvImportFromApi();
+  };
+
   const handleExportYaml = () => {
     if (cart.length === 0 || !selectedRuntime) {
       setShowValidationModal(true);
@@ -281,6 +297,10 @@ export const useExecutionBuilderViewModel = (): ExecutionBuilderViewModel => {
   };
 
   return {
+    isLoading,
+    loadError,
+    actionError,
+    loadExecutionData,
     tests,
     cart,
     filteredTests,

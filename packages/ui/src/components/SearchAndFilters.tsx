@@ -291,7 +291,7 @@ export function SearchAndFilters({
         </div>
 
         {/* Summary and Select All */}
-        <div className="mt-4 flex items-center justify-between">
+        <div className="mt-4 flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
           <span className="text-sm text-gray-600">
             Showing {filteredCount} of {totalCount} {itemType}
           </span>

@@ -1,5 +1,6 @@
 import { createServer } from 'node:http';
 
+import { handleExecutionHttpRoute } from './lib/executionRoutes';
 import { handleApiAction } from './lib/router';
 import { handleTestCatalogHttpRoute } from './lib/testCatalogRoutes';
 import { handleTestDataHttpRoute } from './lib/testDataRoutes';
@@ -114,6 +115,36 @@ createServer(async (req, res) => {
     }
 
     const routeResult = handleTestCatalogHttpRoute(method, path, body);
+    if (routeResult) {
+      writeJson(res, routeResult.statusCode, routeResult.body);
+      return;
+    }
+  }
+
+  if (path.startsWith('/api/execution')) {
+    let body: unknown = {};
+
+    if (
+      method === 'POST' ||
+      method === 'PUT' ||
+      method === 'PATCH' ||
+      method === 'DELETE'
+    ) {
+      try {
+        body = await parseJsonBody(req);
+      } catch {
+        writeJson(res, 400, {
+          success: false,
+          error: {
+            code: 'BAD_REQUEST',
+            message: 'Request body must be valid JSON',
+          },
+        });
+        return;
+      }
+    }
+
+    const routeResult = handleExecutionHttpRoute(method, path, body);
     if (routeResult) {
       writeJson(res, routeResult.statusCode, routeResult.body);
       return;

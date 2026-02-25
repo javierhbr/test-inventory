@@ -97,17 +97,20 @@ export interface CreateTestFormData {
   [key: string]: unknown;
 }
 
-export interface CreateTestDataFormData {
-  accountId: string;
-  referenceId: string;
-  customerId: string;
-  classification: string[];
-  metadata: {
-    source: string;
+export interface CreateTestDataPayload {
+  classifications: string[];
+  labels: {
+    project: string;
     environment: string;
-    region: string;
+    dataOwner: string;
+    group?: string;
+    source?: string;
   };
-  [key: string]: unknown;
+  scope: {
+    visibility: 'manual' | 'automated' | 'platform';
+    platforms?: string[];
+  };
+  recipeId?: string;
 }
 
 export interface FilterOptions {

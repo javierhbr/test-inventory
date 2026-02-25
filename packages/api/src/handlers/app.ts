@@ -1,4 +1,5 @@
 import { createHandler } from '../lib/middleware';
+import { handleExecutionHttpRoute } from '../lib/executionRoutes';
 import { handleTestCatalogHttpRoute } from '../lib/testCatalogRoutes';
 import { handleApiAction } from '../lib/router';
 import { handleTestDataHttpRoute } from '../lib/testDataRoutes';
@@ -77,6 +78,18 @@ export const handler = createHandler(
       return {
         statusCode: testCatalogRouteResult.statusCode,
         body: JSON.stringify(testCatalogRouteResult.body),
+      };
+    }
+
+    const executionRouteResult = handleExecutionHttpRoute(
+      method,
+      path,
+      parsedBody
+    );
+    if (executionRouteResult) {
+      return {
+        statusCode: executionRouteResult.statusCode,
+        body: JSON.stringify(executionRouteResult.body),
       };
     }
 

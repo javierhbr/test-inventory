@@ -91,23 +91,73 @@ describe('app handler', () => {
     expect(envelope.data?.[0].id).toBe('TC-00123');
   });
 
-  it('supports create and delete through /api/test-data CRUD routes', async () => {
-    const id = `TD-TEST-${Date.now()}`;
+  it('GET /api/execution/tests returns tests for execution builder', async () => {
+    const event = createEvent('GET', '/api/execution/tests');
 
+    const result = await handler(event as any, {} as any, () => {});
+    const envelope = JSON.parse((result as any).body) as ApiEnvelope<
+      Array<{ id: string }>
+    >;
+
+    expect((result as any).statusCode).toBe(200);
+    expect(envelope.success).toBe(true);
+    expect(Array.isArray(envelope.data)).toBe(true);
+    expect((envelope.data || []).length).toBeGreaterThan(0);
+    expect(envelope.data?.[0].id).toBe('TC-00123');
+  });
+
+  it('GET /api/execution returns execution routes metadata', async () => {
+    const event = createEvent('GET', '/api/execution');
+
+    const result = await handler(event as any, {} as any, () => {});
+    const envelope = JSON.parse((result as any).body) as ApiEnvelope<{
+      routes: string[];
+    }>;
+
+    expect((result as any).statusCode).toBe(200);
+    expect(envelope.success).toBe(true);
+    expect(envelope.data?.routes).toContain('/api/execution/tests');
+  });
+
+  it('POST /api/execution/assign-test-data returns assignment payload', async () => {
+    const event = createEvent('POST', '/api/execution/assign-test-data', {
+      tests: [
+        {
+          id: 'TC-00123',
+          dataRequirements: ['Expired account', 'Authorized user'],
+        },
+      ],
+    });
+
+    const result = await handler(event as any, {} as any, () => {});
+    const envelope = JSON.parse((result as any).body) as ApiEnvelope<{
+      assignments: Array<{
+        testId: string;
+        assignedTestData: {
+          id: string;
+          accountId: string;
+          referenceId: string;
+          customerId: string;
+          assignedAt: string;
+          status: string;
+        } | null;
+      }>;
+    }>;
+
+    expect((result as any).statusCode).toBe(200);
+    expect(envelope.success).toBe(true);
+    expect(envelope.data?.assignments).toHaveLength(1);
+    expect(envelope.data?.assignments[0].testId).toBe('TC-00123');
+    expect(envelope.data?.assignments[0].assignedTestData?.id).toBeDefined();
+  });
+
+  it('supports create and delete through /api/test-data CRUD routes', async () => {
     const createEventPayload = createEvent('POST', '/api/test-data', {
-      id,
-      customer: {
-        customerId: 'CUST-TEST',
-        name: 'Test User',
-        type: 'Individual',
-      },
-      account: {
-        accountId: 'ACC-TEST',
-        referenceId: 'REF-ACC-TEST',
-        type: 'Checking Account',
-        createdAt: new Date().toISOString(),
-      },
-      classifications: ['Active account'],
+      classifications: [
+        'customer-type:primary-user',
+        'account-type:checking',
+        'Active account',
+      ],
       labels: {
         project: 'Core Migration',
         environment: 'QA',
@@ -116,9 +166,7 @@ describe('app handler', () => {
       scope: {
         visibility: 'manual',
       },
-      status: 'Available',
-      lastUsed: null,
-      team: 'QA Team',
+      recipeId: 'recipe-primary-checking',
     });
 
     const createResult = await handler(
@@ -129,9 +177,24 @@ describe('app handler', () => {
 
     expect((createResult as any).statusCode).toBe(201);
 
+    const createEnvelope = JSON.parse(
+      (createResult as any).body
+    ) as ApiEnvelope<{
+      id: string;
+      customer: { type: string };
+      account: { type: string };
+    }>;
+
+    expect(createEnvelope.success).toBe(true);
+    expect(createEnvelope.data?.id).toMatch(/^TD-/);
+    expect(createEnvelope.data?.customer.type).toBe('Primary user');
+    expect(createEnvelope.data?.account.type).toBe('Checking Account');
+
+    const createdId = createEnvelope.data!.id;
+
     const deleteEventPayload = createEvent(
       'DELETE',
-      `/api/test-data/${encodeURIComponent(id)}`,
+      `/api/test-data/${encodeURIComponent(createdId)}`,
       {}
     );
 
@@ -148,7 +211,112 @@ describe('app handler', () => {
 
     expect((deleteResult as any).statusCode).toBe(200);
     expect(deleteEnvelope.success).toBe(true);
-    expect(deleteEnvelope.data?.id).toBe(id);
+    expect(deleteEnvelope.data?.id).toBe(createdId);
+  });
+
+  it('supports get and update through /api/test-data CRUD routes', async () => {
+    // Create via new payload shape
+    const createEventPayload = createEvent('POST', '/api/test-data', {
+      classifications: [
+        'customer-type:company',
+        'account-type:credit-card',
+        'balance:high',
+      ],
+      labels: {
+        project: 'Core Migration',
+        environment: 'QA',
+        dataOwner: 'QA Team',
+      },
+      scope: {
+        visibility: 'manual',
+      },
+    });
+
+    const createResult = await handler(
+      createEventPayload as any,
+      {} as any,
+      () => {}
+    );
+    expect((createResult as any).statusCode).toBe(201);
+
+    const createEnvelope = JSON.parse(
+      (createResult as any).body
+    ) as ApiEnvelope<{
+      id: string;
+      customer: { customerId: string; name: string; type: string };
+      account: {
+        accountId: string;
+        referenceId: string;
+        type: string;
+        createdAt: string;
+      };
+    }>;
+    const created = createEnvelope.data!;
+
+    // Update the created record (PUT uses full TestDataRecord shape)
+    const updateEventPayload = createEvent(
+      'PUT',
+      `/api/test-data/${encodeURIComponent(created.id)}`,
+      {
+        id: created.id,
+        customer: {
+          customerId: created.customer.customerId,
+          name: 'Updated Test User',
+          type: created.customer.type,
+        },
+        account: created.account,
+        classifications: [
+          'customer-type:company',
+          'account-type:credit-card',
+          'balance:high',
+        ],
+        labels: {
+          project: 'Core Migration',
+          environment: 'QA',
+          dataOwner: 'QA Team',
+        },
+        scope: {
+          visibility: 'manual',
+        },
+        status: 'Available',
+        lastUsed: null,
+        team: 'QA Team',
+      }
+    );
+
+    const updateResult = await handler(
+      updateEventPayload as any,
+      {} as any,
+      () => {}
+    );
+    const updateEnvelope = JSON.parse(
+      (updateResult as any).body
+    ) as ApiEnvelope<{
+      customer: {
+        name: string;
+      };
+    }>;
+    expect((updateResult as any).statusCode).toBe(200);
+    expect(updateEnvelope.success).toBe(true);
+    expect(updateEnvelope.data?.customer.name).toBe('Updated Test User');
+
+    const getEventPayload = createEvent(
+      'GET',
+      `/api/test-data/${encodeURIComponent(created.id)}`
+    );
+    const getResult = await handler(
+      getEventPayload as any,
+      {} as any,
+      () => {}
+    );
+    expect((getResult as any).statusCode).toBe(200);
+
+    const deleteEventPayload = createEvent(
+      'DELETE',
+      `/api/test-data/${encodeURIComponent(created.id)}`,
+      {}
+    );
+    await handler(deleteEventPayload as any, {} as any, () => {});
   });
 
   it('supports create and delete through /api/test-catalog CRUD routes', async () => {

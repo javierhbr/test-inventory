@@ -1,10 +1,11 @@
 import { create } from 'zustand';
 
-import { mockTests } from '../data/mockTests';
-import { Test, CartItem } from '../services/types';
+import { executionApi } from '../services/apiClient';
+import { CartItem, Test, TestDataRecord } from '../services/types';
 
 interface ExecutionState {
   tests: Test[];
+  executionTestData: TestDataRecord[];
   cart: CartItem[];
   searchTerm: string;
   filterFlow: string | string[];
@@ -22,20 +23,25 @@ interface ExecutionState {
   currentPage: number;
   cartCurrentPage: number;
   cartSearchFilter: string;
+  isLoading: boolean;
+  loadError: string | null;
+  actionError: string | null;
 }
 
 interface ExecutionActions {
+  loadExecutionData: () => Promise<void>;
+
   // Cart actions
   addToCart: (test: Test) => void;
   removeFromCart: (testId: string) => void;
   removeFilteredCart: (filteredCartIds: Set<string>) => void;
   clearCart: () => void;
   addSelectedToCart: () => void;
-  assignTestData: () => void;
+  assignTestData: () => Promise<void>;
 
   // CSV import
   setCsvInput: (input: string) => void;
-  handleCsvImport: () => void;
+  handleCsvImport: () => Promise<void>;
   setShowCsvDialog: (show: boolean) => void;
 
   // YAML
@@ -68,7 +74,8 @@ interface ExecutionActions {
 type ExecutionStore = ExecutionState & ExecutionActions;
 
 const initialState: ExecutionState = {
-  tests: mockTests,
+  tests: [],
+  executionTestData: [],
   cart: [],
   searchTerm: '',
   filterFlow: 'all',
@@ -86,13 +93,49 @@ const initialState: ExecutionState = {
   currentPage: 1,
   cartCurrentPage: 1,
   cartSearchFilter: 'all',
+  isLoading: false,
+  loadError: null,
+  actionError: null,
 };
 
 export const useExecutionStore = create<ExecutionStore>()((set, get) => ({
   ...initialState,
 
+  loadExecutionData: async () => {
+    set({
+      isLoading: true,
+      loadError: null,
+    });
+
+    try {
+      const [tests, executionTestData] = await Promise.all([
+        executionApi.listTests(),
+        executionApi.listTestData(),
+      ]);
+
+      set({
+        tests,
+        executionTestData,
+        isLoading: false,
+      });
+    } catch (error) {
+      set({
+        isLoading: false,
+        loadError:
+          error instanceof Error
+            ? error.message
+            : 'Failed to load execution data',
+      });
+    }
+  },
+
   // Cart actions
-  addToCart: test => set(state => ({ cart: [...state.cart, { test }] })),
+  addToCart: test =>
+    set(state =>
+      state.cart.some(item => item.test.id === test.id)
+        ? state
+        : { cart: [...state.cart, { test }] }
+    ),
 
   removeFromCart: testId =>
     set(state => ({
@@ -119,49 +162,77 @@ export const useExecutionStore = create<ExecutionStore>()((set, get) => ({
     });
   },
 
-  assignTestData: () =>
-    set(state => ({
-      cart: state.cart.map(item => {
-        if (!item.assignedTestData) {
-          return {
-            ...item,
-            assignedTestData: {
-              id: `TD-${Math.random().toString(36).substring(2, 7)}`,
-              accountId: `ACC-${Math.floor(Math.random() * 90000) + 10000}`,
-              referenceId: `REF-${Math.floor(Math.random() * 90000) + 10000}`,
-              customerId: `CUST-${Math.floor(Math.random() * 90000) + 10000}`,
-              assignedAt: new Date().toISOString(),
-              status: 'Assigned',
-            },
-          };
-        }
-        return item;
-      }),
-    })),
+  assignTestData: async () => {
+    const { cart } = get();
+
+    if (cart.length === 0) {
+      return;
+    }
+
+    try {
+      const payload = cart.map(item => ({
+        id: item.test.id,
+        dataRequirements: item.test.dataRequirements,
+      }));
+      const response = await executionApi.assignTestData(payload);
+      const assignedByTestId = new Map(
+        response.assignments.map(item => [item.testId, item.assignedTestData])
+      );
+
+      set(state => ({
+        cart: state.cart.map(item => {
+          const assignedTestData = assignedByTestId.get(item.test.id);
+          return assignedTestData
+            ? {
+                ...item,
+                assignedTestData,
+              }
+            : item;
+        }),
+        actionError: null,
+      }));
+    } catch (error) {
+      set({
+        actionError:
+          error instanceof Error ? error.message : 'Failed to assign test data',
+      });
+    }
+  },
 
   // CSV import
   setCsvInput: input => set({ csvInput: input }),
 
-  handleCsvImport: () => {
-    const { csvInput, tests, cart } = get();
-    const lines = csvInput.trim().split('\n');
-    if (lines.length <= 1) return;
+  handleCsvImport: async () => {
+    const { csvInput, cart } = get();
+    if (!csvInput.trim()) {
+      return;
+    }
 
-    const testIds = lines
-      .slice(1)
-      .map(line => line.trim())
-      .filter(Boolean);
-    const testsToAdd = tests.filter(test => testIds.includes(test.id));
+    try {
+      const response = await executionApi.importCsv(csvInput);
+      const newCartItems = response.tests
+        .filter(test => !cart.some(item => item.test.id === test.id))
+        .map(test => ({ test }));
 
-    const newCartItems = testsToAdd
-      .filter(test => !cart.some(item => item.test.id === test.id))
-      .map(test => ({ test }));
+      const warning =
+        response.invalidTestIds.length > 0
+          ? `Ignored unknown test IDs: ${response.invalidTestIds.join(', ')}`
+          : null;
 
-    set({
-      cart: [...cart, ...newCartItems],
-      csvInput: '',
-      showCsvDialog: false,
-    });
+      set({
+        cart: [...cart, ...newCartItems],
+        csvInput: '',
+        showCsvDialog: false,
+        actionError: warning,
+      });
+    } catch (error) {
+      set({
+        actionError:
+          error instanceof Error
+            ? error.message
+            : 'Failed to import tests from CSV',
+      });
+    }
   },
 
   setShowCsvDialog: show => set({ showCsvDialog: show }),

@@ -17,6 +17,33 @@ interface SemanticRule {
 
 const SEMANTIC_RULES: SemanticRule[] = [
   {
+    key: 'customer-type',
+    regex: /^customer-type:(primary-user|authorized-user|company|retail)$/i,
+    parse: match => ({ 'customer-type': match[1].toLowerCase() }),
+    format: parsed => `customer-type:${parsed['customer-type']}`,
+    suggestions: [
+      'customer-type:primary-user',
+      'customer-type:authorized-user',
+      'customer-type:company',
+      'customer-type:retail',
+    ],
+  },
+  {
+    key: 'account-type',
+    regex:
+      /^account-type:(checking|savings|credit-card|debit-card|business|line-of-credit)$/i,
+    parse: match => ({ 'account-type': match[1].toLowerCase() }),
+    format: parsed => `account-type:${parsed['account-type']}`,
+    suggestions: [
+      'account-type:checking',
+      'account-type:savings',
+      'account-type:credit-card',
+      'account-type:debit-card',
+      'account-type:business',
+      'account-type:line-of-credit',
+    ],
+  },
+  {
     key: 'account',
     regex: /^account:(primary|secondary)$/i,
     parse: match => ({ account: match[1].toLowerCase() }),
@@ -95,6 +122,19 @@ function getSemanticSuggestions(input: string): string[] {
   return matchingLeaves.length > 0 ? matchingLeaves : matchingCategories;
 }
 
+/** Extract the value of a semantic tag by key from a list of classifications. */
+export function extractTagValue(
+  classifications: string[],
+  key: string
+): string | undefined {
+  const prefix = `${key}:`;
+  const tag = classifications.find(c => c.startsWith(prefix));
+  return tag ? tag.slice(prefix.length) : undefined;
+}
+
+/** Map of tag keys that should be treated as singular (only one allowed). */
+export const SINGULAR_TAG_KEYS = new Set(['customer-type', 'account-type']);
+
 const availableClassifications = [
   'Active account',
   'Active credit card',
@@ -152,9 +192,12 @@ export function ClassificationPicker({
   const inputTrimmed = inputValue.trim();
   const isSemanticMode = inputTrimmed.includes(':');
 
-  const semanticSuggestions = getSemanticSuggestions(inputTrimmed).filter(
-    s => !value.includes(s)
-  );
+  const semanticSuggestions = getSemanticSuggestions(inputTrimmed).filter(s => {
+    if (value.includes(s)) return false;
+    // For singular tags, hide suggestions if a different value is already selected
+    // (but still show them so the user can replace)
+    return true;
+  });
 
   const plainSuggestions = inputTrimmed
     ? availableClassifications.filter(
@@ -183,7 +226,13 @@ export function ClassificationPicker({
     const tag = parsed ? parsed.tag : trimmed;
 
     if (!value.includes(tag)) {
-      onChange([...value, tag]);
+      // For singular tags, replace existing tag with same key
+      const tagKey = tag.includes(':') ? tag.split(':')[0] : null;
+      const isSingular = tagKey && SINGULAR_TAG_KEYS.has(tagKey);
+      const filtered = isSingular
+        ? value.filter(c => !c.startsWith(`${tagKey}:`))
+        : value;
+      onChange([...filtered, tag]);
     }
     setInputValue('');
     setHighlightedIndex(-1);

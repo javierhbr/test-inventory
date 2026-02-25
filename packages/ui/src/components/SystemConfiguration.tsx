@@ -2,7 +2,11 @@ import { useEffect, useState } from 'react';
 
 import { Edit2, Plus, Save, Settings, Trash2, X } from 'lucide-react';
 
-import { configService, SystemConfig } from '../services/configService';
+import {
+  configService,
+  ConfigurationSection,
+  SystemConfig,
+} from '../services/configService';
 
 import { Badge } from './ui/badge';
 import { Button } from './ui/button';
@@ -13,10 +17,15 @@ import { Label } from './ui/label';
 export function SystemConfiguration() {
   const [systemConfig, setSystemConfig] = useState<SystemConfig | null>(null);
   const [editingSection, setEditingSection] = useState<string | null>(null);
-  const [editData, setEditData] = useState<Record<string, unknown> | null>(
-    null
-  );
+  const [editData, setEditData] = useState<
+    ConfigurationSection['items'] | null
+  >(null);
   const [hasChanges, setHasChanges] = useState(false);
+
+  const isKeyValueItems = (
+    value: ConfigurationSection['items'] | null
+  ): value is Record<string, string> =>
+    value !== null && typeof value === 'object' && !Array.isArray(value);
 
   useEffect(() => {
     const loadConfig = async () => {
@@ -43,7 +52,7 @@ export function SystemConfiguration() {
   };
 
   const handleSaveSection = () => {
-    if (!systemConfig || !editingSection) return;
+    if (!systemConfig || !editingSection || editData === null) return;
 
     const updatedSections = systemConfig.configurationSections.map(section =>
       section.id === editingSection ? { ...section, items: editData } : section
@@ -60,7 +69,7 @@ export function SystemConfiguration() {
   };
 
   const handleKeyValueChange = (key: string, value: string) => {
-    if (typeof editData === 'object' && !Array.isArray(editData)) {
+    if (isKeyValueItems(editData)) {
       setEditData({
         ...editData,
         [key]: value,
@@ -70,7 +79,7 @@ export function SystemConfiguration() {
   };
 
   const handleAddKeyValue = () => {
-    if (typeof editData === 'object' && !Array.isArray(editData)) {
+    if (isKeyValueItems(editData)) {
       const newKey = `New Key ${Object.keys(editData).length + 1}`;
       setEditData({
         ...editData,
@@ -81,7 +90,7 @@ export function SystemConfiguration() {
   };
 
   const handleRemoveKeyValue = (key: string) => {
-    if (typeof editData === 'object' && !Array.isArray(editData)) {
+    if (isKeyValueItems(editData)) {
       const newData = { ...editData };
       delete newData[key];
       setEditData(newData);
@@ -137,45 +146,43 @@ export function SystemConfiguration() {
               {editingSection === section.id ? (
                 <div className="space-y-4">
                   {/* Edit Mode - All sections are now keyvalue */}
-                  {section.type === 'keyvalue' &&
-                    typeof editData === 'object' &&
-                    !Array.isArray(editData) && (
-                      <div className="space-y-2">
-                        {Object.entries(editData).map(([key, value]) => (
-                          <div key={key} className="space-y-2">
-                            <div className="flex items-center gap-2">
-                              <Label className="w-1/3 font-semibold">
-                                {key}:
-                              </Label>
-                              <Input
-                                value={String(value)}
-                                onChange={e =>
-                                  handleKeyValueChange(key, e.target.value)
-                                }
-                                placeholder="Enter value"
-                                className="flex-1"
-                              />
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => handleRemoveKeyValue(key)}
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
-                            </div>
+                  {section.type === 'keyvalue' && isKeyValueItems(editData) && (
+                    <div className="space-y-2">
+                      {Object.entries(editData).map(([key, value]) => (
+                        <div key={key} className="space-y-2">
+                          <div className="flex items-center gap-2">
+                            <Label className="w-1/3 font-semibold">
+                              {key}:
+                            </Label>
+                            <Input
+                              value={String(value)}
+                              onChange={e =>
+                                handleKeyValueChange(key, e.target.value)
+                              }
+                              placeholder="Enter value"
+                              className="flex-1"
+                            />
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleRemoveKeyValue(key)}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
                           </div>
-                        ))}
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={handleAddKeyValue}
-                          className="w-full"
-                        >
-                          <Plus className="mr-2 h-4 w-4" />
-                          Add Configuration
-                        </Button>
-                      </div>
-                    )}
+                        </div>
+                      ))}
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={handleAddKeyValue}
+                        className="w-full"
+                      >
+                        <Plus className="mr-2 h-4 w-4" />
+                        Add Configuration
+                      </Button>
+                    </div>
+                  )}
 
                   {/* Edit Actions */}
                   <div className="flex gap-2 pt-4">
@@ -201,7 +208,7 @@ export function SystemConfiguration() {
                 <div>
                   {/* View Mode - All sections are now keyvalue */}
                   {section.type === 'keyvalue' &&
-                    typeof section.items === 'object' && (
+                    isKeyValueItems(section.items) && (
                       <div className="space-y-2">
                         {Object.entries(section.items).map(([key, value]) => (
                           <div key={key} className="flex">
